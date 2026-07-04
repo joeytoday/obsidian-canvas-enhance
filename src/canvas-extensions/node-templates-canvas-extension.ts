@@ -1,13 +1,14 @@
-import { FuzzyMatch, FuzzySuggestModal, getIconIds, Menu, Notice, setIcon, TFile } from "obsidian"
+import App, { FuzzyMatch, FuzzySuggestModal, getIconIds, Menu, Notice, setIcon, TFile } from "obsidian"
 import { CanvasColor, CanvasNodeData } from "obsidian/canvas"
 import { AnyCanvasNodeData } from "src/@types/AdvancedJsonCanvas"
 import { Canvas, CanvasNode, Position } from "src/@types/Canvas"
 import CanvasHelper from "src/utils/canvas-helper"
-import { FileSelectModal } from "src/utils/modal-helper"
+import { AbstractSelectionModal, FileSelectModal } from "src/utils/modal-helper"
 import CanvasExtension from "./canvas-extension"
 
 export interface NodeTemplate {
   icon: string
+  label?: string
   type: string
   width: number
   height: number
@@ -56,7 +57,7 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
 
       this.plugin.addCommand({
         id: commandId,
-        name: `Create template node ${i + 1}`,
+        name: "Create template node " + (template.label ? `"${template.label}"` : (i + 1)),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (_: Canvas) => true,
@@ -94,7 +95,7 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
           canvas,
           {
             id: `${TEMPLATE_NODE_BUTTON_ID_PREFIX}${i}`,
-            label: `Drag to add template node ${i + 1}`,
+            label: "Drag to add template node " + (template.label ? `"${template.label}"` : (i + 1)),
             icon: template.icon ?? 'book-dashed'
           },
           () => ({ width: template.width, height: template.height }),
@@ -171,12 +172,14 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
       new Notice("No icon selected, template creation cancelled.")
       return
     }
+    const label = await new AbstractSelectionModal(this.plugin.app, "Set template label (optional)", [], true).awaitInput()
 
     await this.plugin.settings.setSetting({
       nodeTemplates: [
         ...this.plugin.settings.getSetting("nodeTemplates"),
         {
           icon: icon,
+          label: label ?? undefined,
 
           type: selectedNodeData.type,
           width: selectedNodeData.width,
@@ -197,6 +200,12 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
 }
 
 class IconModal extends FuzzySuggestModal<string> {
+  constructor(app: App) {
+    super(app)
+
+    this.setPlaceholder("Set template icon")
+  }
+
   getItems(): string[] {
     return getIconIds()
   }

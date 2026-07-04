@@ -1,13 +1,15 @@
-import App, { FuzzySuggestModal, SuggestModal, TFile } from 'obsidian'
+import App, { FuzzyMatch, FuzzySuggestModal, SuggestModal, TFile } from 'obsidian'
 import FilepathHelper from 'src/utils/filepath-helper'
 
 export class AbstractSelectionModal extends FuzzySuggestModal<string> {
   suggestions: string[]
+  arbitrary: boolean
 
-  constructor(app: App, placeholder: string, suggestions: string[]) {
+  constructor(app: App, placeholder: string, suggestions: string[], arbitrary: boolean = false) {
     super(app)
 
     this.suggestions = suggestions
+    this.arbitrary = arbitrary
 
     this.setPlaceholder(placeholder)
     this.setInstructions([{
@@ -22,10 +24,19 @@ export class AbstractSelectionModal extends FuzzySuggestModal<string> {
   getItems(): string[] { return this.suggestions }
   getItemText(item: string): string { return item }
 
+  override getSuggestions(query: string): FuzzyMatch<string>[] {
+    const suggestions = super.getSuggestions(query)
+
+    if (this.arbitrary && query.length > 0 && !suggestions.some(s => s.item === query))
+      suggestions.splice(0, 0, { item: query, match: { score: 1, matches: [[0, query.length]] } })
+
+    return suggestions
+  }
+
   onChooseItem(_item: string, _evt: MouseEvent | KeyboardEvent): void { }
   awaitInput(): Promise<string> {
     return new Promise((resolve, _reject) => {
-      this.onChooseItem = (item: string) => { resolve(item) }
+      this.onChooseItem = (item: string) => resolve(item)
       this.open()
     })
   }
