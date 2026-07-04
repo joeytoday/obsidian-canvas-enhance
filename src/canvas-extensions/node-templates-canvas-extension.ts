@@ -20,6 +20,8 @@ export interface NodeTemplate {
 const TEMPLATE_NODE_BUTTON_ID_PREFIX = "create-template-node-"
 
 export default class NodeTemplatesCanvasExtension extends CanvasExtension {
+  private registeredNodeTemplateCommandIds: string[]
+
   isEnabled() { return true }
 
   init() {
@@ -33,10 +35,47 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
       )
     })
 
+    this.registeredNodeTemplateCommandIds = []
+    this.registerNodeTemplateCommands()
+
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'advanced-canvas:canvas-changed',
       (canvas: Canvas) => this.onCardMenuCreated(canvas)
     ))
+  }
+
+  private registerNodeTemplateCommands() {
+    for (const commandId of this.registeredNodeTemplateCommandIds)
+      this.plugin.removeCommand(commandId)
+    this.registeredNodeTemplateCommandIds = []
+
+    const templates = this.plugin.settings.getSetting("nodeTemplates")
+    for (let i = 0; i < templates.length; i++) {
+      const template = templates[i]
+      const commandId = `create-template-node-${i}`
+
+      this.plugin.addCommand({
+        id: commandId,
+        name: `Create template node ${i + 1}`,
+        checkCallback: CanvasHelper.canvasCommand(
+          this.plugin,
+          (_: Canvas) => true,
+          (canvas: Canvas) => {
+            const center = canvas.posCenter()
+            void this.createNodeFromTemplate(
+              canvas,
+              template,
+              {
+                x: center.x - template.width / 2,
+                y: center.y - template.height / 2
+              }
+            )
+          }
+        )
+      })
+
+      this.registeredNodeTemplateCommandIds.push(commandId)
+    }
   }
 
   private onCardMenuCreated(canvas: Canvas) {
@@ -152,6 +191,7 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
       ]
     })
 
+    this.registerNodeTemplateCommands()
     this.onCardMenuCreated(canvas)
   }
 }

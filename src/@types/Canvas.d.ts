@@ -282,6 +282,7 @@ export interface Canvas {
   zoom: number
   zoomCenter: Position | null
   zoomBreakpoint: number
+  posCenter: () => Position
 
   tx: number
   ty: number
