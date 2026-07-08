@@ -73,6 +73,8 @@ export interface AdvancedCanvasPluginSettingsValues {
   disableZoom: boolean
   disablePan: boolean
 
+  readingModeFixEnabled: boolean
+
   autoResizeNodeFeatureEnabled: boolean
   autoResizeNodeEnabledByDefault: boolean
   autoResizeNodeMaxHeight: number
@@ -170,6 +172,8 @@ export const DEFAULT_SETTINGS_VALUES: AdvancedCanvasPluginSettingsValues = {
   disableNodePopup: false,
   disableZoom: false,
   disablePan: false,
+
+  readingModeFixEnabled: false,
 
   autoResizeNodeFeatureEnabled: false,
   autoResizeNodeEnabledByDefault: false,
@@ -577,6 +581,12 @@ export const SETTINGS = {
     label: 'Variable breakpoint',
     description: `Change the zoom breakpoint (the zoom level at which the nodes won't render their content anymore) on a per-node basis using the ${VARIABLE_BREAKPOINT_CSS_VAR} CSS variable.`,
     infoSection: 'variable-breakpoints',
+    children: { }
+  },
+  readingModeFixEnabled: {
+    label: 'Alter node text rendering',
+    description: 'Tries to synchronize editing and reading view rendering. Caution: This overrides standard markdown rendering, which may cause visual inconsistencies compared to the default Obsidian reading view.',
+    infoSection: 'reading-mode-fix', // FIXME
     children: { }
   },
   autoResizeNodeFeatureEnabled: {

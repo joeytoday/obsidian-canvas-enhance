@@ -1,0 +1,104 @@
+/**
+ * Slightly modified by Developer-Mike to apply css conditionally only when feature is enabled.
+ */
+
+/**
+ * Description: Obsidian CSS snippet for smooth text cards in canvases. It visually synchronizes cards reading and editing views.
+ * Author: stdword
+ * Repository: https://github.com/stdword/obsidian13-canvas-smooth-cards
+ *
+ * Version: 2
+ * Last change: 2026-03-10
+ */
+
+.canvas-wrapper[data-reading-mode-fix-enabled='true'] .canvas {
+  /* paragraphs */
+  .el-p > p:has(> span.vertical-space) {
+    margin-top: 0px;  /* obsidian just would use default size for single P-element */
+  }
+  .el-p > p {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
+  :is(.el-ul, .el-ol) + .el-p > p:has(> span.vertical-space:first-child) {
+    margin-top: 24px;
+  }
+
+  /* number lists */
+  ol::before {
+    margin-left: -2px;
+  }
+  ol {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
+  ul > li > ol > li {
+    margin-left: 36px;
+  }
+
+  /* bullet lists */
+  ul::before {
+    margin-left: -2px;
+  }
+
+  ul {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+  .el-ul > ul > li {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
+  ol > li > ul > li {
+    margin-left: 36px;
+  }
+
+  /* bullet lists :: bullet */
+  ul > li > .list-bullet {
+    margin-top: 2px;
+  }
+  .has-list-bullet .list-bullet::after {
+    margin-left: -4px;
+    margin-top: -3px;
+  }
+
+  /* headers */
+  .el-h1 > h1,
+  .el-h2 > h2,
+  .el-h3 > h3,
+  .el-h4 > h4,
+  .el-h5 > h5,
+  .el-h6 > h6 {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+  }
+
+  .markdown-preview-section > .markdown-preview-pusher + :is(.el-h2) > :is(h2),
+  .markdown-preview-section > .markdown-preview-pusher + :is(.el-h3) > :is(h3) {
+    margin-top: 0px !important;
+  }
+
+  /* table */
+  .el-table {
+    margin-top: 24px;
+  }
+}
+
+// FIXME: Only conditional
+.canvas-node-iframe-body {
+  /* prevent scrollbars text shifting */
+  .markdown-source-view .cm-contentContainer > .cm-content.cm-lineWrapping > .cm-line {
+    margin-right: -2px !important;
+  }
+
+  .mod-inside-iframe .HyperMD-header {
+    padding-top: 0px !important;
+  }
+
+  .cm-formatting-list.cm-formatting-list-ul {
+    margin-right: 7px;
+  }
+}

@@ -91,6 +91,7 @@ export interface CanvasElement {
 
   initialize(): void
   setColor(color: string): void
+  render(): void
 
   updateBreakpoint(breakpoint: boolean): void
   setIsEditing(editing: boolean): void
