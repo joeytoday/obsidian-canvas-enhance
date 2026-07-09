@@ -33,6 +33,7 @@ This plugin enhances the Obsidian canvas with a wide array of features:
     *   [Node Styles](#node-styles): Includes various [Flowchart Shapes](#node-shapes), [Border Styles](#border-styles), and Text Alignment.
     *   [Auto Node Resizing](#auto-node-resizing): Nodes adapt to their content size automatically.
     *   [Variable Breakpoints](#variable-breakpoints): Control content rendering based on zoom level.
+    *   [Alternative Text Rendering](#alternative-text-rendering): Fix rendering inconsistencies between nodes in edit mode and reading mode.
     *   [Z-Ordering Control](#z-ordering-control): Manage node stacking order.
     *   [Custom Colors](#custom-colors): Add your own colors to the picker.
 *   **Edge Customization:**
@@ -393,6 +394,11 @@ Create a new CSS snippet in your vault (and enable it in settings):
     --variable-breakpoint: 0.5;
 }
 ```
+
+## Alternative text rendering
+Changes how the reading mode of text nodes get rendered to fix visual inconsistencies between the edit mode and reading mode that cause the node's [content to jump around](https://forum.obsidian.md/t/edit-mode-in-canvas-all-the-time/55681) when switching between the two modes. This feature is disabled by default and if enabled, **alters the default markdown rendering** of Obsidian (non-destructive and only applies to text nodes in the canvas view).
+
+Solution is based on [`stdword`'s work](https://github.com/stdword/obsidian13-canvas-smooth-cards).
 
 ## Z-Ordering Control
 Change z-ordering of nodes using the context menu.

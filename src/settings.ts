@@ -586,7 +586,7 @@ export const SETTINGS = {
   readingModeFixEnabled: {
     label: 'Alternative text rendering',
     description: 'Tries to synchronize editing and reading view rendering. Caution: Causes visual inconsistencies compared to the default Obsidian reading view.',
-    infoSection: 'reading-mode-fix', // FIXME
+    infoSection: 'alternative-text-rendering',
     children: { }
   },
   autoResizeNodeFeatureEnabled: {
