@@ -26,8 +26,8 @@ export default class ReadingModeFixCanvasExtension extends CanvasExtension {
 
     renderer.onRendered(() => {
       let text = renderer.text ?? ""
-      text = text.replace(/\n<span class=vertical-space>&nbsp;<\/span>/g, "\n")
-      text = text.replace(/\n/g, "<span class=vertical-space>&nbsp;</span>\n")
+      text = text.replaceAll('<span class="vertical-space">&nbsp;</span>\n', '\n')
+      text = text.replaceAll('\n', '<span class="vertical-space">&nbsp;</span>\n')
 
       renderer.set(text)
     })
