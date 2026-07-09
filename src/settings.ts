@@ -584,8 +584,8 @@ export const SETTINGS = {
     children: { }
   },
   readingModeFixEnabled: {
-    label: 'Alter node text rendering',
-    description: 'Tries to synchronize editing and reading view rendering. Caution: This overrides standard markdown rendering, which may cause visual inconsistencies compared to the default Obsidian reading view.',
+    label: 'Alternative text rendering',
+    description: 'Tries to synchronize editing and reading view rendering. Caution: Causes visual inconsistencies compared to the default Obsidian reading view.',
     infoSection: 'reading-mode-fix', // FIXME
     children: { }
   },
