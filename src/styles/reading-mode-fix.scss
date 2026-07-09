@@ -87,8 +87,7 @@
   }
 }
 
-// FIXME: Only conditional
-.canvas-node-iframe-body {
+.canvas-node-iframe-body[data-reading-mode-fix-enabled='true'] {
   /* prevent scrollbars text shifting */
   .markdown-source-view .cm-contentContainer > .cm-content.cm-lineWrapping > .cm-line {
     margin-right: -2px !important;

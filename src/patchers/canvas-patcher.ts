@@ -345,6 +345,11 @@ export default class CanvasPatcher extends Patcher {
     const that = this // eslint-disable-line @typescript-eslint/no-this-alias -- For patcher
 
     Patcher.patch<CanvasNode>(this.plugin, node, {
+      render: Patcher.OverrideExisting(next => function (...args: any): void {
+        const result = next.call(this, ...args)
+        that.plugin.app.workspace.trigger('advanced-canvas:node-rendered', this.canvas, node)
+        return result
+      }),
       setData: Patcher.OverrideExisting(next => function (data: CanvasNodeData, addHistory?: boolean): void {
         const result = next.call(this, data)
 

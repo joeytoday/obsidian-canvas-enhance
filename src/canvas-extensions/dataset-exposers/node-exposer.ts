@@ -2,6 +2,7 @@ import { Canvas, CanvasNode } from "src/@types/Canvas"
 import SettingsManager from "src/settings"
 import CanvasExtension from "../canvas-extension"
 import { CanvasGroupNodeData, CanvasNodeData } from "src/@types/AdvancedJsonCanvas"
+import CanvasWrapperExposerExtension from "./canvas-wrapper-exposer"
 
 const CANVAS_NODE_IFRAME_BODY_CLASS = 'canvas-node-iframe-body'
 
@@ -48,6 +49,9 @@ export default class NodeExposerExtension extends CanvasExtension {
         new MutationObserver(() => iframe.classList.toggle(CANVAS_NODE_IFRAME_BODY_CLASS, true))
           .observe(iframe, { attributes: true, attributeFilter: ['class'] })
         this.setDataAttributes(iframe, nodeData)
+
+        // Expose wrapper settings in the iframe too
+        CanvasWrapperExposerExtension.updateCanvasExposedSettings(this.plugin, iframe)
       }
     ))
   }

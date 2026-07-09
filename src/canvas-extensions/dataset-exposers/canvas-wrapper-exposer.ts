@@ -1,4 +1,5 @@
 import { Canvas } from "src/@types/Canvas"
+import AdvancedCanvasPlugin from "src/main"
 import { AdvancedCanvasPluginSettingsValues } from "src/settings"
 import CanvasExtension from "../canvas-extension"
 
@@ -17,12 +18,18 @@ export default class CanvasWrapperExposerExtension extends CanvasExtension {
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'advanced-canvas:settings-changed',
-      () => this.updateExposedSettings(this.plugin.getCurrentCanvas())
+      () => CanvasWrapperExposerExtension.updateCanvasExposedSettings(
+        this.plugin,
+        this.plugin.getCurrentCanvas()?.wrapperEl
+      )
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'advanced-canvas:canvas-changed',
-      (canvas: Canvas) => this.updateExposedSettings(canvas)
+      (canvas: Canvas) => CanvasWrapperExposerExtension.updateCanvasExposedSettings(
+        this.plugin,
+        canvas.wrapperEl
+      )
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
@@ -34,11 +41,12 @@ export default class CanvasWrapperExposerExtension extends CanvasExtension {
     ))
   }
 
-  private updateExposedSettings(canvas: Canvas | null) {
-    if (!canvas) return
+  static updateCanvasExposedSettings(plugin: AdvancedCanvasPlugin, element?: HTMLElement) {
+    if (!element) return
 
     for (const setting of EXPOSED_SETTINGS) {
-      canvas.wrapperEl.dataset[setting] = JSON.stringify(this.plugin.settings.getSetting(setting))
+      const value = plugin.settings.getSetting(setting)
+      element.dataset[setting] = JSON.stringify(value)
     }
   }
 }
