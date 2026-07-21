@@ -113,6 +113,7 @@ export interface CanvasEnhancePluginSettingsValues {
   overviewModeZoomThreshold: number
   overviewModeFileNodeTitle: keyof typeof SETTINGS.overviewModeFeatureEnabled.children.overviewModeFileNodeTitle.options
   overviewModeGroupLabelScale: boolean
+  overviewModeMaxFontSize: number
 
   mindmapFeatureEnabled: boolean
   mindmapChildNodeSpacing: number
@@ -225,6 +226,7 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   overviewModeZoomThreshold: 0.4,
   overviewModeFileNodeTitle: 'filename',
   overviewModeGroupLabelScale: true,
+  overviewModeMaxFontSize: 64,
 
   mindmapFeatureEnabled: true,
   mindmapChildNodeSpacing: 200,
@@ -705,6 +707,12 @@ export const SETTINGS = {
         label: '分组标签反向缩放',
         description: '缩小画布时自动放大分组标签文字，保持可读性。',
         type: 'boolean'
+      },
+      overviewModeMaxFontSize: {
+        label: '标题最大字号',
+        description: '概览模式下标题文字的最大字号（像素），避免大卡片上的短标题过大。',
+        type: 'number',
+        parse: (value: string) => Math.max(16, Math.min(200, parseInt(value) || 64))
       }
     }
   },

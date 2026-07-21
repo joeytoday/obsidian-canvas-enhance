@@ -213,8 +213,9 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     // Constrain width so text wraps, then binary-search the largest font that fits height
     textEl.style.width = `${availW}px`
 
+    const maxFontSize = this.plugin.settings.getSetting('overviewModeMaxFontSize')
     let lo = MIN_FONT_SIZE
-    let hi = Math.max(availW, availH)
+    let hi = Math.min(Math.max(availW, availH), maxFontSize)
 
     while (hi - lo > 1) {
       const mid = Math.floor((lo + hi) / 2)
