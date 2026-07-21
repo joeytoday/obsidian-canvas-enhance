@@ -1,4 +1,34 @@
 .ce-settings {
+  .ce-settings-tabs {
+    display: flex;
+    gap: var(--size-2-2);
+    margin-bottom: var(--size-4-4);
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: var(--size-4-2);
+  }
+
+  .ce-settings-tab {
+    padding: var(--size-4-1) var(--size-4-3);
+    border: none;
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+
+    &:hover {
+      color: var(--text-normal);
+      background: var(--background-modifier-hover);
+    }
+
+    &.is-active {
+      color: var(--text-normal);
+      background: var(--background-modifier-hover);
+      font-weight: var(--font-semibold);
+    }
+  }
+
   .properties-field {
     & > .setting-item-info {
       flex: 0;
@@ -69,39 +99,6 @@
 
     & > *:not(summary) {
       border: 1px solid var(--background-primary);
-    }
-  }
-
-  .kofi-banner {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: var(--size-4-3);
-
-    background-color: var(--background-primary-alt);
-
-    border-radius: var(--radius-m);
-
-    .ce-kofi-banner-title {
-      margin: 0;
-
-      font-size: var(--font-ui-small);
-      font-weight: 600;
-    }
-
-    .ce-kofi-button {
-      width: min-content;
-      height: min-content;
-
-      line-height: 0;
-
-      img {
-        min-width: 75px;
-        width: 25%;
-        max-width: 100px;
-      }
     }
   }
 }

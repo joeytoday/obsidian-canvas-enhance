@@ -10,563 +10,105 @@
     <a href="https://github.com/joeytoday/obsidian-canvas-enhance/stargazers"><img src="https://img.shields.io/github/stars/joeytoday/obsidian-canvas-enhance?colorA=363a4f&colorB=e0ac00&style=for-the-badge" alt="GitHub star count"></a>
     <a href="https://github.com/joeytoday/obsidian-canvas-enhance/issues"><img src="https://img.shields.io/github/issues/joeytoday/obsidian-canvas-enhance?colorA=363a4f&colorB=e93147&style=for-the-badge" alt="Open issues on GitHub"></a>
     <br/>
-    <a href="https://obsidian.md/plugins?id=canvas-enhance"><img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/obsidianmd/obsidian-releases/master/community-plugin-stats.json&query=$.canvas-enhance.downloads&label=Downloads&style=for-the-badge&colorA=363a4f&colorB=d53984"/></a>
     <a href="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/LICENSE"><img src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=GPL-3.0&colorA=363a4f&colorB=b7bdf8" alt="GPL-3.0 license"/></a>
-    <br/><br/>
-    <b>⚡ Supercharge</b> your canvas experience! Create presentations, flowcharts and more!
 </p>
 
-> **Note:** This is a fork of [Developer-Mike/obsidian-advanced-canvas](https://github.com/Developer-Mike/obsidian-advanced-canvas), renamed to **Canvas Enhance** and maintained by [joeytoday](https://github.com/joeytoday). All credit for the original work goes to [Developer-Mike](https://github.com/Developer-Mike).
+<p align="center"><b>⚡ 全面增强</b>你的 Obsidian Canvas 体验。演示文稿、流程图、脑图，一个插件搞定。</p>
+
+## 功能概览
+
+所有功能均可在设置中独立开关。
+
+### 核心增强
+
+| 功能 | 说明 |
+|------|------|
+| 元数据缓存 | `.canvas` 文件接入 Obsidian 元数据系统，支持关系图谱、反向链接、出链 |
+| Frontmatter | 为 Canvas 文件添加自定义属性（标签、别名、CSS 类等） |
+| 单节点链接/嵌入 | 通过 `[[canvas#node-id]]` 链接或嵌入 Canvas 中的单个节点 |
+| 自动文件节点边 | 根据 frontmatter 自动创建文件节点之间的边 |
+| 画布内搜索 | `Ctrl+F` 在 Canvas 中搜索文本，体验接近原生 |
+| 更好的默认设置 | 自定义节点尺寸、网格对齐、双击行为等 |
+| 只读模式增强 | 精细控制只读模式下的交互行为 |
+| 图片导出 | 导出为 PNG/SVG，支持透明度等选项 |
+
+### 节点
+
+| 功能 | 说明 |
+|------|------|
+| 节点样式 | 流程图形状（终端、流程、判断、数据库等）、边框样式、文本对齐 |
+| 节点模板 | 保存节点样式为模板，快速复用 |
+| 自动调整大小 | 节点根据内容自动调整尺寸 |
+| 变量断点 | 按缩放级别控制节点内容的渲染 |
+| Z 轴排序 | 通过右键菜单调整节点层叠顺序 |
+| 自定义颜色 | 通过 CSS 变量扩展颜色选择器 |
+
+### 边
+
+| 功能 | 说明 |
+|------|------|
+| 边样式 | 路径样式（虚线/点线）、箭头样式（8 种）、寻路方式（直线/直角/A*） |
+| 浮动边 | 边自动调整连接侧，支持不连接到节点的浮动边 |
+| 翻转边 | 一键反转边的方向 |
+| 边高亮 | 选中节点时高亮关联的边 |
+| 边选择 | 按方向（连接/入/出）选择边 |
+
+### 交互与工作流
+
+| 功能 | 说明 |
+|------|------|
+| Mindmap 模式 | Tab 创建子节点、Enter 创建兄弟节点、方向键导航、颜色传播 |
+| 演示模式 | 幻灯片式导航，支持全屏、过渡动画 |
+| 传送门 | 在 Canvas 中嵌入另一个 Canvas 的视图 |
+| 可折叠组 | 组节点可折叠/展开 |
+| 聚焦模式 | 模糊未选中节点，突出当前节点 |
+| 封装选区 | 将选中节点移动到新 Canvas 并链接回来 |
+| 画布命令 | 20+ 命令：创建节点、导航、克隆、展开、翻转、交换等 |
+
+### 自定义样式
+
+通过 CSS snippet 为节点和边添加自定义样式属性。在 CSS 文件中用 YAML 注释定义样式选项，即可在弹出菜单中使用。
 
-## Feature Overview
-This plugin enhances the Obsidian canvas with a wide array of features:
-
-*   **Core Enhancements:**
-    *   [Standardized Format](#standardized-format): Compatible with the JSON Canvas format, introducing the Advanced JSON Canvas format for enhanced features.
-    *   [Full Metadata Cache Support](#full-metadata-cache-support): Integrate canvases with Obsidian's graph view, outgoing links, and backlinks.
-    *   [Frontmatter Support](#frontmatter-support): Add custom properties to canvas files.
-    *   [Auto File Node Edges](#auto-file-node-edges): Automatically create edges between file nodes based on their frontmatter properties.
-    *   [Single Node Links & Embeds](#single-node-links--embeds): Link or embed a single node from a canvas into markdown files.
-    *   [Better Default Settings](#better-default-settings): Customize default node sizes, grid alignment, and more.
-    *   [Enhanced Readonly Mode](#better-readonly): Finer control over canvas interaction in readonly mode.
-    *   [Improved Image Export](#image-export): Export to PNG/SVG with transparency and other options.
-*   **Node Customization:**
-    *   [Node Templates](#node-templates): Save and reuse node styles as templates.
-    *   [Node Styles](#node-styles): Includes various [Flowchart Shapes](#node-shapes), [Border Styles](#border-styles), and Text Alignment.
-    *   [Auto Node Resizing](#auto-node-resizing): Nodes adapt to their content size automatically.
-    *   [Variable Breakpoints](#variable-breakpoints): Control content rendering based on zoom level.
-    *   [Alternative Text Rendering](#alternative-text-rendering): Fix rendering inconsistencies between nodes in edit mode and reading mode.
-    *   [Z-Ordering Control](#z-ordering-control): Manage node stacking order.
-    *   [Custom Colors](#custom-colors): Add your own colors to the picker.
-*   **Edge Customization:**
-    *   [Edge Styles](#edge-styles): Includes [Path Styles](#path-styles) (dotted, dashed), [Arrow Styles](#arrow-styles), and [Pathfinding Methods](#pathfinding-methods).
-    *   [Floating Edges](#floating-edges-automatic-edge-side): Edges automatically adjust their connection side.
-    *   [Flip Edge](#flip-edge): Quickly reverse edge direction.
-*   **Interaction & Workflow:**
-    *   [Canvas Commands](#canvas-commands): A suite of commands for efficient canvas manipulation.
-    *   [Native-Like File Search](#native-like-file-search): Search for text within the whole canvas using a native-like interface.
-    *   [Presentation Mode](#presentation-mode): Create and navigate slide-like presentations.
-    *   [Portals](#portals): Embed other canvases within your current canvas.
-    *   [Collapsible Groups](#collapsible-groups): Organize your canvas with expandable/collapsible groups.
-    *   [Edge Highlight](#edge-highlight): Highlight edges when a connected node is selected.
-    *   [Edge Selection](#edge-selection): Select edges connected to the selected node(s).
-    *   [Focus Mode](#focus-mode): Highlight a single node by blurring others.
-    *   [Encapsulate Selection](#encapsulate-selection): Move selected nodes to a new canvas, linking back to it.
-    *   Create groups independently of the nodes.
-*   **Styling & Extensibility:**
-    *   [Custom Styles](#custom-styles): Add unique CSS-based styles to nodes and edges.
-    *   [Canvas Events](#canvas-events): Expose canvas events for use in other plugins.
-
-All features can be enabled/disabled in the settings.
-
-## Installation
-Open the Community Plugins tab in the settings and search for "Canvas Enhance" (or click [here](https://obsidian.md/plugins?id=canvas-enhance)).
-
-<details>
-    <summary>Other installation methods</summary>
-
-*   Install it using [BRAT](https://github.com/TfTHacker/obsidian42-brat)
-*   Manual folder creation
-    1.  Create a folder named `canvas-enhance` in your vault's plugins folder (`<vault>/.obsidian/plugins/`).
-    2.  Download `main.js`, `styles.css` and `manifest.json` from the latest release and put them in the `canvas-enhance` folder.
-    3.  Enable the plugin in Settings -> Community plugins -> Installed plugins
-</details>
-
-## Support
-If you find this plugin useful, please consider starring ⭐ the repository.
-
-This plugin is a fork of [Developer-Mike/obsidian-advanced-canvas](https://github.com/Developer-Mike/obsidian-advanced-canvas). If you appreciate the original work, please consider supporting the original author via their [Ko-fi](https://ko-fi.com/X8X27IA08).
-
-## Terminology
-- **Canvas**: The canvas view is the view in which nodes and edges are displayed.
-- **Node**: A node is a single element in a canvas that can contain text, files, or links. (Some people also call it *card* or *element* - but please always use **node**.)
-  - **Text Node**: A text node is a node that contains text.
-  - **File Node**: A file node is a node that contains a link to another file.
-  - **Group Node**: A group node is a node that contains other nodes.
-  - **Link Node**: A link node is a node that displays a website.
-- **Edge**: An edge is a connection between two nodes in a canvas. It can be used to represent relationships or connections between different elements. (Please always use **edge** instead of *arrow* to avoid confusion with the edge arrow.)
-  - **Edge Path**: The edge path is just the line that connects two nodes in a canvas.
-  - **Edge Arrow**: The edge arrow is the arrow at the end (or start) of an edge that indicates the direction of the connection.
-- **Popup Menu**: The popup menu is the horizontal menu that is visible if one or more canvas elements (nodes or edges) are selected.
-- **Context Menu**: The context menu is menu that is visible if you right-click in a canvas view.
-- **Control Menu**: The control menu is the vertical menu that is visible in the top right corner of a canvas view.
-- **Card Menu**: The card menu is the horizontal menu at the bottom of the canvas view where you can find options to create new nodes.
-
-## Standardized Format
-Compatible with the [JSON Canvas](https://github.com/obsidianmd/jsoncanvas) format, the [Advanced JSON Canvas](https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/assets/formats/advanced-json-canvas/README.md) format takes it a step further by adding more features and flexibility. The Advanced JSON Canvas format was introduced to provide longevity, readability, interoperability, and extensibility for canvases created with Canvas Enhance.
-
-## Full Metadata Cache Support
-Canvas Enhance enables `.canvas` files to be indexed by the metadata cache. This means that there is now full compatibility with the graph view, outgoing links and backlinks. You can even enable (optional) the creation of an outgoing link if two embeds in a canvas are connected by an edge. This feature brings the full power of Obsidian's linking system to the canvas file format.
-
-<details>
-    <summary>Metadata Cache Support Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/metadata-cache-support.png" alt="Metadata Cache Support Example"/>
-</details>
-
-<details>
-    <summary>Outgoing Link Using An Edge Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/edge-metadata-cache.png" alt="Outgoing Link Using An Edge Example"/>
-</details>
-
-<details>
-    <summary>Technical Details</summary>
-
-*   The file cache of a `.canvas` file now contains a value for the `hash` key (Generated from the filepath) instead of an empty string.
-    *   Check the `app.metadataCache.fileCache[<filepath>]` object to see the changes.
-*   The metadata cache is located in the `app.metadataCache` object - the same object that is used by Obsidian for markdown files.
-    *   e.g. `app.metadataCache.getCache`/`app.metadataCache.getFileCache` now works with `.canvas` files.
-    *   The `position` object which is found inside metadata cache entries now contains a new key `nodeId` for `.canvas` files.
-    *   The metadata cache entry for a `.canvas` file now contains a new key `nodes` which is an object of type `{ [nodeId: string]: MetadataCacheEntry }` - this allows for other plugins to access the full metadata cache for single nodes. The `MetadataCacheEntry` object is the same as for markdown files (even created with the same function - 1:1 compatibility).
-*   The resolved links object now has entries for `.canvas` files.
-    *   The `app.metadataCache.resolvedLinks` object values for `.canvas` files are implemented in the exact same way as for markdown files.
-</details>
-
-### Frontmatter Support
-Additionally, Canvas Enhance introduces full frontmatter support for `.canvas` files. You can now view and edit the frontmatter directly within the canvas view:
-
-*   **Accessing Frontmatter:** Click the "info" icon located in the top right corner of the canvas view.
-*   **Functionality:** This allows you to add custom properties (metadata) to your canvas files.
-*   **Use Cases:**
-    *   **Categorization & Tagging:** Add `tags` or custom keys for organization.
-    *   **Aliases:** Use `aliases` to create alternative names for your canvas files.
-    *   **Styling:** Use `cssclasses` to apply custom CSS styles to the entire canvas view.
-    *   **Custom Metadata:** Define any other properties relevant to your workflow.
-*   **Searchability:** Properties defined in the frontmatter of your `.canvas` files are searchable using Obsidian's global search pane, further integrating canvases into your knowledge management system.
-
-This significantly enhances the ability to manage, organize, and customize your canvases alongside your other notes in Obsidian.
-
-## Auto File Node Edges
-Canvas Enhance can automatically create edges between file nodes based on their frontmatter properties. By default (if enabled), it will create edges to files linked in the `canvas-edges` frontmatter property. This allows you to create fixed relationships between file nodes in your canvas, making it easier to visualize fixed structures or connections between different files.
-
-### Single Node Links & Embeds
-Canvas Enhance now allows you to link or embed the content of a *single node* from a `.canvas` file directly into your markdown files. This provides a granular way to reference specific pieces of information within your canvases. (Take a look at `Canvas Enhance: Copy wikilink to node` for getting the id of a node).
-
-*   **Syntax:**
-    *   **Linking:** Use the standard wikilink format with the node ID appended after a `#`:
-        `[[canvas-file-name#node-id]]`
-    *   **Embedding:** Use the standard embed wikilink format, also with the node ID:
-        `![[canvas-file-name#node-id]]`
-*   **Functionality:** When you link or embed a node this way, the actual content of that specific node from the canvas will be displayed or linked within your markdown file. This is incredibly useful for creating direct references to diagrams, text snippets, or any other content held within individual canvas nodes.
-
-## Better Default Settings
-*   Enforce all new nodes to be aligned to the grid
-*   Customize default text node size
-*   Customize default file node size
-*   Modify the minimum node size
-*   Disable the font scaling relative to the zoom level
-
-## Native-Like File Search
-Quickly locate text within your canvas using a familiar search experience. Canvas Enhance integrates a native-like file search specifically for canvas content.
-
-*   **Activation:** Use the `Search current file` command, which is commonly bound to the `Ctrl+F` (or `Cmd+F` on macOS) keyboard shortcut.
-*   **Functionality:** This opens a search interface that allows you to search for text across all nodes within the currently active canvas.
-*   **Benefits:** Easily find specific information, navigate to relevant nodes, and streamline your workflow when dealing with text-heavy canvases.
-
-<details>
-    <summary>Search Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/sample-search.gif" alt="Search Example"/>
-</details>
-
-## Canvas Commands
-<details>
-    <summary>View available commands</summary>
-
-*   `Canvas Enhance: Toggle readonly`
-    *   Toggle the readonly state of the canvas
-*   `Canvas Enhance: Create text node`
-    *   Create a new text node
-*   `Canvas Enhance: Create file node`
-    *   Create a new file node
-*   `Canvas Enhance: Group selected nodes`
-    *   Create a group node around the selected nodes
-*   `Canvas Enhance: Toggle collapse group`
-    *   Collapse/Expand the selected group node
-*   `Canvas Enhance: Select all edges`
-    *   Select all edges
-*   `Canvas Enhance: Zoom to selection`
-    *   Zoom to the bounding box of the selected nodes
-*   `Canvas Enhance: Zoom to fit`
-    *   Zoom to fit all nodes
-*   `Canvas Enhance: Navigate up/down/left/right`
-    *   Navigate through the canvas using the aforementioned commands
-*   `Canvas Enhance: Clone node up/down/left/right`
-    *   Clone the selected node in the direction of the arrow keys
-    *   The cloned node will have the same dimensions and color as the original node
-*   `Canvas Enhance: Expand node up/down/left/right`
-    *   Expand the selected node in the direction of the arrow keys
-*   `Canvas Enhance: Flip selection horizontally/vertically`
-    *   Flip the selected nodes and the respective edges horizontally or vertically
-*   `Canvas Enhance: Swap nodes`
-    *   Swap two selected nodes with each other (x, y and width, height will be swapped)
-*   `Canvas Enhance: Copy wikilink to node`
-    *   Copy the wikilink to the selected node to the clipboard
-*   `Canvas Enhance: Pull outgoing links to canvas`
-    *   Create file nodes for all outgoing links of the selected nodes / the whole canvas if no node is selected
-*   `Canvas Enhance: Pull backlinks to canvas`
-    *   Create file nodes for all backlinks of the selected nodes / the whole canvas if no node is selected
-</details>
-
-## Node Templates
-Save and reuse node styles as templates. This allows you to quickly apply consistent styling to new nodes without having to manually adjust each style attribute every time.
-
-Saving a node as a template can be done using the new `Canvas Enhance: Save node as template` if you have exactly ONE node selected. After selecting the icon used for the new template, the template will be available in the card menu (horizontal menu at the bottom of the canvas view) for quick application to new nodes.
-
-To remove a template you can right-click on the template in the card menu and select `Remove`.
-
-## Node Styles
-You can customize the default node styles using the settings. This includes various shapes, border styles, and text alignment options.
-
-### Node Shapes
-<details>
-    <summary>Flowchart Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/sample-flowchart.png" alt="Flowchart Example"/>
-</details>
-
-#### Usage
-*   Use the updated popup menu set a node's shape.
-
-#### Shapes
-<details>
-    <summary>Terminal Shape</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/flowchart-nodes/terminal.png" alt="Terminal Shape"/>
-</details>
-
-<details>
-    <summary>Process/Center Shape</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/flowchart-nodes/process.png" alt="Process/Center Shape"/>
-</details>
-
-<details>
-    <summary>Decision Shape</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/flowchart-nodes/decision.png" alt="Decision Shape"/>
-</details>
-
-<details>
-    <summary>Input/Output Shape</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/flowchart-nodes/input-output.png" alt="Input/Output Shape"/>
-</details>
-
-<details>
-    <summary>On-page Reference Shape</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/flowchart-nodes/reference.png" alt="On-page Reference Shape"/>
-</details>
-
-<details>
-    <summary>Predefined Process Shape</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/flowchart-nodes/predefined-process.png" alt="Predefined Process Shape"/>
-</details>
-
-<details>
-    <summary>Document Shape</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/flowchart-nodes/document.png" alt="Document Shape"/>
-</details>
-
-<details>
-    <summary>Database Shape</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/flowchart-nodes/database.png" alt="Database Shape"/>
-</details>
-
-### Border Styles
-Set the style of the border to dotted, dashed or invisible.
-
-<details>
-    <summary>Border Styles Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/border-styles.png" alt="Border Styles Example"/>
-</details>
-
-*(Note: Text Alignment options (Left, Center, Right) are also available for nodes.)*
-
-## Edge Styles
-You can customize the default edge styles using the settings.
-
-### Path Styles
-Set the style of the edge paths to dotted, short-dashed or long-dashed.
-
-<details>
-    <summary>Edge Path Styles Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/edge-path-styles.png" alt="Edge Path Styles Example"/>
-</details>
-
-### Arrow Styles
-Set the style of the arrows to triangle outline, halved triangle, thin triangle, diamond, diamond outline, circle, circle outline and blunted.
-
-<details>
-    <summary>Arrow Styles Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/edge-arrow-styles.png" alt="Edge Arrow Styles Example"/>
-</details>
-
-### Pathfinding Methods
-Set the pathfinding method of the edges (arrows) to default, straight, squared or A*.
-
-<details>
-    <summary>Edge Pathfinding Methods Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/edge-pathfinding-methods.png" alt="Edge Pathfinding Methods Example"/>
-</details>
-
-## Custom Styles
-Custom style attributes for nodes and edges can easily be added. They get exposed in the `.canvas-node` dataset (for nodes) or `.canvas-edges path` dataset (for edges) and can be styled using CSS. Node styles also get exposed in the node editor iframe in the body dataset and the class `canvas-node-iframe-body` indicating that the body is inside a canvas node iframe.
-
-1.  Create a new CSS snippet in your vault:
-    *   Navigate to `Settings > Appearance > *scroll down* > CSS snippets` and click on the folder icon to open the snippets folder.
-    *   Create a new CSS file (e.g. `my-fancy-node-style.css`).
-2.  Add the custom style attribute definition:
-    *   Open the CSS file and add the following code. The format needs to be **YAML** (within a CSS comment) and must contain the same keys as in this example. The number of options can be adjusted (minimum of one option is required). The `icon` key should contain the ID of an icon from [lucide.dev](https://lucide.dev/icons/).
-    *   Change `@canvas-enhance-node-style` to `@canvas-enhance-edge-style` for edge styles.
-    ```css
-    /* @canvas-enhance-node-style
-    key: validation-state
-    label: Validation State
-    options:
-      -
-        label: Stateless
-        value: null
-        icon: circle-help
-
-      -
-        label: Approved
-        value: approved
-        icon: circle-check
-
-      -
-        label: Pending
-        value: pending
-        icon: circle-dot
-
-      -
-        label: Rejected
-        value: rejected
-        icon: circle-x
-    */
-    ```
-
-> [!IMPORTANT]
-> There needs to be **one** option with the value `null`.
-
-3.  Add the CSS styling:
-    *   In the same (or another) CSS file, add the styling for your custom attribute.
-    ```css
-    /* General structure */
-    .canvas-node[data-<YOUR-CUSTOM-STYLE-KEY>="<VALUE>"] {
-      /* Your custom styling */
-    }
-    ```
-    *   Example for `validation-state`:
-    ```css
-    .canvas-node[data-validation-state] .canvas-node-content::after {
-      content: "";
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 1em;
-    }
-
-    .canvas-node[data-validation-state="approved"] .canvas-node-content::after {
-      content: "✔️";
-    }
-
-    .canvas-node[data-validation-state="pending"] .canvas-node-content::after {
-      content: "⏳";
-    }
-
-    .canvas-node[data-validation-state="rejected"] .canvas-node-content::after {
-      content: "❌";
-    }
-    ```
-4.  **Enable** the CSS snippet in Obsidian's settings and enjoy your new custom style attribute!
-    <details>
-        <summary>Example in Popup Menu</summary>
-        <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/custom-style-attribute-example.png" alt="Custom Style Attribute Example"/>
-    </details>
-
-**See an example of a complete custom node style CSS file [here](https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/example-custom-node-style.css).**
-
-## Variable Breakpoints
-Add breakpoints to nodes to change at which zoom factor the node's content gets unrendered.
-
-> [!IMPORTANT]
-> Due to performance reasons, custom breakpoints get cached and are only re-fetched when the canvas gets reloaded. Changes in the CSS snippet won't be applied immediately (only after reopening the canvas).
-
-Create a new CSS snippet in your vault (and enable it in settings):
 ```css
-/* Any CSS selector can be used (As long as the .canvas-node element has the CSS variable defined) */
-.canvas-node[data-shape="pill"] {
-    /* The zoom factor at which the node's content gets unrendered (Zoom level can range from 1 to -4) */
-    --variable-breakpoint: 0.5;
-}
+/* @canvas-enhance-node-style
+key: validation-state
+label: 验证状态
+options:
+  - label: 无状态
+    value: null
+    icon: circle-help
+  - label: 已通过
+    value: approved
+    icon: circle-check
+*/
 ```
 
-## Alternative text rendering
-Changes how the reading mode of text nodes get rendered to fix visual inconsistencies between the edit mode and reading mode that cause the node's [content to jump around](https://forum.obsidian.md/t/edit-mode-in-canvas-all-the-time/55681) when switching between the two modes. This feature is disabled by default and if enabled, **alters the default markdown rendering** of Obsidian (non-destructive and only applies to text nodes in the canvas view).
+详见 [示例 CSS 文件](assets/docs/example-custom-node-style.css)。
 
-Solution is based on [`stdword`'s work](https://github.com/stdword/obsidian13-canvas-smooth-cards).
+## 安装
 
-## Z-Ordering Control
-Change z-ordering of nodes using the context menu.
+### 社区插件市场
 
-<details>
-    <summary>Z-Ordering Control Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/z-ordering-control.png" alt="Z-Ordering Control Example"/>
-</details>
+在 Obsidian 设置 → 第三方插件 → 浏览中搜索 **Canvas Enhance**。
 
-## Custom Colors
-Add custom colors to the color picker. You can add them using the following CSS snippet:
-```css
-body {
-    /* Where X is the index of the color in the palette (1-6 are used by Obsidian) */
-    --canvas-color-X: 0, 255, 0; /* RGB values */
-}
-```
+### 手动安装
 
-<details>
-    <summary>Custom Colors In Palette Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/custom-colors.png" alt="Custom Colors In Palette"/>
-</details>
+1. 在 vault 的 `.obsidian/plugins/` 下创建 `canvas-enhance` 文件夹
+2. 从 [Releases](https://github.com/joeytoday/obsidian-canvas-enhance/releases) 下载 `main.js`、`styles.css`、`manifest.json` 放入该文件夹
+3. 在设置 → 第三方插件中启用
 
-## Presentation Mode
-In presentation mode, you can navigate through nodes using arrow keys or PageUp/PageDown keys (compatible with most presentation remotes). Slides/nodes are connected by arrows. For multiple outgoing arrows from one node, number them to define navigation order. While in presentation mode, the canvas is in readonly mode (so [Better Readonly](#better-readonly) features apply). Exit with `ESC` or the corresponding command. Use `Canvas Enhance: Continue presentation` to resume from the last slide.
+## 设置
 
-<img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/sample-presentation-simple.gif" alt="Presentation mode example"/>
+设置页面分为三个标签页：
 
-<details>
-    <summary>Simple Presentation Canvas File</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/sample-presentation-simple.png" alt="Presentation canvas file"/>
-</details>
+- **基础设置** — 日常使用的核心功能：节点尺寸、命令、边高亮、自动调整、可折叠组、只读模式等
+- **Mindmap** — 脑图模式的全部配置：节点间距、快捷键、颜色传播
+- **进阶设置** — 元数据兼容、节点/边样式系统、演示模式、传送门、聚焦模式等
 
-### More Complex Example
-<img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/sample-presentation-complex.gif" alt="Complex presentation mode example"/>
+## 许可证
 
-<details>
-    <summary>Complex Presentation Canvas File</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/sample-presentation-complex.png" alt="Complex presentation canvas file"/>
-</details>
+[GPL-3.0](LICENSE)
 
-### Usage
-*   **Create the first slide:**
-    *   Use the updated popup menu to mark a node as the first slide.
-    *   OR create a node and mark it via the updated card menu.
-*   **Add more slides:**
-    *   Link slides using arrows.
-    *   To loop back, number arrows for navigation order.
-    *   **TIP:** Use the updated card menu for consistent slide dimensions.
-*   **Control the presentation:**
-    *   Start: Command Palette (`Canvas Enhance: Start presentation`).
-    *   Navigate: Arrow keys.
-    *   Exit: `ESC` key.
+## 致谢
 
-## Portals
-Embed other canvases inside your current canvas and create edges (arrows) to the embedded canvas.
-
-<img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/sample-portal-usage.png" alt="Portal example"/>
-
-### Usage
-*   Embed a canvas file, then click the door icon in the popup menu to open it as a portal.
-
-## Collapsible Groups
-Collapse and expand groups to organize your canvas.
-
-<details>
-    <summary>Collapsible Groups Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/collapsible-groups.png" alt="Collapsible Groups Example"/>
-</details>
-
-## Image Export
-Export the whole canvas or just a selection as a PNG/SVG image with transparency. Core plugin export options like "Privacy Mode" and "Show Logo" (extended to include Canvas Enhance logo) are also available.
-
-<details>
-    <summary>Image Export Example (SVG)</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/image-export-example.svg" alt="Image Export Example"/>
-</details>
-
-## Auto Node Resizing
-Resize nodes automatically when their text content changes. Toggle this feature per-node using the updated popup menu.
-
-<details>
-    <summary>Auto Node Resizing Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/auto-node-resizing.gif" alt="Auto Node Resizing Example"/>
-</details>
-
-## Edge Highlight
-Highlight edges when a connected node is selected. This feature helps to visually identify relationships between nodes.
-
-If you want to edit the look of the highlighted edges, you need to edit the `is-focused` CSS class in a custom CSS snippet.
-
-## Focus Mode
-Focus on a single node by blurring all other nodes.
-
-If "[Edge Highlight](#edge-highlight)" is enabled, edges connected to the focused node won't be blurred.
-
-<details>
-    <summary>Focus Mode Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/focus-mode.png" alt="Focus Mode Example"/>
-</details>
-
-## Better Readonly
-*   Disable node popup menus.
-*   Lock the canvas' position.
-*   Lock the canvas' zoom.
-*   Interactivity is retained for zooming to a bounding box (e.g., zoom to selection, zoom to fit all).
-
-### Usage
-*   Use the updated control menu to toggle these features (shown only if the canvas is in readonly mode).
-
-## Encapsulate Selection
-Move the current selection to a new canvas and create a link to it in the current canvas.
-
-### Usage
-1.  Select the nodes you want to encapsulate.
-2.  Use the context menu (right-click) to encapsulate the selection.
-3.  OR use the command palette (`Canvas Enhance: Encapsulate selection`).
-
-## Floating Edges (Automatic Edge Side)
-Edges automatically change their connection side to the most suitable one.
-Drag the edge to the indicated drop zone inside the node to make the edge float.
-
-<details>
-    <summary>Floating Edges Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/floating-edge-example.png" alt="Floating Edges Example"/>
-</details>
-
-## Flip Edge
-Flip the direction of an edge with one click.
-
-<details>
-    <summary>Flip Edge Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/flip-edge.gif" alt="Flip Edge Example"/>
-</details>
-
-## Edge Selection
-Select edges connected to the selected node(s).
-
-<details>
-    <summary>Select Connected Edges Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/select-connected-edges.gif" alt="Select Connected Edges Example"/>
-</details>
-
-### Select By Direction
-Select incoming or outgoing edges of the selected node(s).
-Note: this requires the setting `Edge Selection > Select Edge By Direction` to be enabled.
-
-<details>
-    <summary>Select Outgoing Edges Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/select-outgoing-edges.gif" alt="Select Outgoing Edges Example"/>
-</details>
-
-<details>
-    <summary>Select Incoming Edges Example</summary>
-    <img src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/select-incoming-edges.gif" alt="Select Incoming Edges Example"/>
-</details>
-
-## Canvas Events
-All custom events are prefixed with `canvas-enhance:` and can be listened to using `app.workspace.on` (just like default Obsidian events).
-Check out the list of events [here](https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/src/%40types/CustomWorkspaceEvents.d.ts).
-
-## Settings
-Every feature can be enabled/disabled in the settings. All features were made to be as customizable as possible.
-
-## Contributing
-All code contributions that **aren't made by LLMs or just update the README** are welcome!
-You may want to check out issues with the `PRs appreciated` label to find issues you can start with.
-But feel free to work on any issue or non-issue you want to work on!
-
-## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=joeytoday/obsidian-canvas-enhance&type=Date)](https://star-history.com/#joeytoday/obsidian-canvas-enhance&Date)
+本插件基于 [Developer-Mike](https://github.com/Developer-Mike) 的 [Advanced Canvas](https://github.com/Developer-Mike/obsidian-advanced-canvas) 项目。感谢原作者的出色工作，Canvas Enhance 在此基础上进行了重命名、重构和功能优化。

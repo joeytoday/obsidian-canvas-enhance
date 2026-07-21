@@ -1,5 +1,6 @@
-# vscode
+# tools
 .vscode 
+.qwen
 
 # Intellij
 *.iml

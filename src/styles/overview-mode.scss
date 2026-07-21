@@ -1,0 +1,37 @@
+.ce-overview-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px;
+
+  background: var(--background-primary);
+  border-radius: var(--radius-m);
+
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ce-overview-text {
+  font-weight: 700;
+  color: var(--text-normal);
+  text-align: center;
+  line-height: 1.15;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+.canvas-node:has(.ce-overview-overlay) {
+  .canvas-node-content {
+    visibility: hidden;
+  }
+}
+
+.canvas-node-group .canvas-node-label {
+  transform: scale(var(--ce-group-label-scale, 1));
+  transform-origin: left center;
+}
