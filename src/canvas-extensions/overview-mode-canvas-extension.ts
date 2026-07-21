@@ -1,4 +1,4 @@
-import { Canvas, CanvasNode } from 'src/@types/Canvas'
+import { Canvas, CanvasNode, CanvasView } from 'src/@types/Canvas'
 import { CanvasFileNodeData, CanvasTextNodeData } from 'src/@types/AdvancedJsonCanvas'
 import CanvasExtension from './canvas-extension'
 
@@ -14,7 +14,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
   private overlayEls = new Map<string, HTMLElement>()
   private titleCache = new Map<string, string>()
   private activeCanvases = new Set<HTMLElement>()
-  private rafId: number | null = null
+  private rafIds = new Map<HTMLElement, number>()
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
@@ -38,20 +38,50 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
+      'canvas-enhance:node-text-content-changed',
+      (_canvas: Canvas, node: CanvasNode) => {
+        this.titleCache.delete(node.id)
+        if (this.activeCanvases.has(node.canvas.wrapperEl)) void this.updateNodeOverlay(node)
+      }
+    ))
+
+    this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-removed',
       (_canvas: Canvas, node: CanvasNode) => {
         this.removeOverlay(node)
         this.titleCache.delete(node.id)
       }
     ))
+
+    this.plugin.registerEvent(this.plugin.app.workspace.on(
+      'canvas-enhance:canvas-view-unloaded:before',
+      (view: CanvasView) => this.cleanupCanvas(view.canvas)
+    ))
   }
 
   private scheduleUpdate(canvas: Canvas) {
-    if (this.rafId !== null) window.cancelAnimationFrame(this.rafId)
-    this.rafId = window.requestAnimationFrame(() => {
-      this.rafId = null
+    const wrapperEl = canvas.wrapperEl
+    const existing = this.rafIds.get(wrapperEl)
+    if (existing !== undefined) window.cancelAnimationFrame(existing)
+    this.rafIds.set(wrapperEl, window.requestAnimationFrame(() => {
+      this.rafIds.delete(wrapperEl)
       this.update(canvas)
-    })
+    }))
+  }
+
+  private cleanupCanvas(canvas: Canvas) {
+    const wrapperEl = canvas.wrapperEl
+    const rafId = this.rafIds.get(wrapperEl)
+    if (rafId !== undefined) {
+      window.cancelAnimationFrame(rafId)
+      this.rafIds.delete(wrapperEl)
+    }
+    this.activeCanvases.delete(wrapperEl)
+    wrapperEl.classList.remove('ce-overview-active')
+    for (const node of canvas.nodes.values()) {
+      this.removeOverlay(node)
+      this.titleCache.delete(node.id)
+    }
   }
 
   private getZoom(canvas: Canvas): number {

@@ -710,17 +710,17 @@ export const SETTINGS = {
   },
   mindmapFeatureEnabled: {
     label: '思维导图',
-    description: '将画布变成思维导图：Tab 创建子节点，Enter 创建兄弟节点，Alt+方向键导航。',
+    description: '将画布变成思维导图：Tab 创建下级节点，Enter 创建同级节点，Alt+方向键导航。',
     children: {
       mindmapChildNodeSpacing: {
-        label: '子节点水平间距',
-        description: '父子节点之间的水平间距。',
+        label: '下级节点水平间距',
+        description: '上下级节点之间的水平间距。',
         type: 'number',
         parse: (value: string) => Math.max(0, parseInt(value) || 0)
       },
       mindmapSiblingNodeSpacing: {
-        label: '兄弟节点垂直间距',
-        description: '兄弟节点之间的垂直间距。',
+        label: '同级节点垂直间距',
+        description: '同级节点之间的垂直间距。',
         type: 'number',
         parse: (value: string) => Math.max(0, parseInt(value) || 0)
       },
@@ -753,16 +753,16 @@ const SETTINGS_TABS = {
   basic: {
     label: '基础设置',
     groups: [
+      'overviewModeFeatureEnabled',
       'general',
       'commandsFeatureEnabled',
       'edgeHighlightEnabled',
-      'edgeSelectionEnabled',
       'autoResizeNodeFeatureEnabled',
       'collapsibleGroupsFeatureEnabled',
-      'betterReadonlyEnabled',
       'nativeFileSearchEnabled',
+      'edgeSelectionEnabled',
+      'betterReadonlyEnabled',
       'readingModeFixEnabled',
-      'overviewModeFeatureEnabled',
     ]
   },
   mindmap: {
@@ -845,6 +845,31 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     containerEl.empty()
     containerEl.classList.add("ce-settings")
 
+    // Quick links
+    const linksEl = containerEl.createDiv()
+    linksEl.classList.add('ce-settings-links')
+
+    const openUrl = (url: string) => {
+      // eslint-disable-next-line obsidianmd/prefer-create-el -- Temp virtual anchor
+      const anchor = activeDocument.createElement('a')
+      anchor.href = url
+      anchor.target = '_blank'
+      anchor.click()
+    }
+
+    new SettingEl(linksEl)
+      .setName('Canvas Enhance')
+      .addButton(button => button
+        .setButtonText('使用指南')
+        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/usage-guide.md')))
+      .addButton(button => button
+        .setButtonText('更新日志')
+        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md')))
+      .addButton(button => button
+        .setButtonText('给个 Star ⭐')
+        .setCta()
+        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance')))
+
     // Tab navigation
     const tabBar = containerEl.createDiv()
     tabBar.classList.add('ce-settings-tabs')
@@ -873,7 +898,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
         childrenEl.createSpan()
 
         for (const [settingId, setting] of Object.entries(heading.children) as [keyof CanvasEnhancePluginSettingsValues, Setting][]) {
-          if (!(settingId in DEFAULT_SETTINGS_VALUES)) continue
+          if (!(settingId in DEFAULT_SETTINGS_VALUES) && setting.type !== 'button') continue
 
           switch (setting.type) {
             case 'text':
