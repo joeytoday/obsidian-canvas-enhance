@@ -169,7 +169,7 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
     const selectedNodeData = canvas.getSelectionData().nodes[0]
     const icon = await new IconModal(this.plugin.app).promise
     if (!icon) {
-      new Notice("No icon selected, template creation cancelled.")
+      new Notice("未选择图标，模板创建已取消。")
       return
     }
     const label = await new AbstractSelectionModal(this.plugin.app, "Set template label (optional)", [], true).awaitInput()

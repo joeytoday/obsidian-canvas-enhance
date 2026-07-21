@@ -131,35 +131,17 @@ export default class CommandsCanvasExtension extends CanvasExtension {
       )
     })
 
-    this.plugin.addCommand({
-      id: 'select-connected-edges',
-      name: 'Select connected edges',
-      checkCallback: CanvasHelper.canvasCommand(
-        this.plugin,
-        (canvas: Canvas) => canvas.selection.size > 0,
-        (canvas: Canvas) => CanvasHelper.selectEdgesForNodes(canvas, 'connected')
-      )
-    })
-
-    this.plugin.addCommand({
-      id: 'select-incoming-edges',
-      name: 'Select incoming edges',
-      checkCallback: CanvasHelper.canvasCommand(
-        this.plugin,
-        (canvas: Canvas) => canvas.selection.size > 0,
-        (canvas: Canvas) => CanvasHelper.selectEdgesForNodes(canvas, 'incoming')
-      )
-    })
-
-    this.plugin.addCommand({
-      id: 'select-outgoing-edges',
-      name: 'Select outgoing edges',
-      checkCallback: CanvasHelper.canvasCommand(
-        this.plugin,
-        (canvas: Canvas) => canvas.selection.size > 0,
-        (canvas: Canvas) => CanvasHelper.selectEdgesForNodes(canvas, 'outgoing')
-      )
-    })
+    for (const type of ['connected', 'incoming', 'outgoing'] as const) {
+      this.plugin.addCommand({
+        id: `select-${type}-edges`,
+        name: `Select ${type} edges`,
+        checkCallback: CanvasHelper.canvasCommand(
+          this.plugin,
+          (canvas: Canvas) => canvas.selection.size > 0,
+          (canvas: Canvas) => CanvasHelper.selectEdgesForNodes(canvas, type)
+        )
+      })
+    }
 
     this.plugin.addCommand({
       id: 'swap-nodes',

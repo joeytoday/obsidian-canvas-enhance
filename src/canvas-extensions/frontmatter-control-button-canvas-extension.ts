@@ -28,7 +28,7 @@ export default class FrontmatterControlButtonCanvasExtension extends CanvasExten
         callback: () => {
           const propertiesPlugin = this.plugin.app.internalPlugins.plugins['properties']
           if (!propertiesPlugin?._loaded) {
-            new Notice(`Core plugin "Properties view" was not found or isn't enabled. Enable it and restart Obsidian.`)
+            new Notice(`未找到核心插件"属性视图"或未启用。请启用并重启 Obsidian。`)
             return
           }
 

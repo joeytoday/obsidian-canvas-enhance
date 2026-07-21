@@ -48,13 +48,10 @@ export default abstract class Patcher {
           const view = next.call(this, ...args)
           patch(view)
 
-          // Create a new view
-          const patchedView = next.call(this, ...args)
-
           uninstaller()
-          resolve(patchedView)
+          resolve(view)
 
-          return patchedView
+          return view
         }
       })
     })
@@ -116,7 +113,7 @@ export default abstract class Patcher {
   static async patchOnce<T, V>(
     plugin: Plugin,
     object: T | undefined,
-    patches: (resolve: (vaule: V) => void) => FunctionPatchObject<T>
+    patches: (resolve: (value: V) => void) => FunctionPatchObject<T>
   ): Promise<V> {
     const uninstallers: (() => void)[] = []
     const value = await new Promise<V>(resolve =>

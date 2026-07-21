@@ -57,7 +57,7 @@ export default class CanvasMetadataHandler {
     )
 
     const slowIndexingTimeout = window.setTimeout(() => {
-      new Notice(`Canvas indexing taking a long time for file ${file.path}`)
+      new Notice(`Canvas 索引文件 ${file.path} 耗时较长`)
     }, 10000)
 
     try {

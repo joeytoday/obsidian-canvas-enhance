@@ -523,7 +523,7 @@ export default class CanvasHelper {
     const wikilink = `[[${file.path}#${nodeData.id}|${file.name} (${nodeTypeString} node)]]`
 
     navigator.clipboard.writeText(wikilink).then(() =>
-      new Notice("Copied wikilink to node to clipboard.", 2000)
-    ).catch(() => new Notice("Failed to copy wikilink to node to clipboard.", 2000))
+      new Notice("已复制节点 Wikilink 到剪贴板。", 2000)
+    ).catch(() => new Notice("复制节点 Wikilink 到剪贴板失败。", 2000))
   }
 }

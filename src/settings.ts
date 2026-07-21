@@ -842,7 +842,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
           .setValue(this.settingsManager.getSetting(settingsKey) as boolean)
           .onChange(async (value) => {
             await this.settingsManager.setSetting({ [settingsKey]: value })
-            new Notice("Reload obsidian to apply the changes.")
+            new Notice("重新加载 Obsidian 以应用更改。")
           })
       )
     }

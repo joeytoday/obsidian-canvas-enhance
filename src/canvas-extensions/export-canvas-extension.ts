@@ -190,7 +190,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
       window.getComputedStyle(canvas.canvasEl).getPropertyValue('--canvas-background')
 
     // Create loading overlay
-    new Notice('Exporting the canvas. Please wait...')
+    new Notice('正在导出 Canvas，请稍候...')
     const interactionBlocker = this.getInteractionBlocker()
     activeDocument.body.appendChild(interactionBlocker)
 
@@ -341,7 +341,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
         downloadEl.download = filename
         downloadEl.click()
       } else {
-        const ERROR_MESSAGE = 'Export cancelled: Nodes did not finish loading in time'
+        const ERROR_MESSAGE = '导出已取消：节点未能在限定时间内加载完成'
         new Notice(ERROR_MESSAGE)
         console.error(ERROR_MESSAGE)
       }
