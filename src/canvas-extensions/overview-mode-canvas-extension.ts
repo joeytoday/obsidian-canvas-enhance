@@ -1,5 +1,5 @@
 import { Canvas, CanvasNode } from 'src/@types/Canvas'
-import { CanvasFileNodeData } from 'src/@types/AdvancedJsonCanvas'
+import { CanvasFileNodeData, CanvasTextNodeData } from 'src/@types/AdvancedJsonCanvas'
 import CanvasExtension from './canvas-extension'
 
 const OVERLAY_CLASS = 'ce-overview-overlay'
@@ -130,7 +130,8 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     let title: string | null = null
 
     if (nodeData.type === 'text') {
-      title = this.extractFirstLine(node.child?.data ?? '')
+      const textData = nodeData as CanvasTextNodeData
+      title = this.extractFirstHeading(textData.text ?? node.child?.data ?? '')
     } else if (nodeData.type === 'file') {
       const fileData = nodeData as CanvasFileNodeData
       const mode = this.plugin.settings.getSetting('overviewModeFileNodeTitle')
@@ -154,6 +155,14 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
 
     this.titleCache.set(node.id, title ?? '')
     return title
+  }
+
+  private extractFirstHeading(text: string): string | null {
+    for (const line of text.split('\n')) {
+      const match = line.trim().match(/^#{1,6}\s+(.+)/)
+      if (match) return match[1]
+    }
+    return this.extractFirstLine(text)
   }
 
   private extractFirstLine(text: string): string | null {
