@@ -21,7 +21,7 @@ export default class NodeExposerExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-changed',
+      'canvas-enhance:node-changed',
       (_canvas: Canvas, node: CanvasNode) => {
         const nodeData = node?.getData()
         if (!nodeData) return
@@ -35,7 +35,7 @@ export default class NodeExposerExtension extends CanvasExtension {
 
     // Expose data in editing iframe too
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-editing-state-changed',
+      'canvas-enhance:node-editing-state-changed',
       (_canvas: Canvas, node: CanvasNode, editing: boolean) => {
         if (!editing) return
 

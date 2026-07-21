@@ -40,7 +40,7 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
     this.registerNodeTemplateCommands()
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => this.onCardMenuCreated(canvas)
     ))
   }

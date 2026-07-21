@@ -3,13 +3,15 @@ import { CanvasFileNodeData } from "src/@types/AdvancedJsonCanvas"
 import { Canvas, CanvasNode } from "src/@types/Canvas"
 import { ExtendedCachedMetadata } from "src/@types/Obsidian"
 import BBoxHelper from "src/utils/bbox-helper"
-import CanvasHelper from "src/utils/canvas-helper"
+import CanvasHelper, { ConnectionDirection, MenuOption, NavDirection, NAV_DIRECTIONS } from "src/utils/canvas-helper"
 import { FileSelectModal } from "src/utils/modal-helper"
 import CanvasExtension from "./canvas-extension"
-import CopyNodeReferenceCanvasExtension from "./copy-node-reference-canvas-extension"
 
-type Direction = 'up' | 'down' | 'left' | 'right'
-const DIRECTIONS = ['up', 'down', 'left', 'right'] as Direction[]
+const EDGE_DIRECTION_MENU: Record<ConnectionDirection, MenuOption> = {
+  connected: { id: 'select-connected-edges', icon: 'arrows-selected', label: 'Select Connected Edges' },
+  outgoing:  { id: 'select-outgoing-edges', icon: 'arrow-right-selected', label: 'Select Outgoing Edges' },
+  incoming:  { id: 'select-incoming-edges', icon: 'arrow-left-selected', label: 'Select Incoming Edges' },
+}
 
 export default class CommandsCanvasExtension extends CanvasExtension {
   isEnabled() { return 'commandsFeatureEnabled' as const }
@@ -77,7 +79,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
       )
     })
 
-    for (const direction of DIRECTIONS) {
+    for (const direction of NAV_DIRECTIONS) {
       this.plugin.addCommand({
         id: `clone-node-${direction}`,
         name: `Clone node ${direction}`,
@@ -196,7 +198,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
           const nodeData = canvas.getSelectionData().nodes[0]
           if (!nodeData) return
 
-          CopyNodeReferenceCanvasExtension.copyWikilinkToNode(file, nodeData)
+          CanvasHelper.copyWikilinkToNode(file, nodeData)
         }
       )
     })
@@ -314,13 +316,66 @@ export default class CommandsCanvasExtension extends CanvasExtension {
         }
       )
     })
+
+    // Edge selection popup menu (merged from EdgeSelectionCanvasExtension)
+    this.plugin.registerEvent(this.plugin.app.workspace.on(
+      'canvas-enhance:popup-menu-created',
+      (canvas: Canvas) => this.onPopupMenuCreated(canvas)
+    ))
+  }
+
+  private onPopupMenuCreated(canvas: Canvas) {
+    const popupMenuEl = canvas?.menu?.menuEl
+    if (!popupMenuEl) return
+
+    const selectionNodeData = canvas.getSelectionData().nodes
+
+    // Edge selection popup (merged from EdgeSelectionCanvasExtension)
+    if (this.plugin.settings.getSetting('edgeSelectionEnabled') && !canvas.readonly && selectionNodeData.length > 0) {
+      const selectEdgeByDirection = this.plugin.settings.getSetting("selectEdgeByDirection")
+      const menuDirectionSet = new Set<ConnectionDirection>(['connected'])
+
+      if (selectionNodeData.length === 1) {
+        const node = canvas.nodes.get(selectionNodeData[0].id)
+        if (node) {
+          const edges = canvas.getEdgesForNode(node)
+          if (edges.length > 0 && selectEdgeByDirection) {
+            edges.forEach(edge => {
+              if (edge.from.node === node) menuDirectionSet.add('outgoing')
+              else if (edge.to.node === node) menuDirectionSet.add('incoming')
+            })
+          }
+        }
+      } else if (selectEdgeByDirection) {
+        menuDirectionSet.add('outgoing')
+        menuDirectionSet.add('incoming')
+      }
+
+      menuDirectionSet.forEach(direction => {
+        const config = EDGE_DIRECTION_MENU[direction]
+        CanvasHelper.addPopupMenuOption(canvas, CanvasHelper.createPopupMenuOption({
+          ...config,
+          callback: () => CanvasHelper.selectEdgesForNodes(canvas, direction)
+        }))
+      })
+    }
+
+    // Copy wikilink popup (merged from CopyNodeReferenceCanvasExtension)
+    if (this.plugin.settings.getSetting('enableSingleNodePopupReferenceCopy') && selectionNodeData.length === 1) {
+      CanvasHelper.addPopupMenuOption(canvas, CanvasHelper.createPopupMenuOption({
+        id: 'node-popup-menu-option-copy-reference',
+        label: 'Copy wikilink to node',
+        icon: 'link',
+        callback: () => CanvasHelper.copyWikilinkToNode(canvas.view.file, selectionNodeData[0])
+      }))
+    }
   }
 
   private createTextNode(canvas: Canvas) {
     const size = canvas.config.defaultTextNodeDimensions
     const pos = CanvasHelper.getCenterCoordinates(canvas, size)
 
-    canvas.createTextNode({ pos: pos, size: size })
+    canvas.createTextNode({ pos: pos, size: size, focus: true })
   }
 
   private async createFileNode(canvas: Canvas, file?: TFile) {
@@ -331,7 +386,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     canvas.createFileNode({ pos: pos, size: size, file })
   }
 
-  private cloneNode(canvas: Canvas, cloneDirection: Direction) {
+  private cloneNode(canvas: Canvas, cloneDirection: NavDirection) {
     const sourceNode = canvas.selection.values().next().value
     if (!sourceNode) return
     const sourceNodeData = sourceNode.getData()
@@ -363,7 +418,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
       canvas.zoomToBbox(clonedNode.getBBox())
   }
 
-  private expandNode(canvas: Canvas, expandDirection: Direction) {
+  private expandNode(canvas: Canvas, expandDirection: NavDirection) {
     const node = canvas.selection.values().next().value
     if (!node) return
 
@@ -430,82 +485,12 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     canvas.pushHistory(canvas.getData())
   }
 
-  private navigate(canvas: Canvas, direction: typeof DIRECTIONS[number]) {
-    const node = this.getNextNode(canvas, direction)
+  private navigate(canvas: Canvas, direction: NavDirection) {
+    const node = CanvasHelper.findClosestNode(canvas, direction)
     if (!node) return
 
     canvas.updateSelection(() => {
       canvas.selection = new Set([node])
     })
-  }
-
-  private getNextNode(canvas: Canvas, direction: typeof DIRECTIONS[number]) {
-    const selectedNodeData = canvas.getSelectionData().nodes?.first()
-    if (!selectedNodeData) return
-
-    const selectedNodeBBox = {
-      minX: selectedNodeData.x,
-      minY: selectedNodeData.y,
-      maxX: selectedNodeData.x + selectedNodeData.width,
-      maxY: selectedNodeData.y + selectedNodeData.height
-    }
-
-    const possibleTargetNodes = Array.from(canvas.nodes.values())
-      .filter(node => {
-        const nodeData = node.getData()
-        return nodeData.id !== selectedNodeData.id && (nodeData.type === 'text' || nodeData.type === 'file')
-      })
-
-    const closestNode = possibleTargetNodes.reduce((closestNode, node) => {
-      const nodeBBox = node.getBBox()
-
-      const isInVerticalRange = selectedNodeBBox.minY <= nodeBBox.maxY && selectedNodeBBox.maxY >= nodeBBox.minY
-      const isInHorizontalRange = selectedNodeBBox.minX <= nodeBBox.maxX && selectedNodeBBox.maxX >= nodeBBox.minX
-
-      if (['up', 'down'].includes(direction) && !isInHorizontalRange) return closestNode
-      if (['left', 'right'].includes(direction) && !isInVerticalRange) return closestNode
-
-      let distance = -1
-      switch (direction) {
-        case 'up': distance = selectedNodeBBox.minY - nodeBBox.maxY; break
-        case 'down': distance = nodeBBox.minY - selectedNodeBBox.maxY; break
-        case 'left': distance = selectedNodeBBox.minX - nodeBBox.maxX; break
-        case 'right': distance = nodeBBox.minX - selectedNodeBBox.maxX; break
-      }
-      if (distance < 0) return closestNode
-
-      if (!closestNode) return { node, distance }
-      if (distance < closestNode.distance) return { node, distance }
-
-      if (distance === closestNode.distance) {
-        const selectedNodeCenter = {
-          x: selectedNodeData.x + selectedNodeData.width / 2,
-          y: selectedNodeData.y + selectedNodeData.height / 2
-        }
-        const closestNodeCenter = {
-          x: closestNode.node.x + closestNode.node.width / 2,
-          y: closestNode.node.y + closestNode.node.height / 2
-        }
-        const nodeCenter = {
-          x: node.x + node.width / 2,
-          y: node.y + node.height / 2
-        }
-
-        const closestNodeDistance = Math.sqrt(
-          Math.pow(selectedNodeCenter.x - closestNodeCenter.x, 2) +
-          Math.pow(selectedNodeCenter.y - closestNodeCenter.y, 2)
-        )
-        const nodeDistance = Math.sqrt(
-          Math.pow(selectedNodeCenter.x - nodeCenter.x, 2) +
-          Math.pow(selectedNodeCenter.y - nodeCenter.y, 2)
-        )
-
-        if (nodeDistance < closestNodeDistance) return { node, distance }
-      }
-
-      return closestNode
-    }, null as { node: CanvasNode, distance: number } | null)
-
-    return closestNode?.node
   }
 }

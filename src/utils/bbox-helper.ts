@@ -84,21 +84,6 @@ export default class BBoxHelper {
     }
   }
 
-  static getSideVector(side?: Side): Position {
-    switch (side) {
-      case 'top':
-        return { x: 0, y: 1 }
-      case 'right':
-        return { x: 1, y: 0 }
-      case 'bottom':
-        return { x: 0, y: -1 }
-      case 'left':
-        return { x: -1, y: 0 }
-      default:
-        return { x: 0, y: 0 }
-    }
-  }
-
   static getOppositeSide(side: Side): Side {
     switch (side) {
       case 'top':

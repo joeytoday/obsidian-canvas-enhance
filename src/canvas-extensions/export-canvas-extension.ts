@@ -13,7 +13,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-breakpoint-changed',
+      'canvas-enhance:node-breakpoint-changed',
       (canvas: Canvas, node: CanvasNode, breakpointRef: { value: boolean }) => {
         if (canvas.screenshotting) breakpointRef.value = true
       }
@@ -117,7 +117,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
     let watermark = false
     new Setting(modal.contentEl)
       .setName('Show logo')
-      .setDesc('This will add an Obsidian + Advanced Canvas logo to the bottom left.')
+      .setDesc('This will add an Obsidian + Canvas Enhance logo to the bottom left.')
       .addToggle(toggle => toggle
         .setValue(watermark)
         .onChange(value => watermark = value)

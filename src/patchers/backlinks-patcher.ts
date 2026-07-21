@@ -22,7 +22,7 @@ export default class BacklinksPatcher extends Patcher {
     })
 
     Patcher.patchPrototype<ExtendedVault>(this.plugin, this.plugin.app.vault, {
-      recurseChildrenAC: _next => function (origin: TAbstractFile, traverse: (file: TAbstractFile) => void) {
+      recurseChildrenCE: _next => function (origin: TAbstractFile, traverse: (file: TAbstractFile) => void) {
         for (let stack = [origin]; stack.length > 0;) {
           const current = stack.pop()
           if (current) {
@@ -40,7 +40,7 @@ export default class BacklinksPatcher extends Patcher {
         const files: TFile[] = []
         const root = this.getRoot()
 
-        this.recurseChildrenAC(root, (child: TAbstractFile) => {
+        this.recurseChildrenCE(root, (child: TAbstractFile) => {
           if (child instanceof TFile && (child.extension === "md" || child.extension === "canvas")) {
             files.push(child)
           }

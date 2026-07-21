@@ -9,10 +9,10 @@ import EdgePathfindingDirect from "./edge-pathfinding-methods/pathfinding-direct
 import EdgePathfindingSquare from "./edge-pathfinding-methods/pathfinding-square"
 import { BUILTIN_EDGE_STYLE_ATTRIBUTES, StyleAttribute, styleAttributeValidator } from "./style-config"
 import CssStylesConfigManager from "src/managers/css-styles-config-manager"
-import AdvancedCanvasPlugin from "src/main"
+import CanvasEnhancePlugin from "src/main"
 
-export const GET_EDGE_CSS_STYLES_MANAGER = (plugin: AdvancedCanvasPlugin) =>
-  new CssStylesConfigManager(plugin, 'advanced-canvas-edge-style', styleAttributeValidator)
+export const GET_EDGE_CSS_STYLES_MANAGER = (plugin: CanvasEnhancePlugin) =>
+  new CssStylesConfigManager(plugin, 'canvas-enhance-edge-style', styleAttributeValidator)
 
 const EDGE_PATHFINDING_METHODS: { [key: string]: typeof EdgePathfindingMethod } = {
   'direct': EdgePathfindingDirect,
@@ -30,22 +30,22 @@ export default class EdgeStylesExtension extends CanvasExtension {
     this.cssStylesManager = GET_EDGE_CSS_STYLES_MANAGER(this.plugin)
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:popup-menu-created',
+      'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.onPopupMenuCreated(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-changed',
+      'canvas-enhance:edge-changed',
       (canvas: Canvas, edge: CanvasEdge) => this.onEdgeChanged(canvas, edge)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-center-requested',
+      'canvas-enhance:edge-center-requested',
       (canvas: Canvas, edge: CanvasEdge, center: Position) => this.onEdgeCenterRequested(canvas, edge, center)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-added',
+      'canvas-enhance:node-added',
       (canvas: Canvas, node: CanvasNode) => {
         if (canvas.dirty.size > 1 && !canvas.isPasting) return // Skip if multiple nodes are added at once (e.g. on initial load)
 
@@ -54,18 +54,18 @@ export default class EdgeStylesExtension extends CanvasExtension {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-moved',
+      'canvas-enhance:node-moved',
       // Only update edges this way if a node got moved with the arrow keys
       (canvas: Canvas, node: CanvasNode, keyboard: boolean) => node.initialized && keyboard ? this.updateAllEdgesInArea(canvas, node.getBBox()) : void 0
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-removed',
+      'canvas-enhance:node-removed',
       (canvas: Canvas, node: CanvasNode) => this.updateAllEdgesInArea(canvas, node.getBBox())
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:dragging-state-changed',
+      'canvas-enhance:dragging-state-changed',
       (canvas: Canvas, isDragging: boolean) => {
         if (isDragging) return
 

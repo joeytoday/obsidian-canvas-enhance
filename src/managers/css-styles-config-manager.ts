@@ -1,12 +1,12 @@
 import { parseYaml } from "obsidian"
-import AdvancedCanvasPlugin from "src/main"
+import CanvasEnhancePlugin from "src/main"
 
 export default class CssStylesConfigManager<T> {
   private cachedConfig: T[] | null = null
   private configRegex
 
   constructor(
-    private plugin: AdvancedCanvasPlugin,
+    private plugin: CanvasEnhancePlugin,
     trigger: string,
     private validate: (json: Record<string, unknown>) => T | null
   ) {

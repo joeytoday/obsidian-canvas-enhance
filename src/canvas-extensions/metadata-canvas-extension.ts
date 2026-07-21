@@ -10,17 +10,17 @@ export default class MetadataCanvasExtension extends CanvasExtension {
 
   init(): void {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => this.onCanvasChanged(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-metadata-changed',
+      'canvas-enhance:canvas-metadata-changed',
       (canvas: Canvas) => this.onMetadataChanged(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-view-unloaded:before',
+      'canvas-enhance:canvas-view-unloaded:before',
       (view: CanvasView) => this.onCanvasViewUnloaded(view)
     ))
   }
@@ -43,7 +43,7 @@ export default class MetadataCanvasExtension extends CanvasExtension {
       set(target: any, key: string, value: any) {
         target[key] = value
 
-        that.plugin.app.workspace.trigger('advanced-canvas:canvas-metadata-changed', canvas)
+        that.plugin.app.workspace.trigger('canvas-enhance:canvas-metadata-changed', canvas)
         canvas.requestSave()
 
         return true
@@ -55,7 +55,7 @@ export default class MetadataCanvasExtension extends CanvasExtension {
     canvas.metadata = new Proxy(metadata, validator)
 
     // Trigger metadata change event
-    this.plugin.app.workspace.trigger('advanced-canvas:canvas-metadata-changed', canvas)
+    this.plugin.app.workspace.trigger('canvas-enhance:canvas-metadata-changed', canvas)
   }
 
   private onMetadataChanged(canvas: Canvas) {

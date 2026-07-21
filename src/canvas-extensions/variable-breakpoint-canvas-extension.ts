@@ -7,13 +7,8 @@ export default class VariableBreakpointCanvasExtension extends CanvasExtension {
   isEnabled() { return 'variableBreakpointFeatureEnabled' as const }
 
   init() {
-    /* this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'css-change',
-      () => {}
-    )) */ // Not supported because of performance
-    
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-breakpoint-changed',
+      'canvas-enhance:node-breakpoint-changed',
       (canvas: Canvas, node: CanvasNode, breakpointRef: { value: boolean }) => this.onNodeBreakpointChanged(canvas, node, breakpointRef)
     ))
   }

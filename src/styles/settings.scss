@@ -1,4 +1,4 @@
-.ac-settings {
+.ce-settings {
   .properties-field {
     & > .setting-item-info {
       flex: 0;
@@ -16,7 +16,7 @@
     }
   }
 
-  .ac-settings-heading {
+  .ce-settings-heading {
     &:not(:first-child) {
       margin-top: var(--size-4-10) !important;
     }
@@ -37,7 +37,7 @@
     transition: transform 0.2s ease-in-out;
   }
 
-  .ac-settings-heading:has(.checkbox-container:not(.is-enabled)) + .settings-header-children {
+  .ce-settings-heading:has(.checkbox-container:not(.is-enabled)) + .settings-header-children {
     opacity: 0.5;
     pointer-events: none;
 
@@ -84,14 +84,14 @@
 
     border-radius: var(--radius-m);
 
-    .ac-kofi-banner-title {
+    .ce-kofi-banner-title {
       margin: 0;
 
       font-size: var(--font-ui-small);
       font-weight: 600;
     }
 
-    .ac-kofi-button {
+    .ce-kofi-button {
       width: min-content;
       height: min-content;
 

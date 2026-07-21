@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- It's a generic wrapper */
 import { around } from "monkey-around"
-import AdvancedCanvasPlugin from "src/main"
+import CanvasEnhancePlugin from "src/main"
 import { Plugin } from "obsidian"
 
 // Is any
@@ -32,9 +32,9 @@ type FunctionPatchObject<T> = {
 }
 
 export default abstract class Patcher {
-  plugin: AdvancedCanvasPlugin
+  plugin: CanvasEnhancePlugin
 
-  constructor(plugin: AdvancedCanvasPlugin) {
+  constructor(plugin: CanvasEnhancePlugin) {
     this.plugin = plugin
     void this.patch()
   }
@@ -60,7 +60,7 @@ export default abstract class Patcher {
     })
   }
 
-  protected static async waitForViewRequest<T>(plugin: AdvancedCanvasPlugin, viewType: string, patch: (view: T) => void): Promise<T> {
+  protected static async waitForViewRequest<T>(plugin: CanvasEnhancePlugin, viewType: string, patch: (view: T) => void): Promise<T> {
     return this.waitForMapValueLookup(plugin.app.viewRegistry.viewByType, viewType, patch)
   }
 

@@ -1,9 +1,9 @@
 import { Canvas } from "src/@types/Canvas"
-import AdvancedCanvasPlugin from "src/main"
-import { AdvancedCanvasPluginSettingsValues } from "src/settings"
+import CanvasEnhancePlugin from "src/main"
+import { CanvasEnhancePluginSettingsValues } from "src/settings"
 import CanvasExtension from "../canvas-extension"
 
-const EXPOSED_SETTINGS: (keyof AdvancedCanvasPluginSettingsValues)[] = [
+const EXPOSED_SETTINGS: (keyof CanvasEnhancePluginSettingsValues)[] = [
   'disableFontSizeRelativeToZoom',
   'hideBackgroundGridWhenInReadonly',
   'readingModeFixEnabled',
@@ -17,7 +17,7 @@ export default class CanvasWrapperExposerExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:settings-changed',
+      'canvas-enhance:settings-changed',
       () => CanvasWrapperExposerExtension.updateCanvasExposedSettings(
         this.plugin,
         this.plugin.getCurrentCanvas()?.wrapperEl
@@ -25,7 +25,7 @@ export default class CanvasWrapperExposerExtension extends CanvasExtension {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => CanvasWrapperExposerExtension.updateCanvasExposedSettings(
         this.plugin,
         canvas.wrapperEl
@@ -33,7 +33,7 @@ export default class CanvasWrapperExposerExtension extends CanvasExtension {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:dragging-state-changed',
+      'canvas-enhance:dragging-state-changed',
       (canvas: Canvas, dragging: boolean) => {
         if (dragging) canvas.wrapperEl.dataset.isDragging = 'true'
         else delete canvas.wrapperEl.dataset.isDragging
@@ -41,7 +41,7 @@ export default class CanvasWrapperExposerExtension extends CanvasExtension {
     ))
   }
 
-  static updateCanvasExposedSettings(plugin: AdvancedCanvasPlugin, element?: HTMLElement) {
+  static updateCanvasExposedSettings(plugin: CanvasEnhancePlugin, element?: HTMLElement) {
     if (!element) return
 
     for (const setting of EXPOSED_SETTINGS) {

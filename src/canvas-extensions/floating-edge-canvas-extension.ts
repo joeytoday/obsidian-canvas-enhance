@@ -11,24 +11,24 @@ export default class FloatingEdgeCanvasExtension  extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:data-loaded:after',
+      'canvas-enhance:data-loaded:after',
       (canvas: Canvas, data: CanvasData, setData: (data: CanvasData) => void) => this.onLoadData(canvas, data)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-moved',
+      'canvas-enhance:node-moved',
       (canvas: Canvas, node: CanvasNode) => this.onNodeMoved(canvas, node)
     ))
 
     if (this.plugin.settings.getSetting('allowFloatingEdgeCreation')) {
       this.plugin.registerEvent(this.plugin.app.workspace.on(
-        'advanced-canvas:edge-connection-dragging:before',
+        'canvas-enhance:edge-connection-dragging:before',
         (canvas: Canvas, edge: CanvasEdge, event: PointerEvent, newEdge: boolean, side: 'from' | 'to') => this.onEdgeStartedDragging(canvas, edge, event, newEdge, side)
       ))
     }
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-connection-dragging:after',
+      'canvas-enhance:edge-connection-dragging:after',
       (canvas: Canvas, edge: CanvasEdge, event: PointerEvent, newEdge: boolean, side: 'from' | 'to') => this.onEdgeStoppedDragging(canvas, edge, event, newEdge, side)
     ))
   }

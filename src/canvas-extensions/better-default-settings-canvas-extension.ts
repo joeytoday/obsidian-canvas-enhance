@@ -11,22 +11,22 @@ export default class BetterDefaultSettingsCanvasExtension  extends CanvasExtensi
     this.modifyCanvasSettings(this.plugin.getCurrentCanvas())
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:settings-changed',
+      'canvas-enhance:settings-changed',
       () => this.modifyCanvasSettings(this.plugin.getCurrentCanvas())
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => this.modifyCanvasSettings(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:double-click',
+      'canvas-enhance:double-click',
       (canvas: Canvas, event: MouseEvent, preventDefault: { value: boolean }) => void this.onDoubleClick(canvas, event, preventDefault)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-created',
+      'canvas-enhance:node-created',
       (canvas: Canvas, node: CanvasNode) => {
         this.enforceNodeGridAlignment(canvas, node)
         this.applyDefaultNodeStyles(canvas, node)
@@ -34,12 +34,12 @@ export default class BetterDefaultSettingsCanvasExtension  extends CanvasExtensi
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-created',
+      'canvas-enhance:edge-created',
       (canvas: Canvas, edge: CanvasEdge) => void this.applyDefaultEdgeStyles(canvas, edge)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-resized',
+      'canvas-enhance:node-resized',
       (canvas: Canvas, node: CanvasNode) => this.enforceMaxNodeWidth(canvas, node)
     ))
   }
@@ -82,7 +82,8 @@ export default class BetterDefaultSettingsCanvasExtension  extends CanvasExtensi
       default:
         canvas.createTextNode({
           pos: pos,
-          position: 'center'
+          position: 'center',
+          focus: true
         })
 
         break

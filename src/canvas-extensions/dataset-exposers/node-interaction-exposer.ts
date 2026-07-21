@@ -10,7 +10,7 @@ export default class NodeInteractionExposerExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-interaction',
+      'canvas-enhance:node-interaction',
       (canvas: Canvas, node: CanvasNode) => {
         const nodeData = node?.getData()
         if (!nodeData) return

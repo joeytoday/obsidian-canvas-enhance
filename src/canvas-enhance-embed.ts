@@ -1,7 +1,7 @@
 import App, { Component, EmbedContext, MarkdownRenderer, TFile } from "obsidian"
 import { CanvasData, CanvasFileNodeData, CanvasGroupNodeData, CanvasTextNodeData } from "./@types/AdvancedJsonCanvas"
 
-export default class AdvancedCanvasEmbed extends Component {
+export default class CanvasEnhanceEmbed extends Component {
   private context: EmbedContext
   private file: TFile
   private subpath: string | undefined
@@ -13,7 +13,7 @@ export default class AdvancedCanvasEmbed extends Component {
     this.file = file
     this.subpath = subpath
 
-    if (!subpath) console.warn("AdvancedCanvasEmbed: No subpath provided. This embed will not work as expected.")
+    if (!subpath) console.warn("CanvasEnhanceEmbed: No subpath provided. This embed will not work as expected.")
   }
 
   onload() {
@@ -34,7 +34,7 @@ export default class AdvancedCanvasEmbed extends Component {
     const nodeId = this.subpath.replace(/^#/, "")
 
     const canvasContent = await this.context.app.vault.cachedRead(this.file)
-    if (!canvasContent) return console.warn("AdvancedCanvasEmbed: No canvas content found.")
+    if (!canvasContent) return console.warn("CanvasEnhanceEmbed: No canvas content found.")
 
     const canvasJson = JSON.parse(canvasContent) as CanvasData
     const canvasNode = canvasJson.nodes.find(node => node.id === nodeId)
@@ -54,7 +54,7 @@ export default class AdvancedCanvasEmbed extends Component {
     else if (canvasNode.type === "file") nodeContent = `**File Node:** ${(canvasNode as CanvasFileNodeData).file}`
 
     this.context.containerEl.empty() // Clear the container (for re-rendering on changes)
-    this.context.containerEl.classList.add("ac-card-embed")
+    this.context.containerEl.classList.add("ce-card-embed")
     if (canvasNode.color !== undefined) {
       this.context.containerEl.classList.add("is-themed")
       this.context.containerEl.classList.add(`mod-canvas-color-${canvasNode.color}`)

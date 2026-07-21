@@ -1,4 +1,5 @@
 import { DataWriteOptions, TFile } from "obsidian"
+import CanvasFileHelper from "src/utils/canvas-file-helper"
 import Patcher from "./patcher"
 
 export default class FileManagerPatcher extends Patcher {
@@ -8,22 +9,13 @@ export default class FileManagerPatcher extends Patcher {
     const that = this // eslint-disable-line @typescript-eslint/no-this-alias -- For patcher
     Patcher.patch(this.plugin, this.plugin.app.fileManager, {
       processFrontMatter: Patcher.OverrideExisting(next => async function (file: TFile, fn: (frontmatter: unknown) => void, options?: DataWriteOptions) {
-        // Check if the file is a canvas file
         if (file?.extension === 'canvas') {
-          that.plugin.app.vault.process(file, (data: string) => {
-            const content = JSON.parse(data)
-
-            // Modify frontmatter
+          await CanvasFileHelper.modifyContent(that.plugin.app.vault, file, (content) =>
             fn(content.metadata.frontmatter)
-
-            // Save changes
-            return JSON.stringify(content, null, 2)
-          }).catch(() => console.error("Failed to update metadata object in canvas file."))
-
+          )
           return
         }
 
-        // Otherwise, call the original method
         return next.call(this, file, fn, options)
       }),
     })

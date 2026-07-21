@@ -6,12 +6,12 @@ export default class ReadingModeFixCanvasExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-rendered',
+      'canvas-enhance:node-rendered',
       (_canvas: Canvas, node: CanvasNode) => this.updateNodeRenderer(node)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-editing-state-changed',
+      'canvas-enhance:node-editing-state-changed',
       (_canvas: Canvas, node: CanvasNode, isEditing: boolean) => {
         if (isEditing) return
         this.updateNodeRenderer(node)

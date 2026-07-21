@@ -10,22 +10,22 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-created',
+      'canvas-enhance:node-created',
       (canvas: Canvas, node: CanvasNode) => this.onNodeCreated(canvas, node)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:popup-menu-created',
+      'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.onPopupMenuCreated(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-editing-state-changed',
+      'canvas-enhance:node-editing-state-changed',
       (canvas: Canvas, node: CanvasNode, editing: boolean) => void this.onNodeEditingStateChanged(canvas, node, editing)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-text-content-changed',
+      'canvas-enhance:node-text-content-changed',
       (canvas: Canvas, node: CanvasNode, viewUpdate: ViewUpdate) => void this.onNodeTextContentChanged(canvas, node, viewUpdate.view.dom)
     ))
   }

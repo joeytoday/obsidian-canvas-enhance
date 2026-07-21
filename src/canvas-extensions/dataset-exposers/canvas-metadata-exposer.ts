@@ -6,12 +6,12 @@ export default class CanvasMetadataExposerExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-metadata-changed',
+      'canvas-enhance:canvas-metadata-changed',
       (canvas: Canvas) => this.updateExposedSettings(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => this.updateExposedSettings(canvas)
     ))
   }

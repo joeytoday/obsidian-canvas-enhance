@@ -1,5 +1,5 @@
 import { Canvas } from "src/@types/Canvas"
-import { AdvancedCanvasPluginSettingsValues } from "src/settings"
+import { CanvasEnhancePluginSettingsValues } from "src/settings"
 import CanvasHelper, { MenuOption } from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
 
@@ -11,24 +11,24 @@ export default class BetterReadonlyCanvasExtension extends CanvasExtension {
   init() {
     /* Popup listener */
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:popup-menu-created',
+      'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.updatePopupMenu(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:viewport-changed:before',
+      'canvas-enhance:viewport-changed:before',
       (canvas: Canvas) => this.onBeforeViewPortChanged(canvas)
     ))
 
     // Allow viewport change when using zoom to bbox
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:zoom-to-bbox:before',
+      'canvas-enhance:zoom-to-bbox:before',
       () => this.isMovingToBBox = true
     ))
 
     /* Readonly listener */
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:readonly-changed',
+      'canvas-enhance:readonly-changed',
       (canvas: Canvas, _readonly: boolean) => {
         this.updatePopupMenu(canvas)
         this.updateLockedZoom(canvas)
@@ -38,7 +38,7 @@ export default class BetterReadonlyCanvasExtension extends CanvasExtension {
 
     /* Add settings */
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => this.addQuickSettings(canvas)
     ))
   }
@@ -104,7 +104,7 @@ export default class BetterReadonlyCanvasExtension extends CanvasExtension {
     )
   }
 
-  private createToggle(menuOption: MenuOption, settingKey: keyof AdvancedCanvasPluginSettingsValues): HTMLElement {
+  private createToggle(menuOption: MenuOption, settingKey: keyof CanvasEnhancePluginSettingsValues): HTMLElement {
     const toggle = CanvasHelper.createControlMenuButton({
       ...menuOption,
       callback: () => void (async () => {

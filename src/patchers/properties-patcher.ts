@@ -1,6 +1,7 @@
-import PropertiesView from "src/@types/PropertiesPlugin"
-import Patcher from "./patcher"
 import { TFile } from "obsidian"
+import PropertiesView from "src/@types/PropertiesPlugin"
+import CanvasFileHelper from "src/utils/canvas-file-helper"
+import Patcher from "./patcher"
 
 export default class PropertiesPatcher extends Patcher {
   protected async patch() {
@@ -10,14 +11,10 @@ export default class PropertiesPatcher extends Patcher {
     await Patcher.waitForViewRequest<PropertiesView>(this.plugin, "file-properties", view => {
       Patcher.patchPrototype<PropertiesView>(this.plugin, view, {
         isSupportedFile: Patcher.OverrideExisting(next => function (file?: TFile): boolean {
-          // Check if the file is a canvas file
           if (file?.extension === 'canvas') return true
-
-          // Otherwise, call the original method
           return next.call(this, file)
         }),
         updateFrontmatter: Patcher.OverrideExisting(next => function (file: TFile, content: string): { [key: string]: unknown } | null {
-          // Check if the file is a canvas file
           if (file?.extension === 'canvas') {
             let frontmatter
 
@@ -30,25 +27,19 @@ export default class PropertiesPatcher extends Patcher {
             return frontmatter
           }
 
-          // Otherwise, call the original method
           return next.call(this, file, content)
         }),
         saveFrontmatter: Patcher.OverrideExisting(next => function (frontmatter: { [key: string]: unknown }): void {
-          // Check if the file is a canvas file
           if (this.file?.extension === 'canvas') {
             if (this.file !== this.modifyingFile) return
 
-            this.app.vault.process(this.file, (data: string) => {
-              const content = JSON.parse(data)
+            void CanvasFileHelper.modifyContent(this.app.vault, this.file, (content) => {
               if (content?.metadata) content.metadata.frontmatter = frontmatter
-
-              return JSON.stringify(content, null, 2)
-            }).catch(() => console.error("Failed to update metadata object in canvas file."))
+            })
 
             return
           }
 
-          // Otherwise, call the original method
           return next.call(this, frontmatter)
         })
       })

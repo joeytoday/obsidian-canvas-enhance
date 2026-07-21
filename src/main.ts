@@ -43,12 +43,11 @@ import CollapsibleGroupsCanvasExtension from './canvas-extensions/collapsible-gr
 import FocusModeCanvasExtension from './canvas-extensions/focus-mode-canvas-extension'
 import AutoFileNodeEdgesCanvasExtension from './canvas-extensions/auto-file-node-edges-canvas-extension'
 import FlipEdgeCanvasExtension from './canvas-extensions/flip-edge-canvas-extension'
-import EdgeSelectionCanvasExtension from './canvas-extensions/edge-selection-canvas-extension'
 import ExportCanvasExtension from './canvas-extensions/export-canvas-extension'
 import FloatingEdgeCanvasExtension from './canvas-extensions/floating-edge-canvas-extension'
 import EdgeHighlightCanvasExtension from './canvas-extensions/edge-highlight-canvas-extension'
-import CopyNodeReferenceCanvasExtension from './canvas-extensions/copy-node-reference-canvas-extension'
 import ReadingModeFixCanvasExtension from './canvas-extensions/reading-mode-fix-canvas-extension'
+import MindmapCanvasExtension from './canvas-extensions/mindmap-canvas-extension'
 
 // Advanced Styles
 import NodeStylesExtension from './canvas-extensions/advanced-styles/node-styles'
@@ -81,7 +80,7 @@ const PATCHERS = [
   LinkSuggestionsPatcher,
   EmbedPatcher,
   SearchPatcher,
-]
+].filter(Boolean) as (typeof Patcher)[]
 
 const CANVAS_EXTENSIONS: typeof CanvasExtension[] = [
   // Advanced JSON Canvas Extensions
@@ -118,11 +117,10 @@ const CANVAS_EXTENSIONS: typeof CanvasExtension[] = [
   ExportCanvasExtension,
   FocusModeCanvasExtension,
   EncapsulateCanvasExtension,
-  EdgeSelectionCanvasExtension,
-  CopyNodeReferenceCanvasExtension
+  MindmapCanvasExtension
 ]
 
-export default class AdvancedCanvasPlugin extends Plugin {
+export default class CanvasEnhancePlugin extends Plugin {
   debugHelper: DebugHelper
 
   settings: SettingsManager
@@ -142,8 +140,6 @@ export default class AdvancedCanvasPlugin extends Plugin {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Just use any to avoid type issues
     this.patchers = PATCHERS.map((Patcher: any) => {
-      if (!Patcher) return
-
       try { return new Patcher(this) }
       catch (e) {
         console.error(`Error initializing patcher ${Patcher.name}:`, e)
@@ -154,7 +150,7 @@ export default class AdvancedCanvasPlugin extends Plugin {
     this.canvasExtensions = CANVAS_EXTENSIONS.map((Extension: any) => {
       try { return new Extension(this) }
       catch (e) {
-        console.error(`Error initializing ac-extension ${Extension.name}:`, e)
+        console.error(`Error initializing ce-extension ${Extension.name}:`, e)
       }
     })
   }
@@ -184,7 +180,7 @@ export default class AdvancedCanvasPlugin extends Plugin {
     fileRecoveryPlugin.forceAdd(path, content)
   }
 
-  // this.app.plugins.plugins["advanced-canvas"].enableDebugMode()
+  // this.app.plugins.plugins["canvas-enhance"].enableDebugMode()
   enableDebugMode() {
     if (this.debugHelper) return
     this.debugHelper = new DebugHelper(this)

@@ -7,7 +7,7 @@ export default class FlipEdgeCanvasExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:popup-menu-created',
+      'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.onPopupMenuCreated(canvas)
     ))
   }

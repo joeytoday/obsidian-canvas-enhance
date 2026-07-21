@@ -2,7 +2,6 @@ import esbuild from "esbuild";
 import process from "process";
 import { builtinModules } from 'node:module';
 import { sassPlugin } from 'esbuild-sass-plugin';
-import { copy } from "esbuild-plugin-copy";
 
 const banner =
 `/*
@@ -40,14 +39,9 @@ const context = await esbuild.context({
   logLevel: "info",
   sourcemap: prod ? false : "inline",
   treeShaking: true,
-  outdir: "dist",
+  outdir: ".",
   plugins: [
     sassPlugin({}),
-    copy({
-      resolveFrom: "cwd",
-      watch: !prod,
-      assets: [ { from: "manifest.json", to: "dist/manifest.json" } ],
-    }),
   ],
 });
 

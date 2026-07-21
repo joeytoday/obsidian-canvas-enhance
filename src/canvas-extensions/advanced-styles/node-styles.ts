@@ -3,10 +3,10 @@ import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "../canvas-extension"
 import { BUILTIN_NODE_STYLE_ATTRIBUTES, StyleAttribute, styleAttributeValidator } from "./style-config"
 import CssStylesConfigManager from "src/managers/css-styles-config-manager"
-import AdvancedCanvasPlugin from "src/main"
+import CanvasEnhancePlugin from "src/main"
 
-export const GET_NODE_CSS_STYLES_MANAGER = (plugin: AdvancedCanvasPlugin) =>
-  new CssStylesConfigManager(plugin, 'advanced-canvas-node-style', styleAttributeValidator)
+export const GET_NODE_CSS_STYLES_MANAGER = (plugin: CanvasEnhancePlugin) =>
+  new CssStylesConfigManager(plugin, 'canvas-enhance-node-style', styleAttributeValidator)
 
 export default class NodeStylesExtension extends CanvasExtension {
   cssStylesManager: CssStylesConfigManager<StyleAttribute>
@@ -17,7 +17,7 @@ export default class NodeStylesExtension extends CanvasExtension {
     this.cssStylesManager = GET_NODE_CSS_STYLES_MANAGER(this.plugin)
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:popup-menu-created',
+      'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.onPopupMenuCreated(canvas)
     ))
   }

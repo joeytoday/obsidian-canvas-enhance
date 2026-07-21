@@ -1,18 +1,18 @@
-import AdvancedCanvasPlugin from "src/main"
-import { AdvancedCanvasPluginSettingsValues } from "src/settings"
+import CanvasEnhancePlugin from "src/main"
+import { CanvasEnhancePluginSettingsValues } from "src/settings"
 
 export default abstract class CanvasExtension {
-  plugin: AdvancedCanvasPlugin
+  plugin: CanvasEnhancePlugin
 
-  abstract isEnabled(): boolean | keyof AdvancedCanvasPluginSettingsValues
+  abstract isEnabled(): boolean | keyof CanvasEnhancePluginSettingsValues
   abstract init(): void
 
-  constructor(plugin: AdvancedCanvasPlugin) {
+  constructor(plugin: CanvasEnhancePlugin) {
     this.plugin = plugin
 
     const isEnabled = this.isEnabled()
 
-    if (!(isEnabled === true || this.plugin.settings.getSetting(isEnabled as keyof AdvancedCanvasPluginSettingsValues)))
+    if (!(isEnabled === true || this.plugin.settings.getSetting(isEnabled as keyof CanvasEnhancePluginSettingsValues)))
       return
 
     this.init()

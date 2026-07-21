@@ -1,9 +1,9 @@
 /* eslint-disable obsidianmd/rule-custom-message -- It's a debug file... */
 import { BBox, Canvas, CanvasEdge, CanvasNode } from "src/@types/Canvas"
-import AdvancedCanvasPlugin from "src/main"
+import CanvasEnhancePlugin from "src/main"
 
 export default class DebugHelper {
-  plugin: AdvancedCanvasPlugin
+  plugin: CanvasEnhancePlugin
   logging = true
 
   private nodeAddedCount = 0
@@ -11,11 +11,11 @@ export default class DebugHelper {
   private edgeAddedCount = 0
   private edgeChangedCount = 0
 
-  constructor(plugin: AdvancedCanvasPlugin) {
+  constructor(plugin: CanvasEnhancePlugin) {
     this.plugin = plugin
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (_canvas: Canvas) => {
         this.nodeAddedCount = 0
         this.nodeChangedCount = 0
@@ -25,7 +25,7 @@ export default class DebugHelper {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-added',
+      'canvas-enhance:node-added',
       (_canvas: Canvas, _node: CanvasNode) => {
         if (this.logging) console.count('🟢 NodeAdded')
         this.nodeAddedCount++
@@ -33,7 +33,7 @@ export default class DebugHelper {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-changed',
+      'canvas-enhance:node-changed',
       (_canvas: Canvas, _node: CanvasNode) => {
         if (this.logging) console.count('🟡 NodeChanged')
         this.nodeChangedCount++
@@ -41,7 +41,7 @@ export default class DebugHelper {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-added',
+      'canvas-enhance:edge-added',
       (_canvas: Canvas, _edge: CanvasEdge) => {
         if (this.logging) console.count('🟢 EdgeAdded')
         this.edgeAddedCount++
@@ -49,7 +49,7 @@ export default class DebugHelper {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-changed',
+      'canvas-enhance:edge-changed',
       (_canvas: Canvas, _edge: CanvasEdge) => {
         if (this.logging) console.count('🟡 EdgeChanged')
         this.edgeChangedCount++

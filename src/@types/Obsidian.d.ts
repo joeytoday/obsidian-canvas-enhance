@@ -63,7 +63,7 @@ declare module "obsidian" {
     getMarkdownFiles: () => obsidian.TFile[]
 
     // Custom
-    recurseChildrenAC: (origin: obsidian.TAbstractFile, traverse: (file: obsidian.TAbstractFile) => void) => void
+    recurseChildrenCE: (origin: obsidian.TAbstractFile, traverse: (file: obsidian.TAbstractFile) => void) => void
   }
 
   export interface EmbedRegistry {

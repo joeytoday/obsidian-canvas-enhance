@@ -16,7 +16,7 @@ export default class EdgeExposerExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-changed',
+      'canvas-enhance:edge-changed',
       (_canvas: Canvas, edge: CanvasEdge) => {
         const edgeData = edge?.getData()
         if (!edgeData) return

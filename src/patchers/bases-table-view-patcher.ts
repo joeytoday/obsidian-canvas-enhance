@@ -1,4 +1,5 @@
 import { BasesPlugin, BasesTableCell, BasesTableCellContext, BasesTableRow, BasesTableView, BasesViewRegistrationEntry } from "src/@types/BasesPlugin"
+import CanvasFileHelper from "src/utils/canvas-file-helper"
 import Patcher from "./patcher"
 
 export default class BasesTableViewPatcher extends Patcher {
@@ -70,13 +71,7 @@ export default class BasesTableViewPatcher extends Patcher {
   private async patchTableCell(cell: BasesTableCell) {
     Patcher.patchPrototype<BasesTableCell>(this.plugin, cell, {
       render: Patcher.OverrideExisting(next => function (ctx: BasesTableCellContext): void {
-        const isCanvas = ctx.file?.extension === "canvas"
-        if (isCanvas) ctx.file.extension = "md"
-
-        const result = next.call(this, ctx)
-
-        if (isCanvas) ctx.file.extension = "canvas"
-        return result
+        return CanvasFileHelper.withMdExtension(ctx.file, () => next.call(this, ctx))
       })
     })
   }

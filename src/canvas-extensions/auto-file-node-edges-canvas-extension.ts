@@ -17,12 +17,12 @@ export default class AutoFileNodeEdgesCanvasExtension extends CanvasExtension {
     }))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-added',
+      'canvas-enhance:node-added',
       (canvas: Canvas, node: CanvasNode) => this.onNodeChanged(canvas, node)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-changed',
+      'canvas-enhance:node-changed',
       (canvas: Canvas, node: CanvasNode) => this.onNodeChanged(canvas, node)
     ))
   }

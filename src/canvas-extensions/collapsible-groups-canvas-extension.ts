@@ -10,27 +10,27 @@ export default class CollapsibleGroupsCanvasExtension extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-changed',
+      'canvas-enhance:node-changed',
       (canvas: Canvas, node: CanvasNode) => this.onNodeChanged(canvas, node)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-bbox-requested',
+      'canvas-enhance:node-bbox-requested',
       (canvas: Canvas, node: CanvasNode, bbox: BBox) => this.onNodeBBoxRequested(canvas, node, bbox)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:copy',
+      'canvas-enhance:copy',
       (canvas: Canvas, selectionData: SelectionData) => this.onCopy(canvas, selectionData)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:data-requested',
+      'canvas-enhance:data-requested',
       (_canvas: Canvas, data: CanvasData) => this.expandNodes(data)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:data-loaded:before',
+      'canvas-enhance:data-loaded:before',
       (_canvas: Canvas, data: CanvasData, _setData: (data: CanvasData) => void) => this.collapseNodes(data)
     ))
 

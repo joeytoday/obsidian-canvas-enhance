@@ -13,7 +13,7 @@ export default class NodeRatioCanvasExtension extends CanvasExtension {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-resized',
+      'canvas-enhance:node-resized',
       (canvas: Canvas, node: CanvasNode) => this.onNodeResized(canvas, node)
     ))
   }

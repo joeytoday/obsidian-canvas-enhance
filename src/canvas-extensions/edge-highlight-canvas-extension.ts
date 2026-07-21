@@ -6,7 +6,7 @@ export default class EdgeHighlightCanvasExtension  extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:selection-changed',
+      'canvas-enhance:selection-changed',
       (canvas: Canvas, oldSelection: Set<CanvasElement>, updateSelection: (update: () => void) => void) => this.onSelectionChanged(canvas, oldSelection)
     ))
   }

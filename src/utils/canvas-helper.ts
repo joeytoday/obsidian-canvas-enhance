@@ -1,8 +1,9 @@
-import { setIcon, setTooltip } from "obsidian"
+import { Notice, setIcon, setTooltip, TFile } from "obsidian"
 import { BBox, Canvas, CanvasEdge, CanvasNode, Position, Size } from "src/@types/Canvas"
 import { StyleAttribute } from "src/canvas-extensions/advanced-styles/style-config"
-import AdvancedCanvasPlugin from "src/main"
+import CanvasEnhancePlugin from "src/main"
 import BBoxHelper from "./bbox-helper"
+import TextHelper from "./text-helper"
 import { CanvasNodeData, Side } from "src/@types/AdvancedJsonCanvas"
 
 export interface MenuOption {
@@ -13,11 +14,13 @@ export interface MenuOption {
 }
 
 export type ConnectionDirection = 'connected' | 'outgoing' | 'incoming'
+export type NavDirection = 'up' | 'down' | 'left' | 'right'
+export const NAV_DIRECTIONS: NavDirection[] = ['up', 'down', 'left', 'right']
 
 export default class CanvasHelper {
   static readonly GRID_SIZE = 20
 
-  static canvasCommand(plugin: AdvancedCanvasPlugin, check: (canvas: Canvas) => boolean, run: (canvas: Canvas) => void): (checking: boolean) => boolean {
+  static canvasCommand(plugin: CanvasEnhancePlugin, check: (canvas: Canvas) => boolean, run: (canvas: Canvas) => void): (checking: boolean) => boolean {
     return (checking: boolean) => {
       const canvas = plugin.getCurrentCanvas()
       if (checking) return canvas !== null && check(canvas)
@@ -175,7 +178,7 @@ export default class CanvasHelper {
     return bbox
   }
 
-  static addStyleAttributesToPopup(plugin: AdvancedCanvasPlugin, canvas: Canvas, styleAttributes: StyleAttribute[], currentStyleAttributes: { [key: string]: string | null }, setStyleAttribute: (attribute: StyleAttribute, value: string | null) => void) {
+  static addStyleAttributesToPopup(plugin: CanvasEnhancePlugin, canvas: Canvas, styleAttributes: StyleAttribute[], currentStyleAttributes: { [key: string]: string | null }, setStyleAttribute: (attribute: StyleAttribute, value: string | null) => void) {
     if (!plugin.settings.getSetting('combineCustomStylesInDropdown'))
       this.addStyleAttributesButtons(canvas, styleAttributes, currentStyleAttributes, setStyleAttribute)
     else this.addStyleAttributesDropdownMenu(canvas, styleAttributes, currentStyleAttributes, setStyleAttribute)
@@ -462,5 +465,65 @@ export default class CanvasHelper {
     canvas.updateSelection(() => {
       canvas.selection = edges
     })
+  }
+
+  static findClosestNode(canvas: Canvas, direction: NavDirection, candidates?: CanvasNode[]): CanvasNode | null {
+    const selectedData = canvas.getSelectionData().nodes?.first()
+    if (!selectedData) return null
+
+    const selBBox = {
+      minX: selectedData.x,
+      minY: selectedData.y,
+      maxX: selectedData.x + selectedData.width,
+      maxY: selectedData.y + selectedData.height,
+    }
+
+    const nodes = candidates ?? Array.from(canvas.nodes.values())
+    let best: { node: CanvasNode; dist: number } | null = null
+
+    for (const node of nodes) {
+      const data = node.getData()
+      if (data.id === selectedData.id) continue
+      if (data.type !== 'text' && data.type !== 'file') continue
+
+      const nb = node.getBBox()
+      const inV = selBBox.minY <= nb.maxY && selBBox.maxY >= nb.minY
+      const inH = selBBox.minX <= nb.maxX && selBBox.maxX >= nb.minX
+      if (['up', 'down'].includes(direction) && !inH) continue
+      if (['left', 'right'].includes(direction) && !inV) continue
+
+      let dist = -1
+      switch (direction) {
+        case 'up':    dist = selBBox.minY - nb.maxY; break
+        case 'down':  dist = nb.minY - selBBox.maxY; break
+        case 'left':  dist = selBBox.minX - nb.maxX; break
+        case 'right': dist = nb.minX - selBBox.maxX; break
+      }
+      if (dist < 0) continue
+
+      if (!best || dist < best.dist) {
+        best = { node, dist }
+        continue
+      }
+
+      if (dist === best.dist) {
+        const sc = { x: selectedData.x + selectedData.width / 2, y: selectedData.y + selectedData.height / 2 }
+        const bc = { x: best.node.x + best.node.width / 2, y: best.node.y + best.node.height / 2 }
+        const nc = { x: node.x + node.width / 2, y: node.y + node.height / 2 }
+        if (Math.hypot(sc.x - nc.x, sc.y - nc.y) < Math.hypot(sc.x - bc.x, sc.y - bc.y))
+          best = { node, dist }
+      }
+    }
+
+    return best?.node ?? null
+  }
+
+  static copyWikilinkToNode(file: TFile, nodeData: CanvasNodeData) {
+    const nodeTypeString = TextHelper.toTitleCase(nodeData.type as string)
+    const wikilink = `[[${file.path}#${nodeData.id}|${file.name} (${nodeTypeString} node)]]`
+
+    navigator.clipboard.writeText(wikilink).then(() =>
+      new Notice("Copied wikilink to node to clipboard.", 2000)
+    ).catch(() => new Notice("Failed to copy wikilink to node to clipboard.", 2000))
   }
 }

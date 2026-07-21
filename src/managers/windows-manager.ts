@@ -1,11 +1,11 @@
 import { WorkspaceWindow } from "obsidian"
-import AdvancedCanvasPlugin from "src/main"
+import CanvasEnhancePlugin from "src/main"
 
 export default class WindowsManager {
-  plugin: AdvancedCanvasPlugin
+  plugin: CanvasEnhancePlugin
   windows: Window[] = [window]
 
-  constructor(plugin: AdvancedCanvasPlugin) {
+  constructor(plugin: CanvasEnhancePlugin) {
     this.plugin = plugin
 
     this.plugin.registerEvent(this.plugin.app.workspace.on('window-open', 

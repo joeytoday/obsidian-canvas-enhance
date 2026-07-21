@@ -37,10 +37,11 @@ export default class SvgPathHelper {
   }
 
   static pathArrayToSvgPath(positions: Position[]): string {
-    for (let i = 0; i < positions.length - 2; i++) {
-      const p1 = positions[i]
-      const p2 = positions[i + 1]
-      const p3 = positions[i + 2]
+    const points = [...positions]
+    for (let i = 0; i < points.length - 2; i++) {
+      const p1 = points[i]
+      const p2 = points[i + 1]
+      const p3 = points[i + 2]
 
       const currentDirection = {
         x: p2.x - p1.x,
@@ -54,11 +55,11 @@ export default class SvgPathHelper {
 
       if (currentDirection.x !== nextDirection.x && currentDirection.y !== nextDirection.y) continue
 
-      positions.splice(i + 1, 1)
+      points.splice(i + 1, 1)
       i--
     }
 
-    return positions.map((position, index) =>
+    return points.map((position, index) =>
       `${index === 0 ? 'M' : 'L'} ${position.x} ${position.y}`
     ).join(' ')
   }

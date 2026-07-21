@@ -106,12 +106,12 @@ export default class PresentationCanvasExtension extends CanvasExtension {
 
     // Register events
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => this.onCanvasChanged(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:popup-menu-created',
+      'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.onPopupMenuCreated(canvas)
     ))
   }

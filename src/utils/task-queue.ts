@@ -23,7 +23,11 @@ export default class TaskQueue {
     while (this.queue.length > 0) {
       const [resolver, task] = this.queue.shift() ?? [undefined, undefined]
 
-      await task?.()
+      try {
+        await task?.()
+      } catch (e) {
+        console.error('TaskQueue: task failed', e)
+      }
       resolver?.()
     }
 

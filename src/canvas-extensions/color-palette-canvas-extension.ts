@@ -24,7 +24,7 @@ export default class ColorPaletteCanvasExtension extends CanvasExtension {
     this.updateCustomColorModStyleClasses()
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:popup-menu-created',
+      'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.patchColorSelection(canvas)
     ))
 

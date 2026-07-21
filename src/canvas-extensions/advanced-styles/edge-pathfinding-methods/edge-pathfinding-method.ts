@@ -1,10 +1,10 @@
 import { Side } from "src/@types/AdvancedJsonCanvas"
 import { BBox, Canvas, Position } from "src/@types/Canvas"
-import AdvancedCanvasPlugin from "src/main"
+import CanvasEnhancePlugin from "src/main"
 
 export default abstract class EdgePathfindingMethod {
   constructor(
-    protected plugin: AdvancedCanvasPlugin,
+    protected plugin: CanvasEnhancePlugin,
     protected canvas: Canvas,
     protected fromNodeBBox: BBox,
     protected fromPos: Position,

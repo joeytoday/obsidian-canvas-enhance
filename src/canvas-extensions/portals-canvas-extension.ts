@@ -19,57 +19,57 @@ export default class PortalsCanvasExtension extends CanvasExtension {
     }))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:popup-menu-created',
+      'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.onPopupMenu(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-removed',
+      'canvas-enhance:node-removed',
       (canvas: Canvas, node: CanvasNode) => this.onNodeRemoved(canvas, node)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-moved',
+      'canvas-enhance:node-moved',
       (canvas: Canvas, node: CanvasNode, _keyboard: boolean) => this.onNodeMoved(canvas, node)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:node-resized',
+      'canvas-enhance:node-resized',
       (canvas: Canvas, node: CanvasNode) => this.onNodeResized(canvas, node)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:dragging-state-changed',
+      'canvas-enhance:dragging-state-changed',
       (canvas: Canvas, startedDragging: boolean) => this.onDraggingStateChanged(canvas, startedDragging)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:containing-nodes-requested',
+      'canvas-enhance:containing-nodes-requested',
       (canvas: Canvas, bbox: BBox, nodes: CanvasNode[]) => this.onContainingNodesRequested(canvas, bbox, nodes)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-connection-try-dragging:before',
+      'canvas-enhance:edge-connection-try-dragging:before',
       (canvas: Canvas, edge: CanvasEdge, event: PointerEvent, cancelRef: { value: boolean }) => this.onEdgeConnectionTryDraggingBefore(canvas, edge, event, cancelRef)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:edge-connection-dragging:after',
+      'canvas-enhance:edge-connection-dragging:after',
       (canvas: Canvas, edge: CanvasEdge, event: PointerEvent, newEdge: boolean, side: 'from' | 'to', previousEnds?: { from: CanvasEdgeEnd, to: CanvasEdgeEnd }) => this.onEdgeConnectionDraggingAfter(canvas, edge, event, newEdge, side, previousEnds)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:selection-changed',
+      'canvas-enhance:selection-changed',
       (canvas: Canvas, oldSelection: Set<CanvasElement>, updateSelection: (update: () => void) => void) => this.onSelectionChanged(canvas, oldSelection, updateSelection)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:data-requested',
+      'canvas-enhance:data-requested',
       (canvas: Canvas, data: CanvasData) => this.onGetData(canvas, data)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:data-loaded:before',
+      'canvas-enhance:data-loaded:before',
       (canvas: Canvas, data: CanvasData, setData: (data: CanvasData) => void) => {
         this.onSetData(canvas, data).then((newData: CanvasData) => {
           // Skip if the data didn't change
@@ -126,7 +126,7 @@ export default class PortalsCanvasExtension extends CanvasExtension {
     canvas.toggleObjectSnapping(false)
 
     const dragEndEventRef = this.plugin.app.workspace.on(
-      'advanced-canvas:dragging-state-changed',
+      'canvas-enhance:dragging-state-changed',
       (canvas: Canvas, startedDragging: boolean) => {
         if (startedDragging) return
 

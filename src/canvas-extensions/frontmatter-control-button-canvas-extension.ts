@@ -8,7 +8,7 @@ export default class FrontmatterControlButtonCanvasExtension extends CanvasExten
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => this.addQuickSettings(canvas)
     ))
   }

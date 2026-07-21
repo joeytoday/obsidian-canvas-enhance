@@ -21,7 +21,7 @@ export default class GroupCanvasExtension extends CanvasExtension {
     })
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
-      'advanced-canvas:canvas-changed',
+      'canvas-enhance:canvas-changed',
       (canvas: Canvas) => {
         CanvasHelper.addCardMenuOption(
           canvas,
