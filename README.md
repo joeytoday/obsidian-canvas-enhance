@@ -143,7 +143,16 @@ Based on [Advanced Canvas](https://github.com/Developer-Mike/obsidian-advanced-c
 
 <p align="center"><b>⚡ 全面增强</b>你的 Obsidian Canvas 体验。演示文稿、流程图、脑图，一个插件搞定。</p>
 
+<p align="center">
+  <a href="https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/usage-guide.md">📖 使用指南</a> ·
+  <a href="https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md">📋 更新日志</a> ·
+  <a href="https://github.com/joeytoday/obsidian-canvas-enhance/issues">🐛 反馈问题</a> ·
+  <a href="#why-canvas-enhance">🇬🇧 English</a>
+</p>
+
 ### 为什么选择 Canvas Enhance？
+
+Obsidian Canvas 原生功能够用，但不够好用。Canvas Enhance 在不改变原生体验的前提下，补上了这些缺口：
 
 - **缩小画布就看不清节点？** 概览模式自动用大号标题填满卡片，全局视角也能快速定位
 - **想用 Canvas 做脑图？** Tab 创建下级节点、Enter 创建同级节点、方向键导航，完整的思维导图工作流
@@ -153,28 +162,98 @@ Based on [Advanced Canvas](https://github.com/Developer-Mike/obsidian-advanced-c
 
 所有功能均可在设置中独立开关，不用的功能零开销。
 
-### 功能概览
+### 功能
 
-| 分类 | 功能 |
+#### 概览模式
+
+<!-- TODO: Add overview-mode.gif -->
+
+缩小画布后节点内容变得难以阅读。概览模式自动用大号标题填满每张卡片：
+
+- **文件节点**显示文件名或第一行标题
+- **文本节点**显示第一个 Markdown 标题（`# 标题`）
+- **分组标签**自动放大，保持可读
+- 放大画布超过阈值后，自动恢复原始内容
+
+#### 思维导图
+
+<!-- TODO: Add mindmap.gif -->
+
+将画布变成思维导图：`Tab` 创建下级节点，`Enter` 创建同级节点，`Alt+方向键` 在节点间导航。下级节点自动继承上级节点颜色。
+
+#### 演示模式
+
+![演示模式](assets/docs/sample-presentation-simple.gif)
+
+像幻灯片一样浏览画布。设置起始节点，运行命令，支持过渡动画和全屏。
+
+#### 节点与边样式
+
+![流程图形状](assets/docs/sample-flowchart.png)
+
+流程图形状（终端、流程、判断、数据库等）、边框样式、文本对齐、8 种箭头、路径样式（虚线/点线）、A* 自动寻路——全部通过右键菜单设置。
+
+#### 更多功能
+
+| 功能 | 说明 |
 |------|------|
-| 核心增强 | 元数据缓存、Frontmatter、单节点链接/嵌入、画布内搜索、图片导出、只读模式增强 |
-| 节点 | 流程图形状、节点模板、自动调整大小、变量断点、Z 轴排序、自定义颜色 |
-| 边 | 路径/箭头样式、浮动边、翻转边、边高亮、边选择 |
-| 交互与工作流 | 概览模式、Mindmap、演示模式、传送门、可折叠组、聚焦模式、封装选区、20+ 命令 |
+| 元数据缓存 | `.canvas` 文件接入关系图谱、反向链接、出链 |
+| Frontmatter | 为 Canvas 文件添加自定义属性（标签、别名、CSS 类） |
+| 单节点链接 | 通过 `[[canvas#node-id]]` 链接或嵌入单个节点 |
+| 画布内搜索 | `Ctrl+F` 搜索画布中的文本 |
+| 可折叠组 | 组节点可折叠/展开 |
+| 聚焦模式 | 模糊未选中节点，突出当前节点 |
+| 传送门 | 在画布中嵌入另一个画布的视图 |
+| 图片导出 | 导出为 PNG/SVG，支持透明度选项 |
+| Z 轴排序 | 右键菜单调整节点层叠顺序 |
+| 浮动边 | 边自动调整连接侧，支持不连接到节点的浮动边 |
+| 20+ 命令 | 创建、导航、克隆、展开、翻转、交换等 |
+
+#### 自定义 CSS 样式
+
+通过 CSS snippet 为节点和边添加自定义样式属性，在 CSS 文件中用 YAML 注释定义：
+
+```css
+/* @canvas-enhance-node-style
+key: validation-state
+label: 验证状态
+options:
+  - label: 无状态
+    value: null
+    icon: circle-help
+  - label: 已通过
+    value: approved
+    icon: circle-check
+*/
+```
+
+详见[示例 CSS 文件](assets/docs/example-custom-node-style.css)。
 
 ### 安装
 
-社区插件市场搜索 **Canvas Enhance**，或从 [Releases](https://github.com/joeytoday/obsidian-canvas-enhance/releases) 手动下载安装。
+#### 社区插件市场
+
+在 Obsidian 设置 → 第三方插件 → 浏览中搜索 **Canvas Enhance**。
+
+#### 手动安装
+
+1. 在 vault 的 `.obsidian/plugins/` 下创建 `canvas-enhance` 文件夹
+2. 从 [Releases](https://github.com/joeytoday/obsidian-canvas-enhance/releases) 下载 `main.js`、`styles.css`、`manifest.json` 放入该文件夹
+3. 在设置 → 第三方插件中启用
 
 ### 设置
 
-- **基础设置** — 概览模式、节点尺寸、命令、边高亮、自动调整、可折叠组等
+三个标签页：
+
+- **基础设置** — 概览模式、节点尺寸、命令、边高亮、自动调整、可折叠组、画布搜索
 - **Mindmap** — 节点间距、快捷键、颜色传播
-- **进阶设置** — 元数据兼容、节点/边样式系统、演示模式、传送门、聚焦模式等
+- **进阶设置** — 元数据兼容、节点/边样式系统、演示模式、传送门、聚焦模式
 
-### 支持
+### 支持这个项目
 
-觉得好用？给个 ⭐ Star 吧。
+如果 Canvas Enhance 帮到了你，请考虑给一个 ⭐ Star。这是对我最大的鼓励，也让更多人发现这个插件。
+
+[![Star](https://img.shields.io/github/stars/joeytoday/obsidian-canvas-enhance?style=social)](https://github.com/joeytoday/obsidian-canvas-enhance)
 
 ### 许可证
 
