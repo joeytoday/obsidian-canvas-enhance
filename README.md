@@ -59,7 +59,7 @@ Navigate your canvas like a slideshow. Set a start node, run the command, and pr
 
 ### Node & Edge Styles
 
-![Flowchart Shapes](assets/docs/sample-flowchart.png)
+<img src="assets/docs/sample-flowchart.png" alt="Flowchart Shapes" width="420">
 
 Flowchart shapes (terminal, process, decision, database…), border styles, text alignment, 8 arrow types, path styles (dashed/dotted), and A* pathfinding — all from the right-click menu.
 
@@ -185,7 +185,7 @@ https://github.com/user-attachments/assets/9d0a7240-75b7-4c5c-bc42-cfba88a1e9f9
 
 #### 节点与边样式
 
-![流程图形状](assets/docs/sample-flowchart.png)
+<img src="assets/docs/sample-flowchart.png" alt="流程图形状" width="420">
 
 流程图形状（终端、流程、判断、数据库等）、边框样式、文本对齐、8 种箭头、路径样式（虚线/点线）、A* 自动寻路——全部通过右键菜单设置。
 
