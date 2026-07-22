@@ -134,6 +134,9 @@ export default class CollapsibleGroupsCanvasExtension extends CanvasExtension {
   }
 
   private collapseNodes(data: CanvasData) {
+    // Skip the whole pass when no group is collapsed (common case)
+    if (!data?.nodes?.some(nodeData => (nodeData as CanvasGroupNodeData).collapsed)) return
+
     data?.nodes?.forEach((groupNodeData: CanvasGroupNodeData) => {
       if (!groupNodeData.collapsed) return
 

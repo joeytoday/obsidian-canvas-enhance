@@ -82,19 +82,6 @@ export interface CanvasEnhancePluginSettingsValues {
 
   focusModeFeatureEnabled: boolean
 
-  presentationFeatureEnabled: boolean
-  showSetStartNodeInPopup: boolean
-  defaultSlideDimensions: [number, number]
-  wrapInSlidePadding: number
-  resetViewportOnPresentationEnd: boolean
-  useArrowKeysToChangeSlides: boolean
-  usePgUpPgDownKeysToChangeSlides: boolean
-  zoomToSlideWithoutPadding: boolean
-  useUnclampedZoomWhilePresenting: boolean
-  fullscreenPresentationEnabled: boolean
-  slideTransitionAnimationDuration: number
-  slideTransitionAnimationIntensity: number
-
   canvasEncapsulationEnabled: boolean
 
   portalsFeatureEnabled: boolean
@@ -194,19 +181,6 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   collapsedGroupPreviewOnDrag: true,
 
   focusModeFeatureEnabled: false,
-
-  presentationFeatureEnabled: true,
-  showSetStartNodeInPopup: false,
-  defaultSlideDimensions: [1200, 675],
-  wrapInSlidePadding: 20,
-  resetViewportOnPresentationEnd: true,
-  useArrowKeysToChangeSlides: true,
-  usePgUpPgDownKeysToChangeSlides: true,
-  zoomToSlideWithoutPadding: true,
-  useUnclampedZoomWhilePresenting: false,
-  fullscreenPresentationEnabled: true,
-  slideTransitionAnimationDuration: 0.5,
-  slideTransitionAnimationIntensity: 1.25,
 
   canvasEncapsulationEnabled: false,
 
@@ -513,76 +487,6 @@ export const SETTINGS = {
     infoSection: '边',
     children: { }
   },
-  presentationFeatureEnabled: {
-    label: '演示模式',
-    description: '从画布创建演示文稿。',
-    infoSection: '交互与工作流',
-    children: {
-      showSetStartNodeInPopup: {
-        label: '在弹出菜单中显示「设为起始节点」',
-        description: '关闭后，仍可通过对应命令设置起始节点。',
-        type: 'boolean'
-      },
-      defaultSlideDimensions: {
-        label: '默认幻灯片尺寸',
-        description: '幻灯片的默认尺寸。',
-        type: 'dimension',
-        parse: (value: [string, string]) => {
-          const width = Math.max(1, parseInt(value[0]) || 0)
-          const height = Math.max(1, parseInt(value[1]) || 0)
-          return [width, height]
-        }
-      },
-      wrapInSlidePadding: {
-        label: '包裹幻灯片内边距',
-        description: '将选中内容包裹为幻灯片时的内边距。',
-        type: 'number',
-        parse: (value: string) => Math.max(0, parseInt(value) || 0)
-      },
-      resetViewportOnPresentationEnd: {
-        label: '演示结束后重置视口',
-        description: '启用后，演示结束后视口将恢复到原始位置。',
-        type: 'boolean'
-      },
-      useArrowKeysToChangeSlides: {
-        label: '用方向键切换幻灯片',
-        description: '启用后，在演示模式中可以用方向键切换幻灯片。',
-        type: 'boolean'
-      },
-      usePgUpPgDownKeysToChangeSlides: {
-        label: '用 PgUp/PgDown 键切换幻灯片',
-        description: '启用后，在演示模式中可以用 PgUp/PgDown 键切换幻灯片（兼容大多数演示遥控器）。',
-        type: 'boolean'
-      },
-      zoomToSlideWithoutPadding: {
-        label: '无内边距缩放到幻灯片',
-        description: '启用后，缩放到幻灯片时不添加内边距。',
-        type: 'boolean'
-      },
-      useUnclampedZoomWhilePresenting: {
-        label: '演示时使用无限制缩放',
-        description: '启用后，演示时缩放将不受限制。',
-        type: 'boolean'
-      },
-      fullscreenPresentationEnabled: {
-        label: '演示时进入全屏',
-        description: '启用后，演示会自动请求全屏。禁用以保持 Obsidian 窗口模式。',
-        type: 'boolean'
-      },
-      slideTransitionAnimationDuration: {
-        label: '幻灯片切换动画时长',
-        description: '幻灯片切换动画的时长（秒），设为 0 禁用动画。',
-        type: 'number',
-        parse: (value: string) => Math.max(0, parseFloat(value) || 0)
-      },
-      slideTransitionAnimationIntensity: {
-        label: '幻灯片切换动画强度',
-        description: '切换动画的强度。值越大，切换前缩远的幅度越大。',
-        type: 'number',
-        parse: (value: string) => Math.max(0, parseFloat(value) || 0)
-      }
-    }
-  },
   zOrderingControlFeatureEnabled: {
     label: 'Z 轴层级控制',
     description: '通过右键菜单改变节点的持久化 z-index。',
@@ -788,7 +692,6 @@ const SETTINGS_TABS = {
       'edgesStylingFeatureEnabled',
       'floatingEdgeFeatureEnabled',
       'flipEdgeFeatureEnabled',
-      'presentationFeatureEnabled',
       'portalsFeatureEnabled',
       'focusModeFeatureEnabled',
       'zOrderingControlFeatureEnabled',

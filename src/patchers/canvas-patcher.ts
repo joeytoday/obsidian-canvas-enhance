@@ -353,8 +353,10 @@ export default class CanvasPatcher extends Patcher {
         }
 
         // Save the data to the file (only if the canvas isn't loading)
-        this.canvas.data = this.canvas.getData()
-        if (this.initialized) this.canvas.view.requestSave()
+        if (this.initialized) {
+          this.canvas.data = this.canvas.getData()
+          this.canvas.view.requestSave()
+        }
 
         // Add to the undo stack
         if (addHistory) this.canvas.pushHistory(this.canvas.data)
@@ -469,8 +471,10 @@ export default class CanvasPatcher extends Patcher {
         }
 
         // Save the data to the file (only if the canvas isn't loading)
-        this.canvas.data = this.canvas.getData()
-        if (this.initialized) this.canvas.view.requestSave()
+        if (this.initialized) {
+          this.canvas.data = this.canvas.getData()
+          this.canvas.view.requestSave()
+        }
 
         // Add to the undo stack
         if (addHistory) this.canvas.pushHistory(this.canvas.getData())
