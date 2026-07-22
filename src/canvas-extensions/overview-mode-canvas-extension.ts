@@ -157,8 +157,21 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
       overlay.appendChild(textEl)
     }
 
+    this.applyNodeColor(overlay, node.color)
     textEl.textContent = title
     this.fitText(textEl, node.width, node.height)
+  }
+
+  private applyNodeColor(overlay: HTMLElement, color: string | undefined) {
+    if (!color) {
+      overlay.classList.remove('ce-overview-colored')
+      overlay.style.removeProperty('--ce-overview-node-color')
+      return
+    }
+    // Preset colors 1-6 resolve via Obsidian's --canvas-color-N variables; custom colors are used as-is
+    const colorValue = /^[1-6]$/.test(color) ? `rgb(var(--canvas-color-${color}))` : color
+    overlay.style.setProperty('--ce-overview-node-color', colorValue)
+    overlay.classList.add('ce-overview-colored')
   }
 
   private async getTitle(node: CanvasNode): Promise<string | null> {

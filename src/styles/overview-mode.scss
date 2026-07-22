@@ -25,6 +25,14 @@
   overflow-wrap: break-word;
 }
 
+.ce-overview-overlay.ce-overview-colored {
+  background: color-mix(in srgb, var(--ce-overview-node-color) 12%, var(--background-primary));
+}
+
+.ce-overview-colored .ce-overview-text {
+  color: var(--ce-overview-node-color);
+}
+
 .canvas-node:has(.ce-overview-overlay) {
   .canvas-node-content {
     visibility: hidden;
