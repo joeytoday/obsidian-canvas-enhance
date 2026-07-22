@@ -108,10 +108,10 @@ Search **Canvas Enhance** in Obsidian → Settings → Community Plugins → Bro
 
 Four tabs:
 
-- **Basic** — Overview Mode, general, commands, search, collapsible groups, edge highlight/selection, readonly
+- **Basic** — General defaults, file templates, Overview Mode, commands, search, image export
 - **Mindmap** — Node spacing, hotkeys, color propagation
-- **Nodes & Edges** — Node/edge styles, custom styles, node templates, floating/flip edge, auto-resize, aspect ratio, z-order
-- **Advanced** — Metadata, portals, focus mode, encapsulation, variable breakpoints
+- **Nodes & Edges** — Node/edge styles, custom styles, floating/flip edge, edge highlight/selection, auto-resize, aspect ratio, layer order, collapsible groups
+- **Advanced** — Metadata, portals, focus mode, encapsulation, render breakpoints, readonly, text rendering
 
 ## Support This Project
 
@@ -228,10 +228,10 @@ options:
 
 四个标签页：
 
-- **基础设置** — 概览模式、通用、命令、搜索、可折叠组、边高亮/选择、只读
+- **基础设置** — 通用、文件模板、概览模式、命令、搜索、图片导出
 - **思维导图** — 节点间距、快捷键、颜色传播
-- **节点与边** — 节点/边样式、自定义样式、节点模板、浮动/翻转边、自动调整、宽高比、Z 轴
-- **进阶功能** — 元数据、传送门、专注模式、封装选区、变量断点
+- **节点与边** — 节点/边样式、自定义样式、浮动/翻转边、边高亮/选择、自动调整、宽高比、图层顺序、可折叠分组
+- **进阶功能** — 元数据、传送门、专注模式、封装选区、节点渲染断点、增强只读、替代文本渲染
 
 ### 支持这个项目
 
