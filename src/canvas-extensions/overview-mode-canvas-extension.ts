@@ -46,6 +46,13 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
+      'canvas-enhance:node-resized',
+      (_canvas: Canvas, node: CanvasNode) => {
+        if (this.activeCanvases.has(node.canvas.wrapperEl)) void this.updateNodeOverlay(node)
+      }
+    ))
+
+    this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-removed',
       (_canvas: Canvas, node: CanvasNode) => {
         this.removeOverlay(node)
@@ -105,8 +112,6 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
         canvas.wrapperEl.classList.remove('ce-overview-active')
         for (const node of canvas.nodes.values()) this.removeOverlay(node)
       }
-    } else if (shouldActivate) {
-      for (const node of canvas.nodes.values()) void this.updateNodeOverlay(node)
     }
   }
 
@@ -128,6 +133,10 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     if (nodeData.type === 'group' || nodeData.type === 'link') return
 
     const title = await this.getTitle(node)
+    // The node may have been removed or the canvas deactivated while awaiting the title
+    if (!node.canvas.nodes.has(node.id)) return
+    if (!this.activeCanvases.has(node.canvas.wrapperEl)) return
+
     if (!title) {
       this.removeOverlay(node)
       return
@@ -188,21 +197,31 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
   }
 
   private extractFirstHeading(text: string): string | null {
-    for (const line of text.split('\n')) {
-      const match = line.trim().match(/^#{1,6}\s+(.+)/)
-      if (match) return match[1]
+    const lines = text.split('\n')
+    for (let i = this.frontmatterEnd(lines); i < lines.length; i++) {
+      const match = lines[i].trim().match(/^#{1,6}\s+(.+)/)
+      if (match) return match[1].replace(/\s+#+\s*$/, '')
     }
     return this.extractFirstLine(text)
   }
 
   private extractFirstLine(text: string): string | null {
-    for (const line of text.split('\n')) {
-      const trimmed = line.trim()
+    const lines = text.split('\n')
+    for (let i = this.frontmatterEnd(lines); i < lines.length; i++) {
+      const trimmed = lines[i].trim()
       if (!trimmed) continue
       const cleaned = trimmed.replace(/^#{1,6}\s+/, '')
       if (cleaned) return cleaned
     }
     return null
+  }
+
+  private frontmatterEnd(lines: string[]): number {
+    if (lines[0]?.trim() !== '---') return 0
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].trim() === '---') return i + 1
+    }
+    return 0
   }
 
   private fitText(textEl: HTMLElement, cardWidth: number, cardHeight: number) {
@@ -216,6 +235,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     const maxFontSize = this.plugin.settings.getSetting('overviewModeMaxFontSize')
     let lo = MIN_FONT_SIZE
     let hi = Math.min(Math.max(availW, availH), maxFontSize)
+    if (hi < lo) lo = hi
 
     while (hi - lo > 1) {
       const mid = Math.floor((lo + hi) / 2)
