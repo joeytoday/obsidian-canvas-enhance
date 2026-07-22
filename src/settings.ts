@@ -819,7 +819,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
       .setName('Canvas Enhance')
       .addButton(button => button
         .setButtonText('使用指南')
-        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/usage-guide.md')))
+        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md')))
       .addButton(button => button
         .setButtonText('更新日志')
         .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md')))

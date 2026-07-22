@@ -16,7 +16,7 @@
 <p align="center"><b>⚡ 全面增强</b>你的 Obsidian Canvas 体验。流程图、脑图，一个插件搞定。</p>
 
 <p align="center">
-  <a href="https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/usage-guide.md">📖 使用指南</a> ·
+  <a href="https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md">📖 使用指南</a> ·
   <a href="https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md">📋 更新日志</a> ·
   <a href="https://github.com/joeytoday/obsidian-canvas-enhance/issues">🐛 反馈问题</a> ·
   <a href="#english">🇬🇧 English</a>
@@ -137,7 +137,7 @@ options:
 <p align="center"><b>⚡ Supercharge</b> your Obsidian Canvas. Flowcharts, mindmaps, and more — one plugin does it all.</p>
 
 <p align="center">
-  <a href="https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/usage-guide.md">📖 Usage Guide</a> ·
+  <a href="https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md">📖 Usage Guide</a> ·
   <a href="https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md">📋 Changelog</a> ·
   <a href="https://github.com/joeytoday/obsidian-canvas-enhance/issues">🐛 Report Issue</a> ·
   <a href="#为什么选择-canvas-enhance">🇨🇳 中文文档</a>
