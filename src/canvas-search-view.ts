@@ -41,7 +41,7 @@ export default class CanvasSearchView {
 
     this.searchCount = searchInputContainer.createDiv()
     this.searchCount.className = "document-search-count"
-    this.searchCount.style.display = "none"
+    this.searchCount.hide()
     this.searchCount.textContent = "0 / 0"
 
     const documentSearchButtons = documentSearch.createDiv()

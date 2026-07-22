@@ -5,6 +5,8 @@ import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
 import { CanvasFileNodeData, CanvasNodeData } from "src/@types/AdvancedJsonCanvas"
 
+const MIN_CONTENT_HEIGHT = "min-content"
+
 export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
   isEnabled() { return 'autoResizeNodeFeatureEnabled' as const }
 
@@ -97,7 +99,7 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
     const renderedMarkdownContainer = node.nodeEl.querySelector(".markdown-preview-view.markdown-rendered") as HTMLElement
     if (!renderedMarkdownContainer) return
 
-    renderedMarkdownContainer.style.height = "min-content"
+    renderedMarkdownContainer.style.height = MIN_CONTENT_HEIGHT
     const newHeight = renderedMarkdownContainer.clientHeight
     renderedMarkdownContainer.style.removeProperty("height")
 
@@ -111,7 +113,7 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
     const cmScroller = dom.querySelector(".cm-scroller") as HTMLElement
     if (!cmScroller) return
 
-    cmScroller.style.height = "min-content"
+    cmScroller.style.height = MIN_CONTENT_HEIGHT
     const newHeight = cmScroller.scrollHeight
     cmScroller.style.removeProperty("height")
 

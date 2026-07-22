@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.3
+
+- 符合 Obsidian 社区插件审核规范
+
 ## 0.7.2
 
 - 符合 Obsidian 社区插件审核规范

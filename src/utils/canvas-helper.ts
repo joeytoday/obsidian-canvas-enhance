@@ -253,9 +253,6 @@ export default class CanvasHelper {
       styleMenuDropdownElement.classList.add('menu')
 
       // Position correctly
-      styleMenuDropdownElement.style.position = 'absolute'
-      styleMenuDropdownElement.style.maxHeight = 'initial'
-
       styleMenuDropdownElement.style.top = `${popupMenuElement.getBoundingClientRect().height}px`
 
       const canvasWrapperCenterX = canvas.wrapperEl.getBoundingClientRect().left + canvas.wrapperEl.getBoundingClientRect().width / 2
@@ -314,9 +311,6 @@ export default class CanvasHelper {
           styleMenuDropdownSubmenuElement.classList.add('menu')
 
           // Position correctly
-          styleMenuDropdownSubmenuElement.style.position = 'absolute'
-          styleMenuDropdownSubmenuElement.style.maxHeight = 'initial'
-
           const topOffset = parseFloat(window.getComputedStyle(styleMenuDropdownElement).getPropertyValue('padding-top')) + (styleMenuDropdownElement.offsetHeight - styleMenuDropdownElement.clientHeight) / 2
           styleMenuDropdownSubmenuElement.style.top = `${stylableAttributeElement.getBoundingClientRect().top - topOffset - popupMenuElement.getBoundingClientRect().top}px`
 

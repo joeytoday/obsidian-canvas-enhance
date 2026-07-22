@@ -3,6 +3,12 @@
   display: none;
 }
 
+#style-menu-dropdown,
+#style-menu-dropdown-submenu {
+  position: absolute;
+  max-height: initial;
+}
+
 .canvas-control-item[data-toggled="true"] {
   background-color: var(--color-accent);
 
