@@ -3,7 +3,6 @@ import CanvasEnhancePlugin from "src/main"
 import { Canvas, CanvasNode, Position } from "src/@types/Canvas"
 
 export function getTemplatesFolder(plugin: CanvasEnhancePlugin): TFolder | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal plugins are untyped
   const templatesPlugin = (plugin.app as any).internalPlugins?.getPluginById?.('templates')
   const folderPath = templatesPlugin?.instance?.options?.folder as string | undefined
   if (!folderPath) return null
