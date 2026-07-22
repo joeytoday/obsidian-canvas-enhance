@@ -11,8 +11,8 @@ const CARD_PADDING = 8
 export default class OverviewModeCanvasExtension extends CanvasExtension {
   isEnabled() { return 'overviewModeFeatureEnabled' as const }
 
-  private overlayEls = new Map<string, HTMLElement>()
-  private titleCache = new Map<string, string>()
+  private overlayEls = new Map<CanvasNode, HTMLElement>()
+  private titleCache = new Map<CanvasNode, string>()
   private activeCanvases = new Set<HTMLElement>()
   private rafIds = new Map<HTMLElement, number>()
 
@@ -32,7 +32,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-changed',
       (_canvas: Canvas, node: CanvasNode) => {
-        this.titleCache.delete(node.id)
+        this.titleCache.delete(node)
         if (this.activeCanvases.has(node.canvas.wrapperEl)) void this.updateNodeOverlay(node)
       }
     ))
@@ -40,7 +40,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-text-content-changed',
       (_canvas: Canvas, node: CanvasNode) => {
-        this.titleCache.delete(node.id)
+        this.titleCache.delete(node)
         if (this.activeCanvases.has(node.canvas.wrapperEl)) void this.updateNodeOverlay(node)
       }
     ))
@@ -56,7 +56,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
       'canvas-enhance:node-removed',
       (_canvas: Canvas, node: CanvasNode) => {
         this.removeOverlay(node)
-        this.titleCache.delete(node.id)
+        this.titleCache.delete(node)
       }
     ))
 
@@ -87,7 +87,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     wrapperEl.classList.remove('ce-overview-active')
     for (const node of canvas.nodes.values()) {
       this.removeOverlay(node)
-      this.titleCache.delete(node.id)
+      this.titleCache.delete(node)
     }
   }
 
@@ -142,11 +142,11 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
       return
     }
 
-    let overlay = this.overlayEls.get(node.id)
+    let overlay = this.overlayEls.get(node)
     if (!overlay) {
       overlay = activeDocument.createElement('div')
       overlay.className = OVERLAY_CLASS
-      this.overlayEls.set(node.id, overlay)
+      this.overlayEls.set(node, overlay)
       node.nodeEl.appendChild(overlay)
     }
 
@@ -162,7 +162,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
   }
 
   private async getTitle(node: CanvasNode): Promise<string | null> {
-    const cached = this.titleCache.get(node.id)
+    const cached = this.titleCache.get(node)
     if (cached !== undefined) return cached || null
 
     const nodeData = node.getData()
@@ -192,7 +192,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
       }
     }
 
-    this.titleCache.set(node.id, title ?? '')
+    this.titleCache.set(node, title ?? '')
     return title
   }
 
@@ -252,10 +252,10 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
   }
 
   private removeOverlay(node: CanvasNode) {
-    const overlay = this.overlayEls.get(node.id)
+    const overlay = this.overlayEls.get(node)
     if (overlay) {
       overlay.remove()
-      this.overlayEls.delete(node.id)
+      this.overlayEls.delete(node)
     }
   }
 }

@@ -244,9 +244,10 @@ export const SETTINGS = {
     children: {
       nodeTypeOnDoubleClick: {
         label: '双击创建的节点类型',
-        description: '在画布上双击时创建的节点类型。',
+        description: '在画布上双击时创建的节点类型。选择「原生」则不拦截，使用 Obsidian 默认行为。',
         type: 'dropdown',
         options: {
+          'native': '原生',
           'text': '文本',
           'file': '文件'
         }

@@ -134,20 +134,27 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     if (!scope) return
 
     scope.register([], 'Tab', (ev: KeyboardEvent) => {
+      if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
+      const node = this.getSelectedNode(canvas)
+      if (canvas.readonly || !node || node.isEditing) return
       ev.preventDefault()
-      const node = this.createChildNode(canvas, false)
-      if (node) this.focusNode(canvas, node)
+      const child = this.createChildNode(canvas, false)
+      if (child) this.focusNode(canvas, child)
     })
 
     scope.register([], 'Enter', (ev: KeyboardEvent) => {
+      if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
+      const node = this.getSelectedNode(canvas)
+      if (canvas.readonly || !node || node.isEditing) return
       ev.preventDefault()
-      const node = this.createSiblingNode(canvas, false)
-      if (node) this.focusNode(canvas, node)
+      const sibling = this.createSiblingNode(canvas, false)
+      if (sibling) this.focusNode(canvas, sibling)
     })
 
     scope.register([], 'Space', (ev: KeyboardEvent) => {
+      if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
       const node = this.getSelectedNode(canvas)
-      if (!node || node.isEditing) return
+      if (canvas.readonly || !node || node.isEditing) return
       ev.preventDefault()
       node.setIsEditing(true)
     })
@@ -371,6 +378,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
         setColor: (next: any) =>
           function(this: any, color: any, t: any) {
             next.call(this, color, t)
+            if (!plugin.settings.getSetting('mindmapFeatureEnabled')) return
             if (!plugin.settings.getSetting('mindmapPropagateColorToEdges')) return
             this.canvas.getEdgesForNode(this).forEach((edge: any) => {
               if (edge.from.node === this) {
@@ -405,6 +413,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
         showPreview: (next: any) =>
           function(this: any, e: any) {
             next.call(this, e)
+            if (!plugin.settings.getSetting('mindmapFeatureEnabled')) return
             if (e) {
               this.node?.canvas.wrapperEl.focus()
               this.node?.setIsEditing(false)

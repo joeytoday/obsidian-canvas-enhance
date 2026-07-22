@@ -73,12 +73,17 @@ export default class CanvasSearchView {
   }
 
   private onKeyDown(e: KeyboardEvent) {
-    // TODO: Fix arrows moving the node and not the cursor
-
-    if (e.key === "Enter" || e.key === "F3")
+    if (e.key === "Enter" || e.key === "F3") {
+      e.preventDefault()
+      e.stopPropagation()
       this.changeMatch(this.matchIndex + (e.shiftKey ? -1 : 1))
-    else if (e.key === "Escape")
+    } else if (e.key === "Escape") {
+      e.stopPropagation()
       this.close()
+    } else if (e.key.startsWith("Arrow")) {
+      // Keep arrow keys for cursor movement in the input; don't let the canvas move nodes
+      e.stopPropagation()
+    }
   }
 
   private onInput() {

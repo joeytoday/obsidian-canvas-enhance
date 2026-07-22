@@ -64,11 +64,15 @@ export default class BetterDefaultSettingsCanvasExtension  extends CanvasExtensi
 
   private async onDoubleClick(canvas: Canvas, event: MouseEvent, preventDefault: { value: boolean }) {
     if (event.defaultPrevented || event.target !== canvas.wrapperEl || canvas.isDragging || canvas.readonly) return
+
+    const nodeType = this.plugin.settings.getSetting('nodeTypeOnDoubleClick')
+    if (nodeType === 'native') return // Let Obsidian handle double-click natively
+
     preventDefault.value = true
 
     const pos = canvas.posFromEvt(event)
 
-    switch (this.plugin.settings.getSetting('nodeTypeOnDoubleClick')) {
+    switch (nodeType) {
       case 'file': {
         const file = await new FileSelectModal(this.plugin.app, undefined, true).awaitInput()
         canvas.createFileNode({
@@ -138,9 +142,18 @@ export default class BetterDefaultSettingsCanvasExtension  extends CanvasExtensi
     // Wait until the connecting class is removed (else, the direction will be reset on mousemove (onConnectionPointerdown))
     if (canvas.canvasEl.hasClass('is-connecting')) {
       await new Promise<void>(resolve => {
-        new MutationObserver(() => {
-          if (!canvas.canvasEl.hasClass('is-connecting')) resolve()
-        }).observe(canvas.canvasEl, { attributes: true, attributeFilter: ['class'] })
+        const observer = new MutationObserver(() => {
+          if (!canvas.canvasEl.hasClass('is-connecting')) {
+            observer.disconnect()
+            resolve()
+          }
+        })
+        observer.observe(canvas.canvasEl, { attributes: true, attributeFilter: ['class'] })
+        // Safety net in case the class is never removed
+        window.setTimeout(() => {
+          observer.disconnect()
+          resolve()
+        }, 1000)
       })
     }
 

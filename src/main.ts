@@ -153,6 +153,11 @@ export default class CanvasEnhancePlugin extends Plugin {
         console.error(`Error initializing ce-extension ${Extension.name}:`, e)
       }
     })
+
+    // Activate features that get enabled after load (idempotent per extension)
+    this.registerEvent(this.app.workspace.on('canvas-enhance:settings-changed', () => {
+      for (const extension of this.canvasExtensions) extension?.tryInit()
+    }))
   }
 
   onunload() {}

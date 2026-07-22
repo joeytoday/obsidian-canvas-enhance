@@ -413,7 +413,9 @@ export default class CanvasPatcher extends Patcher {
         return result
       }),
       onConnectionPointerdown: Patcher.OverrideExisting(next => function (e: PointerEvent, side: Side): void {
+        let edgeAdded = false
         const addEdgeEventRef = that.plugin.app.workspace.on('canvas-enhance:edge-added', (_canvas: Canvas, edge: CanvasEdge) => {
+          edgeAdded = true
           that.plugin.app.workspace.trigger('canvas-enhance:edge-connection-dragging:before', this.canvas, edge, e, true, "to")
           that.plugin.app.workspace.offref(addEdgeEventRef)
 
@@ -422,6 +424,14 @@ export default class CanvasPatcher extends Patcher {
             that.plugin.app.workspace.trigger('canvas-enhance:edge-connection-dragging:after', this.canvas, edge, e, true, "to")
           }, { once: true })
         })
+
+        // If the connection drag is cancelled (no edge created), edge-added never fires.
+        // Defer the cleanup so a successful drop's edge-added runs first.
+        activeDocument.addEventListener('pointerup', () => {
+          window.setTimeout(() => {
+            if (!edgeAdded) that.plugin.app.workspace.offref(addEdgeEventRef)
+          }, 0)
+        }, { once: true })
 
         const result = next.call(this, e, side)
         return result

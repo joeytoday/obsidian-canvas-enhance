@@ -105,6 +105,11 @@ export default class PortalsCanvasExtension extends CanvasExtension {
   }
 
   private onSelectionChanged(canvas: Canvas, _oldSelection: Set<CanvasElement>, updateSelection: (update: () => void) => void) {
+    // Skip the selection rebuild when nothing selected is a portal element
+    const hasPortalSelected = Array.from(canvas.selection)
+      .some(canvasElement => PortalsCanvasExtension.isPortalElement(canvasElement.id))
+    if (!hasPortalSelected) return
+
     // Unselect nodes from portals
     updateSelection(() => {
       const updatedSelection = Array.from(canvas.selection)

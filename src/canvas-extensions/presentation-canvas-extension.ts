@@ -290,13 +290,13 @@ export default class PresentationCanvasExtension extends CanvasExtension {
       }
 
       if (this.plugin.settings.getSetting('useArrowKeysToChangeSlides')) {
-        if (e.key === 'ArrowRight') this.nextNode(canvas)
-        else if (e.key === 'ArrowLeft') this.previousNode(canvas)
+        if (e.key === 'ArrowRight') { e.preventDefault(); this.nextNode(canvas) }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); this.previousNode(canvas) }
       }
 
       if (this.plugin.settings.getSetting('usePgUpPgDownKeysToChangeSlides')) {
-        if (e.key === 'PageDown') this.nextNode(canvas)
-        else if (e.key === 'PageUp') this.previousNode(canvas)
+        if (e.key === 'PageDown') { e.preventDefault(); this.nextNode(canvas) }
+        else if (e.key === 'PageUp') { e.preventDefault(); this.previousNode(canvas) }
       }
     }
 
