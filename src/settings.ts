@@ -698,16 +698,12 @@ const SETTINGS_TABS = {
   basic: {
     label: '基础设置',
     groups: [
-      'overviewModeFeatureEnabled',
       'general',
+      'fileNodeTemplateEnabled',
+      'overviewModeFeatureEnabled',
       'commandsFeatureEnabled',
       'nativeFileSearchEnabled',
       'betterExportFeatureEnabled',
-      'collapsibleGroupsFeatureEnabled',
-      'edgeHighlightEnabled',
-      'edgeSelectionEnabled',
-      'betterReadonlyEnabled',
-      'readingModeFixEnabled',
     ]
   },
   mindmap: {
@@ -722,12 +718,14 @@ const SETTINGS_TABS = {
       'nodeStylingFeatureEnabled',
       'edgesStylingFeatureEnabled',
       'combineCustomStylesInDropdown',
-      'fileNodeTemplateEnabled',
       'floatingEdgeFeatureEnabled',
       'flipEdgeFeatureEnabled',
+      'edgeHighlightEnabled',
+      'edgeSelectionEnabled',
       'autoResizeNodeFeatureEnabled',
       'aspectRatioControlFeatureEnabled',
       'zOrderingControlFeatureEnabled',
+      'collapsibleGroupsFeatureEnabled',
       'autoFileNodeEdgesFeatureEnabled',
     ]
   },
@@ -739,6 +737,8 @@ const SETTINGS_TABS = {
       'focusModeFeatureEnabled',
       'canvasEncapsulationEnabled',
       'variableBreakpointFeatureEnabled',
+      'betterReadonlyEnabled',
+      'readingModeFixEnabled',
     ]
   },
 } as const
