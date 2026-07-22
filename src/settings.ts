@@ -554,7 +554,28 @@ export const SETTINGS = {
         description: '启用后，只读模式下将隐藏背景网格。',
         type: 'boolean'
       },
+      disableNodePopup: {
+        label: '只读模式隐藏节点弹出菜单',
+        description: '启用后，只读模式下不显示节点的弹出菜单。',
+        type: 'boolean'
+      },
+      disableZoom: {
+        label: '只读模式禁用缩放',
+        description: '启用后，只读模式下锁定画布缩放。',
+        type: 'boolean'
+      },
+      disablePan: {
+        label: '只读模式禁用平移',
+        description: '启用后，只读模式下锁定画布平移。',
+        type: 'boolean'
+      },
     }
+  },
+  betterExportFeatureEnabled: {
+    label: '图片导出',
+    description: '把整张画布或选中的节点导出为 PNG / SVG 图片。',
+    infoSection: '核心增强',
+    children: {}
   },
   edgeHighlightEnabled: {
     label: '边高亮',
@@ -680,6 +701,7 @@ const SETTINGS_TABS = {
       'general',
       'commandsFeatureEnabled',
       'nativeFileSearchEnabled',
+      'betterExportFeatureEnabled',
       'collapsibleGroupsFeatureEnabled',
       'edgeHighlightEnabled',
       'edgeSelectionEnabled',

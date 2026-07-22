@@ -21,7 +21,7 @@ export function styleAttributeValidator(json: Record<string, any>): StyleAttribu
 
   if (!hasKey) console.error('Style attribute is missing the "key" property')
   if (!hasLabel) console.error('Style attribute is missing the "label" property')
-  if (!hasOptions) console.error('Style attribute is missing the "options" property or it is not an array')
+  if (!hasOptions) console.error('Style attribute is missing the "options" property or is not an array')
 
   // Camel case the key
   json.key = TextHelper.toCamelCase(json.key)
@@ -49,95 +49,95 @@ export function styleAttributeValidator(json: Record<string, any>): StyleAttribu
 export const BUILTIN_NODE_STYLE_ATTRIBUTES = [
   {
     key: 'textAlign',
-    label: 'Text Alignment',
+    label: '文本对齐',
     nodeTypes: ['text'],
     options: [
       {
         icon: 'align-left',
-        label: 'Left',
+        label: '左对齐',
         value: null
       },
       {
         icon: 'align-center',
-        label: 'Center',
+        label: '居中',
         value: 'center'
       },
       {
         icon: 'align-right',
-        label: 'Right',
+        label: '右对齐',
         value: 'right'
       }
     ]
   },
   {
     key: 'shape',
-    label: 'Shape',
+    label: '形状',
     nodeTypes: ['text'],
     options: [
       {
         icon: 'rectangle-horizontal',
-        label: 'Round Rectangle',
+        label: '圆角矩形',
         value: null
       },
       {
         icon: 'shape-pill',
-        label: 'Pill',
+        label: '胶囊',
         value: 'pill'
       },
       {
         icon: 'diamond',
-        label: 'Diamond',
+        label: '菱形',
         value: 'diamond'
       },
       {
         icon: 'shape-parallelogram',
-        label: 'Parallelogram',
+        label: '平行四边形',
         value: 'parallelogram'
       },
       {
         icon: 'circle',
-        label: 'Circle',
+        label: '圆形',
         value: 'circle'
       },
       {
         icon: 'shape-predefined-process',
-        label: 'Predefined Process',
+        label: '预定义流程',
         value: 'predefined-process'
       },
       {
         icon: 'shape-document',
-        label: 'Document',
+        label: '文档',
         value: 'document'
       },
       {
         icon: 'shape-database',
-        label: 'Database',
+        label: '数据库',
         value: 'database'
       }
     ]
   },
   {
     key: 'border',
-    label: 'Border',
+    label: '边框',
     options: [
       {
         icon: 'border-solid',
-        label: 'Solid',
+        label: '实线',
         value: null
       },
       {
         icon: 'border-dashed',
-        label: 'Dashed',
+        label: '虚线',
         value: 'dashed'
       },
       {
         icon: 'border-dotted',
-        label: 'Dotted',
+        label: '点线',
         value: 'dotted'
       },
       {
         icon: 'eye-off',
-        label: 'Invisible',
+        label: '隐藏',
         value: 'invisible'
       }
     ]
@@ -147,98 +147,98 @@ export const BUILTIN_NODE_STYLE_ATTRIBUTES = [
 export const BUILTIN_EDGE_STYLE_ATTRIBUTES = [
   {
     key: 'path',
-    label: 'Path Style',
+    label: '路径样式',
     options: [
       {
         icon: 'path-solid',
-        label: 'Solid',
+        label: '实线',
         value: null
       },
       {
         icon: 'path-dotted',
-        label: 'Dotted',
+        label: '点线',
         value: 'dotted'
       },
       {
         icon: 'path-short-dashed',
-        label: 'Short Dashed',
+        label: '短虚线',
         value: 'short-dashed'
       },
       {
         icon: 'path-long-dashed',
-        label: 'Long Dashed',
+        label: '长虚线',
         value: 'long-dashed'
       }
     ]
   },
   {
     key: 'arrow',
-    label: 'Arrow Style',
+    label: '箭头样式',
     options: [
       {
         icon: 'arrow-triangle',
-        label: 'Triangle',
+        label: '三角形',
         value: null
       },
       {
         icon: 'arrow-triangle-outline',
-        label: 'Triangle Outline',
+        label: '三角形轮廓',
         value: 'triangle-outline'
       },
       {
         icon: 'arrow-thin-triangle',
-        label: 'Thin Triangle',
+        label: '细三角形',
         value: 'thin-triangle'
       },
       {
         icon: 'arrow-halved-triangle',
-        label: 'Halved Triangle',
+        label: '半三角形',
         value: 'halved-triangle'
       },
       {
         icon: 'arrow-diamond',
-        label: 'Diamond',
+        label: '菱形',
         value: 'diamond'
       },
       {
         icon: 'arrow-diamond-outline',
-        label: 'Diamond Outline',
+        label: '菱形轮廓',
         value: 'diamond-outline'
       },
       {
         icon: 'arrow-circle',
-        label: 'Circle',
+        label: '圆形',
         value: 'circle'
       },
       {
         icon: 'arrow-circle-outline',
-        label: 'Circle Outline',
+        label: '圆形轮廓',
         value: 'circle-outline'
       },
       {
         icon: 'tally-1',
-        label: 'Blunt',
+        label: '平头',
         value: 'blunt'
       }
     ]
   },
   {
     key: 'pathfindingMethod',
-    label: 'Pathfinding Method',
+    label: '寻路方式',
     options: [
       {
         icon: 'pathfinding-method-bezier',
-        label: 'Bezier',
+        label: '贝塞尔曲线',
         value: null
       },
       {
         icon: 'slash',
-        label: 'Direct',
+        label: '直线',
         value: 'direct'
       },
       {
         icon: 'pathfinding-method-square',
-        label: 'Square',
+        label: '直角',
         value: 'square'
       },
       {
