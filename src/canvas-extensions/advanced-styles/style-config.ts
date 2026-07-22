@@ -224,11 +224,11 @@ export const BUILTIN_EDGE_STYLE_ATTRIBUTES = [
   },
   {
     key: 'pathfindingMethod',
-    label: '寻路方式',
+    label: '连线走向',
     options: [
       {
         icon: 'pathfinding-method-bezier',
-        label: '贝塞尔曲线',
+        label: '曲线',
         value: null
       },
       {
@@ -238,12 +238,12 @@ export const BUILTIN_EDGE_STYLE_ATTRIBUTES = [
       },
       {
         icon: 'pathfinding-method-square',
-        label: '直角',
+        label: '直角折线',
         value: 'square'
       },
       {
         icon: 'map',
-        label: 'A*',
+        label: '自动避障',
         value: 'a-star'
       }
     ]

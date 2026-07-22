@@ -448,18 +448,18 @@ export const SETTINGS = {
         type: 'boolean'
       },
       edgeStyleSquarePathRounded: {
-        label: '方角路径圆角化',
-        description: '启用后，方角路径的边角将变为圆角。',
+        label: '直角折线圆角化',
+        description: '启用后，直角折线的转角变为圆角。',
         type: 'boolean'
       },
       edgeStylePathfinderAllowDiagonal: {
-        label: 'A* 允许对角线路径',
-        description: '启用后，A* 寻路将允许对角线路径。',
+        label: '自动避障允许斜线',
+        description: '启用后，自动避障的连线可以走斜线。',
         type: 'boolean'
       },
       edgeStylePathfinderPathRounded: {
-        label: 'A* 路径圆角化',
-        description: '启用后，A* 路径将变为圆角。',
+        label: '自动避障路径圆角',
+        description: '启用后，自动避障的连线转角变为圆角。',
         type: 'boolean'
       }
     }
@@ -488,12 +488,12 @@ export const SETTINGS = {
     children: { }
   },
   zOrderingControlFeatureEnabled: {
-    label: 'Z 轴层级控制',
-    description: '通过右键菜单改变节点的持久化 z-index。',
+    label: '图层顺序',
+    description: '通过右键菜单调整节点的前后叠放顺序（谁压在最上面）。',
     children: {
       zOrderingControlShowOneLayerShiftOptions: {
-        label: '显示单层移动选项',
-        description: '启用后，可以将节点向前或向后移动一层。',
+        label: '显示上移/下移选项',
+        description: '启用后，右键菜单额外显示「上移一层 / 下移一层」选项。',
         type: 'boolean'
       }
     }
@@ -504,8 +504,8 @@ export const SETTINGS = {
     children: { }
   },
   variableBreakpointFeatureEnabled: {
-    label: '变量断点',
-    description: `通过 ${VARIABLE_BREAKPOINT_CSS_VAR} CSS 变量按节点设置缩放断点（即节点内容停止渲染的缩放级别）。`,
+    label: '节点渲染断点',
+    description: `缩小画布时，让节点内容在指定缩放级别停止渲染（提升大画布性能）。通过 CSS 变量 ${VARIABLE_BREAKPOINT_CSS_VAR} 按节点单独配置。`,
     infoSection: '节点',
     children: { }
   },
