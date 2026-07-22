@@ -196,7 +196,7 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   edgeSelectionEnabled: false,
   selectEdgeByDirection: false,
 
-  overviewModeFeatureEnabled: false,
+  overviewModeFeatureEnabled: true,
   overviewModeZoomThreshold: 0.4,
   overviewModeFileNodeTitle: 'filename',
   overviewModeGroupLabelScale: true,
@@ -667,37 +667,42 @@ const SETTINGS_TABS = {
       'overviewModeFeatureEnabled',
       'general',
       'commandsFeatureEnabled',
-      'edgeHighlightEnabled',
-      'autoResizeNodeFeatureEnabled',
-      'collapsibleGroupsFeatureEnabled',
       'nativeFileSearchEnabled',
+      'collapsibleGroupsFeatureEnabled',
+      'edgeHighlightEnabled',
       'edgeSelectionEnabled',
       'betterReadonlyEnabled',
       'readingModeFixEnabled',
     ]
   },
   mindmap: {
-    label: 'Mindmap',
+    label: '思维导图',
     groups: [
       'mindmapFeatureEnabled',
     ]
   },
-  advanced: {
-    label: '进阶设置',
+  nodeEdge: {
+    label: '节点与边',
     groups: [
-      'canvasMetadataCompatibilityEnabled',
-      'autoFileNodeEdgesFeatureEnabled',
-      'combineCustomStylesInDropdown',
       'nodeStylingFeatureEnabled',
       'edgesStylingFeatureEnabled',
+      'combineCustomStylesInDropdown',
       'floatingEdgeFeatureEnabled',
       'flipEdgeFeatureEnabled',
+      'autoResizeNodeFeatureEnabled',
+      'aspectRatioControlFeatureEnabled',
+      'zOrderingControlFeatureEnabled',
+      'autoFileNodeEdgesFeatureEnabled',
+    ]
+  },
+  advanced: {
+    label: '进阶功能',
+    groups: [
+      'canvasMetadataCompatibilityEnabled',
       'portalsFeatureEnabled',
       'focusModeFeatureEnabled',
-      'zOrderingControlFeatureEnabled',
-      'aspectRatioControlFeatureEnabled',
-      'variableBreakpointFeatureEnabled',
       'canvasEncapsulationEnabled',
+      'variableBreakpointFeatureEnabled',
     ]
   },
 } as const
