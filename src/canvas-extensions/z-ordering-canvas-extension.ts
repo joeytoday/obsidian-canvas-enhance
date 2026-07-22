@@ -35,33 +35,33 @@ export default class ZOrderingCanvasExtension  extends CanvasExtension {
 
     if (this.plugin.settings.getSetting('zOrderingControlShowOneLayerShiftOptions') && nodes.length === 1) {
       menu.addItem(item => {
-        item.setTitle('Move one layer forward')
+        item.setTitle('上移一层')
         item.setIcon('arrow-up')
         item.onClick(() => this.moveOneLayer(canvas, nodes.first()!, true))
       })
 
       menu.addItem(item => {
-        item.setTitle('Move one layer backward')
+        item.setTitle('下移一层')
         item.setIcon('arrow-down')
         item.onClick(() => this.moveOneLayer(canvas, nodes.first()!, false))
       })
     }
 
     menu.addItem(item => {
-      item.setTitle('Bring to Front')
+      item.setTitle('置于顶层')
       item.setIcon('bring-to-front')
       item.onClick(() => this.moveMaxLayers(canvas, nodes, true))
     })
 
     menu.addItem(item => {
-      item.setTitle('Send to Back')
+      item.setTitle('置于底层')
       item.setIcon('send-to-back')
       item.onClick(() => this.moveMaxLayers(canvas, nodes, false))
     })
 
     if (nodes.some(node => node.getData().zIndex !== undefined)) {
       menu.addItem(item => {
-        item.setTitle('Remove persistent z-index')
+        item.setTitle('移除固定图层顺序')
         item.setIcon('pin-off')
         item.onClick(() => this.removePersistentZIndexes(canvas, nodes))
       })

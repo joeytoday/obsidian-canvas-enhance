@@ -240,7 +240,7 @@ export default class PortalsCanvasExtension extends CanvasExtension {
       canvas,
       CanvasHelper.createPopupMenuOption({
         id: 'toggle-portal',
-        label: portalNodeData.portal ? 'Close portal' : 'Open portal',
+        label: portalNodeData.portal ? '关闭传送门' : '打开传送门',
         icon: portalNodeData.portal ? 'door-open' : 'door-closed',
         callback: () => {
           this.setPortalOpen(canvas, portalNode, !portalNodeData.portal)

@@ -1,9 +1,8 @@
-import { Notice, PluginSettingTab, Setting as SettingEl, TextComponent } from "obsidian"
-import { BooleanSetting, ButtonSetting, DimensionSetting, DropdownSetting, NodeTemplateListSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TextSetting } from "./@types/Settings"
+import { Notice, PluginSettingTab, Setting as SettingEl, TextComponent, TFile, TFolder } from "obsidian"
+import { BooleanSetting, ButtonSetting, DimensionSetting, DropdownSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TemplateSelectSetting, TextSetting } from "./@types/Settings"
 import { GET_EDGE_CSS_STYLES_MANAGER } from "./canvas-extensions/advanced-styles/edge-styles"
 import { GET_NODE_CSS_STYLES_MANAGER } from "./canvas-extensions/advanced-styles/node-styles"
 import { BUILTIN_EDGE_STYLE_ATTRIBUTES, BUILTIN_NODE_STYLE_ATTRIBUTES, StyleAttribute } from "./canvas-extensions/advanced-styles/style-config"
-import { NodeTemplate } from "./canvas-extensions/node-templates-canvas-extension"
 import { VARIABLE_BREAKPOINT_CSS_VAR } from "./canvas-extensions/variable-breakpoint-canvas-extension"
 import CanvasEnhancePlugin from "./main"
 import CssStylesConfigManager from "./managers/css-styles-config-manager"
@@ -29,7 +28,8 @@ export interface CanvasEnhancePluginSettingsValues {
   customNodeStyleAttributes: StyleAttribute[]
   defaultTextNodeColor: number
   defaultTextNodeStyleAttributes: { [key: string]: string }
-  nodeTemplates: NodeTemplate[]
+  fileNodeTemplateEnabled: boolean
+  fileNodeTemplatePath: string
 
   edgesStylingFeatureEnabled: boolean
   customEdgeStyleAttributes: StyleAttribute[]
@@ -129,7 +129,8 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   customNodeStyleAttributes: [],
   defaultTextNodeColor: 0,
   defaultTextNodeStyleAttributes: {},
-  nodeTemplates: [],
+  fileNodeTemplateEnabled: false,
+  fileNodeTemplatePath: '',
 
   edgesStylingFeatureEnabled: true,
   customEdgeStyleAttributes: [],
@@ -673,20 +674,20 @@ export const SETTINGS = {
       }
     }
   },
-  nodeTemplatesFeature: {
-    label: '节点模板',
-    description: '把常用节点存为模板，之后可一键创建。选中单个节点后运行「Save node as template」命令即可添加模板。',
-    disableToggle: true,
+  fileNodeTemplateEnabled: {
+    label: '文件模板',
+    description: '新建文件节点时，用指定的 Obsidian 模板生成文件内容。',
+    infoSection: '节点',
     children: {
-      nodeTemplates: {
-        label: '已保存的模板',
-        description: '',
-        type: 'nodeTemplateList'
-      } as NodeTemplateListSetting
+      fileNodeTemplatePath: {
+        label: '选择模板',
+        description: '新建文件节点时使用的模板（来自 Obsidian 核心「模板」插件的文件夹）。',
+        type: 'templateSelect'
+      } as TemplateSelectSetting
     }
   },
 } as const satisfies {
-  [key in keyof CanvasEnhancePluginSettingsValues | "general" | "nodeTemplatesFeature"]?: SettingsHeading & {
+  [key in keyof CanvasEnhancePluginSettingsValues | "general"]?: SettingsHeading & {
     children: {
       [key in keyof CanvasEnhancePluginSettingsValues]?: Setting
     }
@@ -721,7 +722,7 @@ const SETTINGS_TABS = {
       'nodeStylingFeatureEnabled',
       'edgesStylingFeatureEnabled',
       'combineCustomStylesInDropdown',
-      'nodeTemplatesFeature',
+      'fileNodeTemplateEnabled',
       'floatingEdgeFeatureEnabled',
       'flipEdgeFeatureEnabled',
       'autoResizeNodeFeatureEnabled',
@@ -871,8 +872,8 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
             case 'styles':
               this.createStylesSetting(childrenEl, settingId, setting as StyleAttributesSetting)
               break
-            case 'nodeTemplateList':
-              this.createNodeTemplateListSetting(childrenEl)
+            case 'templateSelect':
+              this.createTemplateSelectSetting(childrenEl, settingId)
               break
           }
         }
@@ -999,7 +1000,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
       .setName(setting.label)
       .setDesc(setting.description)
       .addButton(button => button
-        .setButtonText('Open')
+        .setButtonText('打开')
         .onClick(() => setting.onClick())
       )
   }
@@ -1031,33 +1032,41 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     }
   }
 
-  private createNodeTemplateListSetting(containerEl: HTMLElement) {
-    const renderList = () => {
-      containerEl.empty()
-      const templates = this.settingsManager.getSetting('nodeTemplates')
+  private getTemplatesFolder(): TFolder | null {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal plugins are untyped
+    const templatesPlugin = (this.plugin.app as any).internalPlugins?.getPluginById?.('templates')
+    const folderPath = templatesPlugin?.instance?.options?.folder as string | undefined
+    if (!folderPath) return null
+    const folder = this.plugin.app.vault.getAbstractFileByPath(folderPath)
+    return folder instanceof TFolder ? folder : null
+  }
 
-      if (templates.length === 0) {
-        new SettingEl(containerEl)
-          .setName('暂无模板')
-          .setDesc('选中一个节点，运行「Save node as template」命令把它存为模板。')
-        return
+  private createTemplateSelectSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues) {
+    const templates: string[] = []
+    const folder = this.getTemplatesFolder()
+    if (folder) {
+      const collect = (f: TFolder) => {
+        for (const child of f.children) {
+          if (child instanceof TFile && child.extension === 'md') templates.push(child.path)
+          else if (child instanceof TFolder) collect(child)
+        }
       }
-
-      templates.forEach((template: NodeTemplate, index: number) => {
-        const typeLabel = template.type === 'file' ? '文件' : template.type === 'link' ? '链接' : '文本'
-        new SettingEl(containerEl)
-          .setName(template.label || `模板 ${index + 1}`)
-          .setDesc(`${typeLabel}节点 · ${template.width} × ${template.height}`)
-          .addButton(button => button
-            .setButtonText('删除')
-            .onClick(async () => {
-              const updated = this.settingsManager.getSetting('nodeTemplates').filter((_, i) => i !== index)
-              await this.settingsManager.setSetting({ nodeTemplates: updated })
-              renderList()
-            })
-          )
-      })
+      collect(folder)
     }
-    renderList()
+
+    new SettingEl(containerEl)
+      .setName('选择模板')
+      .setDesc(folder
+        ? '新建文件节点时使用的模板。'
+        : '未检测到 Obsidian 核心「模板」插件或其文件夹。请先在核心插件中启用「模板」并设置模板文件夹。')
+      .addDropdown(dropdown => {
+        dropdown.addOption('', '（不使用模板）')
+        for (const template of templates)
+          dropdown.addOption(template, template.replace(/\.md$/, ''))
+        dropdown.setValue(this.settingsManager.getSetting(settingId) as string)
+        dropdown.onChange(async (value) => {
+          await this.settingsManager.setSetting({ [settingId]: value })
+        })
+      })
   }
 }

@@ -42,7 +42,7 @@ export default class CanvasEnhanceEmbed extends Component {
     // Show node not found error
     if (!canvasNode) {
       this.context.containerEl.classList.add("mod-empty")
-      this.context.containerEl.textContent = "Node not found"
+      this.context.containerEl.textContent = "未找到节点"
 
       return
     }

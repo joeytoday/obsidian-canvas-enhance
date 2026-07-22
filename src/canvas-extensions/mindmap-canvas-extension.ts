@@ -83,28 +83,28 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'mindmap-create-child-node',
-      name: 'Create child node',
+      name: '创建下级节点',
       checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
         (canvas) => void this.createChildNode(canvas, true))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-create-sibling-node',
-      name: 'Create sibling node',
+      name: '创建同级节点',
       checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
         (canvas) => void this.createSiblingNode(canvas, true))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-create-floating-node',
-      name: 'Create floating node',
+      name: '创建浮动节点',
       checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
         (canvas) => this.createFloatingNode(canvas, 'right'))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-split-heading-into-mindmap',
-      name: 'Split heading into mindmap based on H1',
+      name: '按 H1 标题拆分为思维导图',
       checkCallback: (checking: boolean) => {
         const canvas = this.plugin.getCurrentCanvas()
         if (!canvas || canvas.readonly || canvas.selection.size !== 1) return false

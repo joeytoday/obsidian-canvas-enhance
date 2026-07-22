@@ -14,10 +14,10 @@ export class AbstractSelectionModal extends FuzzySuggestModal<string> {
     this.setPlaceholder(placeholder)
     this.setInstructions([{
         command: '↑↓',
-        purpose: 'to navigate'
+        purpose: '导航'
     }, {
         command: 'esc',
-        purpose: 'to dismiss'
+        purpose: '关闭'
     }])
   }
 
@@ -92,19 +92,19 @@ export class FileSelectModal extends SuggestModal<string> {
       .filter(path => FilepathHelper.extension(path)?.match(extensionsRegex ?? /.*/))
     this.suggestNewFile = suggestNewFile
 
-    this.setPlaceholder('Type to search...')
+    this.setPlaceholder('输入以搜索...')
     this.setInstructions([{
         command: '↑↓',
-        purpose: 'to navigate'
+        purpose: '导航'
     }, {
         command: '↵',
-        purpose: 'to open'
+        purpose: '打开'
     }, {
         command: 'shift ↵',
-        purpose: 'to create'
+        purpose: '创建'
     }, {
         command: 'esc',
-        purpose: 'to dismiss'
+        purpose: '关闭'
     }])
 
     this.scope.register(['Shift'], 'Enter', ((e) => {

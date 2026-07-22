@@ -21,7 +21,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'export-all-as-image',
-      name: 'Export canvas as image',
+      name: '导出画布为图片',
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.nodes.size > 0,
@@ -31,7 +31,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'export-selected-as-image',
-      name: 'Export selected nodes as image',
+      name: '导出选中节点为图片',
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.selection.size > 0,
@@ -47,7 +47,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
   private async showExportImageSettingsModal(canvas: Canvas, nodesToExport: CanvasNode[] | null) {
     const modal = new Modal(this.plugin.app)
-    modal.setTitle('Export image settings')
+    modal.setTitle('导出图片设置')
 
     // Create ref to dynamic settings
     let pixelRatioSetting: Setting | null = null
@@ -67,8 +67,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let svg = false
     new Setting(modal.contentEl)
-      .setName('Export file format')
-      .setDesc('Choose the file format to export the canvas as.')
+      .setName('导出文件格式')
+      .setDesc('选择导出画布的文件格式。')
       .addDropdown(dropdown => dropdown
         .addOptions({
           png: 'PNG',
@@ -83,8 +83,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let pixelRatioFactor = 1
     pixelRatioSetting = new Setting(modal.contentEl)
-      .setName('Pixel ratio')
-      .setDesc('Higher pixel ratios result in higher resolution images but also larger file sizes.')
+      .setName('像素比例')
+      .setDesc('像素比例越高，图片分辨率越高，但文件也越大。')
       .addSlider(slider => slider
         .setDynamicTooltip()
         .setLimits(0.2, 5, 0.1)
@@ -94,8 +94,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let noFontExport = true
     noFontExportSetting = new Setting(modal.contentEl)
-      .setName('Skip font export')
-      .setDesc('This will not include the fonts in the exported SVG. This will make the SVG file smaller.')
+      .setName('跳过字体导出')
+      .setDesc('导出的 SVG 将不包含字体，从而减小文件体积。')
       .addToggle(toggle => toggle
         .setValue(noFontExport)
         .onChange(value => noFontExport = value)
@@ -103,12 +103,12 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let theme: 'light' | 'dark' = activeDocument.body.classList.contains('theme-dark') ? 'dark' : 'light'
     new Setting(modal.contentEl)
-      .setName('Theme')
-      .setDesc('The theme used for the export.')
+      .setName('主题')
+      .setDesc('导出时使用的主题。')
       .addDropdown(dropdown => dropdown
         .addOptions({
-          light: 'Light',
-          dark: 'Dark'
+          light: '浅色',
+          dark: '深色'
         })
         .setValue(theme)
         .onChange(value => theme = value as 'light' | 'dark')
@@ -116,8 +116,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let watermark = false
     new Setting(modal.contentEl)
-      .setName('Show logo')
-      .setDesc('This will add an Obsidian + Canvas Enhance logo to the bottom left.')
+      .setName('显示水印')
+      .setDesc('在左下角添加 Obsidian + Canvas Enhance 水印。')
       .addToggle(toggle => toggle
         .setValue(watermark)
         .onChange(value => watermark = value)
@@ -125,8 +125,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let garbledText = false
     new Setting(modal.contentEl)
-      .setName('Privacy mode')
-      .setDesc('This will obscure any text on your canvas.')
+      .setName('隐私模式')
+      .setDesc('将模糊化画布上的所有文本。')
       .addToggle(toggle => toggle
         .setValue(garbledText)
         .onChange(value => garbledText = value)
@@ -134,8 +134,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let transparentBackground = false
     transparentBackgroundSetting = new Setting(modal.contentEl)
-      .setName('Transparent background')
-      .setDesc('This will make the background of the image transparent.')
+      .setName('透明背景')
+      .setDesc('使图片背景透明。')
       .addToggle(toggle => toggle
         .setValue(transparentBackground)
         .onChange(value => transparentBackground = value)
@@ -143,7 +143,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     new Setting(modal.contentEl)
       .addButton(button => button
-        .setButtonText('Save')
+        .setButtonText('保存')
         .setCta()
         .onClick(async () => {
           modal.close()
@@ -331,8 +331,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
         }
 
         // Download the image
-        let baseFilename = `${canvas.view.file?.basename || 'Untitled'}`
-        if (!isWholeCanvas) baseFilename += ` - Selection of ${nodesToExport.length}`
+        let baseFilename = `${canvas.view.file?.basename || '未命名'}`
+        if (!isWholeCanvas) baseFilename += ` - 选中 ${nodesToExport.length} 个节点`
         const filename = `${baseFilename}.${svg ? 'svg' : 'png'}`
 
         const downloadEl = activeDocument.createElement('a')
@@ -374,7 +374,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     const progressBarMessage = progressBar.createDiv()
     progressBarMessage.classList.add('progress-bar-message', 'u-center-text')
-    progressBarMessage.innerText = 'Generating image...'
+    progressBarMessage.innerText = '正在生成图片...'
 
     const progressBarIndicator = progressBar.createDiv()
     progressBarIndicator.classList.add('progress-bar-indicator')
