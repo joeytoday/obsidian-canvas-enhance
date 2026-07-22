@@ -13,7 +13,7 @@ export interface SettingsHeading {
 export interface Setting {
   label: string
   description: string
-  type: null | 'text' | 'number' | 'dimension' | 'boolean' | 'dropdown' | 'button' | 'styles' | 'templateSelect'
+  type: null | 'text' | 'number' | 'dimension' | 'boolean' | 'dropdown' | 'button' | 'styles' | 'templateSelect' | 'folderSelect'
 
   parse?: (value: unknown) => unknown
 }
@@ -54,4 +54,8 @@ export interface ButtonSetting extends Setting {
 
 export interface TemplateSelectSetting extends Setting {
   type: 'templateSelect'
+}
+
+export interface FolderSelectSetting extends Setting {
+  type: 'folderSelect'
 }

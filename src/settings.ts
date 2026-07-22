@@ -1,9 +1,10 @@
-import { Notice, PluginSettingTab, Setting as SettingEl, TextComponent, TFile, TFolder } from "obsidian"
-import { BooleanSetting, ButtonSetting, DimensionSetting, DropdownSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TemplateSelectSetting, TextSetting } from "./@types/Settings"
+import { Notice, PluginSettingTab, Setting as SettingEl, TextComponent } from "obsidian"
+import { BooleanSetting, ButtonSetting, DimensionSetting, DropdownSetting, FolderSelectSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TemplateSelectSetting, TextSetting } from "./@types/Settings"
 import { GET_EDGE_CSS_STYLES_MANAGER } from "./canvas-extensions/advanced-styles/edge-styles"
 import { GET_NODE_CSS_STYLES_MANAGER } from "./canvas-extensions/advanced-styles/node-styles"
 import { BUILTIN_EDGE_STYLE_ATTRIBUTES, BUILTIN_NODE_STYLE_ATTRIBUTES, StyleAttribute } from "./canvas-extensions/advanced-styles/style-config"
 import { VARIABLE_BREAKPOINT_CSS_VAR } from "./canvas-extensions/variable-breakpoint-canvas-extension"
+import { getTemplatesFolder, listTemplateFiles, listVaultFolders } from "./utils/file-template-helper"
 import CanvasEnhancePlugin from "./main"
 import CssStylesConfigManager from "./managers/css-styles-config-manager"
 
@@ -30,6 +31,7 @@ export interface CanvasEnhancePluginSettingsValues {
   defaultTextNodeStyleAttributes: { [key: string]: string }
   fileNodeTemplateEnabled: boolean
   fileNodeTemplatePath: string
+  fileNodeTemplateFolder: string
 
   edgesStylingFeatureEnabled: boolean
   customEdgeStyleAttributes: StyleAttribute[]
@@ -131,6 +133,7 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   defaultTextNodeStyleAttributes: {},
   fileNodeTemplateEnabled: false,
   fileNodeTemplatePath: '',
+  fileNodeTemplateFolder: '',
 
   edgesStylingFeatureEnabled: true,
   customEdgeStyleAttributes: [],
@@ -683,7 +686,12 @@ export const SETTINGS = {
         label: '选择模板',
         description: '新建文件节点时使用的模板（来自 Obsidian 核心「模板」插件的文件夹）。',
         type: 'templateSelect'
-      } as TemplateSelectSetting
+      } as TemplateSelectSetting,
+      fileNodeTemplateFolder: {
+        label: '新建文件所在文件夹',
+        description: '新建模板文件存放的文件夹。留空则存放在当前画布所在文件夹。',
+        type: 'folderSelect'
+      } as FolderSelectSetting
     }
   },
 } as const satisfies {
@@ -875,6 +883,9 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
             case 'templateSelect':
               this.createTemplateSelectSetting(childrenEl, settingId)
               break
+            case 'folderSelect':
+              this.createFolderSelectSetting(childrenEl, settingId)
+              break
           }
         }
       }
@@ -1032,37 +1043,36 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     }
   }
 
-  private getTemplatesFolder(): TFolder | null {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal plugins are untyped
-    const templatesPlugin = (this.plugin.app as any).internalPlugins?.getPluginById?.('templates')
-    const folderPath = templatesPlugin?.instance?.options?.folder as string | undefined
-    if (!folderPath) return null
-    const folder = this.plugin.app.vault.getAbstractFileByPath(folderPath)
-    return folder instanceof TFolder ? folder : null
-  }
-
   private createTemplateSelectSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues) {
-    const templates: string[] = []
-    const folder = this.getTemplatesFolder()
-    if (folder) {
-      const collect = (f: TFolder) => {
-        for (const child of f.children) {
-          if (child instanceof TFile && child.extension === 'md') templates.push(child.path)
-          else if (child instanceof TFolder) collect(child)
-        }
-      }
-      collect(folder)
-    }
+    const hasFolder = getTemplatesFolder(this.plugin) !== null
+    const templates = listTemplateFiles(this.plugin)
 
     new SettingEl(containerEl)
       .setName('选择模板')
-      .setDesc(folder
+      .setDesc(hasFolder
         ? '新建文件节点时使用的模板。'
         : '未检测到 Obsidian 核心「模板」插件或其文件夹。请先在核心插件中启用「模板」并设置模板文件夹。')
       .addDropdown(dropdown => {
         dropdown.addOption('', '（不使用模板）')
         for (const template of templates)
           dropdown.addOption(template, template.replace(/\.md$/, ''))
+        dropdown.setValue(this.settingsManager.getSetting(settingId) as string)
+        dropdown.onChange(async (value) => {
+          await this.settingsManager.setSetting({ [settingId]: value })
+        })
+      })
+  }
+
+  private createFolderSelectSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues) {
+    const folders = listVaultFolders(this.plugin)
+
+    new SettingEl(containerEl)
+      .setName('新建文件所在文件夹')
+      .setDesc('新建模板文件存放的文件夹。留空则存放在当前画布所在文件夹。')
+      .addDropdown(dropdown => {
+        dropdown.addOption('', '（画布所在文件夹）')
+        for (const folder of folders)
+          dropdown.addOption(folder, folder)
         dropdown.setValue(this.settingsManager.getSetting(settingId) as string)
         dropdown.onChange(async (value) => {
           await this.settingsManager.setSetting({ [settingId]: value })

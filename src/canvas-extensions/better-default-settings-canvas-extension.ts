@@ -1,5 +1,6 @@
 import { Canvas, CanvasEdge, CanvasNode } from "src/@types/Canvas"
 import CanvasHelper from "src/utils/canvas-helper"
+import { createFileNodeFromTemplate } from "src/utils/file-template-helper"
 import { FileSelectModal } from "src/utils/modal-helper"
 import CanvasExtension from "./canvas-extension"
 import { CanvasColor, CanvasFileNodeData } from "src/@types/AdvancedJsonCanvas"
@@ -74,12 +75,16 @@ export default class BetterDefaultSettingsCanvasExtension  extends CanvasExtensi
 
     switch (nodeType) {
       case 'file': {
-        const file = await new FileSelectModal(this.plugin.app, undefined, true).awaitInput()
-        canvas.createFileNode({
-          pos: pos,
-          position: 'center',
-          file: file
-        })
+        if (this.plugin.settings.getSetting('fileNodeTemplateEnabled') && this.plugin.settings.getSetting('fileNodeTemplatePath')) {
+          await createFileNodeFromTemplate(this.plugin, canvas, pos)
+        } else {
+          const file = await new FileSelectModal(this.plugin.app, undefined, true).awaitInput()
+          canvas.createFileNode({
+            pos: pos,
+            position: 'center',
+            file: file
+          })
+        }
 
         break
       }
