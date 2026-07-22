@@ -130,7 +130,6 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     if (this.registeredViews.has(view)) return
     this.registeredViews.add(view)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const scope = (view as any).scope
     if (!scope) return
 
@@ -362,7 +361,6 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
     const patch = (): boolean => {
       const view = plugin.app.workspace.getLeavesOfType("canvas").first()?.view as CanvasView
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const canvas = (view as any)?.canvas
       if (!canvas?.nodes?.size) return false
 
@@ -370,9 +368,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       if (!sample) return false
 
       const uninstaller = around(sample.constructor.prototype, {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setColor: (next: any) =>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           function(this: any, color: any, t: any) {
             next.call(this, color, t)
             if (!plugin.settings.getSetting('mindmapPropagateColorToEdges')) return
@@ -402,14 +398,11 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const plugin = this.plugin
 
     const patch = (): boolean => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const editor = (plugin.app as any).workspace.activeEditor
       if (!editor?.containerEl) return false
 
       const uninstaller = around(editor.constructor.prototype, {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         showPreview: (next: any) =>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           function(this: any, e: any) {
             next.call(this, e)
             if (e) {

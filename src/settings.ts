@@ -394,7 +394,6 @@ export const SETTINGS = {
         description: '为节点添加自定义样式设置。（前往 GitHub 了解更多信息）',
         type: 'button',
         onClick: () => {
-          // eslint-disable-next-line obsidianmd/prefer-create-el -- Temp virtual anchor
           const anchor = activeDocument.createElement('a')
           anchor.href = "https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/README.md#自定义样式"
           anchor.target = '_blank'
@@ -430,7 +429,6 @@ export const SETTINGS = {
         description: '为边添加自定义样式设置。（前往 GitHub 了解更多信息）',
         type: 'button',
         onClick: () => {
-          // eslint-disable-next-line obsidianmd/prefer-create-el -- Temp virtual anchor
           const anchor = activeDocument.createElement('a')
           anchor.href = "https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/README.md#自定义样式"
           anchor.target = '_blank'
@@ -858,7 +856,6 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     linksEl.classList.add('ce-settings-links')
 
     const openUrl = (url: string) => {
-      // eslint-disable-next-line obsidianmd/prefer-create-el -- Temp virtual anchor
       const anchor = activeDocument.createElement('a')
       anchor.href = url
       anchor.target = '_blank'
@@ -961,7 +958,6 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
         .setTooltip("Open GitHub documentation")
         .setIcon('info')
         .onClick(async () => {
-          // eslint-disable-next-line obsidianmd/prefer-create-el -- Temp virtual anchor
           const anchor = activeDocument.createElement('a')
           anchor.href = `${README_URL}#${infoSection}`
           anchor.target = '_blank'

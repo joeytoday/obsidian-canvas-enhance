@@ -26,14 +26,12 @@ export default class MetadataCanvasExtension extends CanvasExtension {
   }
 
   private onCanvasChanged(canvas: Canvas): void {
-    /* eslint-disable-next-line @typescript-eslint/no-deprecated -- It's my lint and I know the consequences */
     const metadata = canvas.data?.metadata
     if (!metadata || metadata.version !== CURRENT_SPEC_VERSION)
       return void new Notice("未找到元数据节点或版本不匹配，应已迁移但未执行。")
 
     // Add proxy to metadata to listen for changes
     const that = this // eslint-disable-line @typescript-eslint/no-this-alias -- For patcher
-    /* eslint-disable @typescript-eslint/no-explicit-any -- Generic wrapper */
     const validator: ProxyHandler<any> = {
       get(target: any, key: string): any {
         if (typeof target[key] === 'object' && target[key] !== null)
