@@ -1,5 +1,5 @@
 import { Notice, PluginSettingTab, Setting as SettingEl, TextComponent } from "obsidian"
-import { BooleanSetting, ButtonSetting, DimensionSetting, DropdownSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TextSetting } from "./@types/Settings"
+import { BooleanSetting, ButtonSetting, DimensionSetting, DropdownSetting, NodeTemplateListSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TextSetting } from "./@types/Settings"
 import { GET_EDGE_CSS_STYLES_MANAGER } from "./canvas-extensions/advanced-styles/edge-styles"
 import { GET_NODE_CSS_STYLES_MANAGER } from "./canvas-extensions/advanced-styles/node-styles"
 import { BUILTIN_EDGE_STYLE_ATTRIBUTES, BUILTIN_NODE_STYLE_ATTRIBUTES, StyleAttribute } from "./canvas-extensions/advanced-styles/style-config"
@@ -652,8 +652,20 @@ export const SETTINGS = {
       }
     }
   },
+  nodeTemplatesFeature: {
+    label: '节点模板',
+    description: '把常用节点存为模板，之后可一键创建。选中单个节点后运行「Save node as template」命令即可添加模板。',
+    disableToggle: true,
+    children: {
+      nodeTemplates: {
+        label: '已保存的模板',
+        description: '',
+        type: 'nodeTemplateList'
+      } as NodeTemplateListSetting
+    }
+  },
 } as const satisfies {
-  [key in keyof CanvasEnhancePluginSettingsValues | "general"]?: SettingsHeading & {
+  [key in keyof CanvasEnhancePluginSettingsValues | "general" | "nodeTemplatesFeature"]?: SettingsHeading & {
     children: {
       [key in keyof CanvasEnhancePluginSettingsValues]?: Setting
     }
@@ -687,6 +699,7 @@ const SETTINGS_TABS = {
       'nodeStylingFeatureEnabled',
       'edgesStylingFeatureEnabled',
       'combineCustomStylesInDropdown',
+      'nodeTemplatesFeature',
       'floatingEdgeFeatureEnabled',
       'flipEdgeFeatureEnabled',
       'autoResizeNodeFeatureEnabled',
@@ -835,6 +848,9 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
               break
             case 'styles':
               this.createStylesSetting(childrenEl, settingId, setting as StyleAttributesSetting)
+              break
+            case 'nodeTemplateList':
+              this.createNodeTemplateListSetting(childrenEl)
               break
           }
         }
@@ -991,5 +1007,35 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
           })
         )
     }
+  }
+
+  private createNodeTemplateListSetting(containerEl: HTMLElement) {
+    const renderList = () => {
+      containerEl.empty()
+      const templates = this.settingsManager.getSetting('nodeTemplates')
+
+      if (templates.length === 0) {
+        new SettingEl(containerEl)
+          .setName('暂无模板')
+          .setDesc('选中一个节点，运行「Save node as template」命令把它存为模板。')
+        return
+      }
+
+      templates.forEach((template: NodeTemplate, index: number) => {
+        const typeLabel = template.type === 'file' ? '文件' : template.type === 'link' ? '链接' : '文本'
+        new SettingEl(containerEl)
+          .setName(template.label || `模板 ${index + 1}`)
+          .setDesc(`${typeLabel}节点 · ${template.width} × ${template.height}`)
+          .addButton(button => button
+            .setButtonText('删除')
+            .onClick(async () => {
+              const updated = this.settingsManager.getSetting('nodeTemplates').filter((_, i) => i !== index)
+              await this.settingsManager.setSetting({ nodeTemplates: updated })
+              renderList()
+            })
+          )
+      })
+    }
+    renderList()
   }
 }

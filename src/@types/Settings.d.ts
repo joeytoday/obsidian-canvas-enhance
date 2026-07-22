@@ -13,7 +13,7 @@ export interface SettingsHeading {
 export interface Setting {
   label: string
   description: string
-  type: null | 'text' | 'number' | 'dimension' | 'boolean' | 'dropdown' | 'button' | 'styles'
+  type: null | 'text' | 'number' | 'dimension' | 'boolean' | 'dropdown' | 'button' | 'styles' | 'nodeTemplateList'
 
   parse?: (value: unknown) => unknown
 }
@@ -50,4 +50,8 @@ export interface DropdownSetting extends Setting {
 export interface ButtonSetting extends Setting {
   type: 'button'
   onClick: () => unknown
+}
+
+export interface NodeTemplateListSetting extends Setting {
+  type: 'nodeTemplateList'
 }
