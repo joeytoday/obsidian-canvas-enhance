@@ -1,8 +1,4 @@
 <h3 align="center">
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/logo-dark.png">
-        <img alt="Logo" src="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/assets/docs/logo-light.png" width="100">
-    </picture><br/><br/>
   Canvas Enhance for <a href="https://obsidian.md">Obsidian.md</a>
 </h3>
 
@@ -51,6 +47,12 @@ https://github.com/user-attachments/assets/d98e9132-ad4f-4186-b1e3-f2f051ceabeb
 https://github.com/user-attachments/assets/9d0a7240-75b7-4c5c-bc42-cfba88a1e9f9
 
 将画布变成思维导图：`Tab` 创建下级节点，`Enter` 创建同级节点，`Alt+方向键` 在节点间导航。下级节点自动继承上级节点颜色。
+
+### 文件节点模板
+
+支持在设置中配置，使用特定模板创建文件节点。
+
+https://github.com/user-attachments/assets/7ae37cf5-bc9d-427e-90d5-e86e044c1b79
 
 ### 节点与边样式
 
