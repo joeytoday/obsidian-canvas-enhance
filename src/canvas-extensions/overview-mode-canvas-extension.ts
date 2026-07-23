@@ -4,7 +4,7 @@ import CanvasExtension from './canvas-extension'
 
 const OVERLAY_CLASS = 'ce-overview-overlay'
 const TEXT_CLASS = 'ce-overview-text'
-const MIN_FONT_SIZE = 8
+const MIN_FONT_SIZE = 6
 const MAX_GROUP_LABEL_SCALE = 4
 const CARD_PADDING = 8
 
@@ -19,6 +19,12 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:viewport-changed:after',
+      (canvas: Canvas) => this.scheduleUpdate(canvas)
+    ))
+
+    // Initial check when a canvas is loaded (handles canvases opened while already zoomed out)
+    this.plugin.registerEvent(this.plugin.app.workspace.on(
+      'canvas-enhance:data-loaded:after',
       (canvas: Canvas) => this.scheduleUpdate(canvas)
     ))
 
@@ -262,6 +268,21 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     }
 
     textEl.style.fontSize = `${lo}px`
+
+    // If text still overflows at minimum font size, clamp visible lines
+    if (textEl.scrollHeight > availH) {
+      const lineHeight = lo * 1.15
+      const maxLines = Math.max(1, Math.floor(availH / lineHeight))
+      textEl.style.display = '-webkit-box'
+      textEl.style.setProperty('-webkit-line-clamp', `${maxLines}`)
+      textEl.style.setProperty('-webkit-box-orient', 'vertical')
+      textEl.style.overflow = 'hidden'
+    } else {
+      textEl.style.display = ''
+      textEl.style.removeProperty('-webkit-line-clamp')
+      textEl.style.removeProperty('-webkit-box-orient')
+      textEl.style.overflow = ''
+    }
   }
 
   private removeOverlay(node: CanvasNode) {

@@ -23,6 +23,8 @@
   line-height: 1.15;
   word-break: break-all;
   overflow-wrap: break-word;
+  flex-shrink: 0;
+  max-width: 100%;
 }
 
 .ce-overview-overlay.ce-overview-colored {
