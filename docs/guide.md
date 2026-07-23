@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/d98e9132-ad4f-4186-b1e3-f2f051ceabeb
 
 新建文件节点时，用指定的 Obsidian 模板生成文件内容，并存放到指定文件夹。
 
-> 📹 待补充演示：双击新建模板笔记、自动填充模板内容的过程
+https://github.com/user-attachments/assets/24b7ffee-225c-4593-851d-907d297d592a
 
 **使用方式**：
 
@@ -55,7 +55,7 @@ https://github.com/user-attachments/assets/d98e9132-ad4f-4186-b1e3-f2f051ceabeb
 
 将画布变成思维导图工具，用快捷键快速搭建结构：
 
-> 📹 待补充演示：Tab/Enter 创建节点、方向键导航、颜色继承
+https://github.com/user-attachments/assets/30538f55-2b52-42b1-932a-09896ec6a052
 
 - `Tab` 创建下级节点
 - `Enter` 创建同级节点
@@ -77,7 +77,7 @@ https://github.com/user-attachments/assets/d98e9132-ad4f-4186-b1e3-f2f051ceabeb
 - **边框**：实线、虚线、点线、隐藏
 - **文本对齐**：左对齐、居中、右对齐
 
-> 📹 待补充演示：右键菜单切换节点形状
+https://github.com/user-attachments/assets/94340110-f7ea-4b20-9c36-a11d937cd8fd
 
 ---
 
