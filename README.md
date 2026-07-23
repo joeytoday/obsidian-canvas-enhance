@@ -97,17 +97,9 @@ options:
 
 详见[示例 CSS 文件](assets/docs/example-custom-node-style.css)。
 
-## 安装
-
-### 社区插件市场
+## 社区插件市场
 
 在 Obsidian 设置 → 第三方插件 → 浏览中搜索 **Canvas Enhance**。
-
-### 手动安装
-
-1. 在 vault 的 `.obsidian/plugins/` 下创建 `canvas-enhance` 文件夹
-2. 从 [Releases](https://github.com/joeytoday/obsidian-canvas-enhance/releases) 下载 `main.js`、`styles.css`、`manifest.json` 放入该文件夹
-3. 在设置 → 第三方插件中启用
 
 ## 设置
 
@@ -123,6 +115,12 @@ options:
 如果 Canvas Enhance 帮到了你，请考虑给一个 ⭐ Star。这是对我最大的鼓励，也让更多人发现这个插件。
 
 [![Star](https://img.shields.io/github/stars/joeytoday/obsidian-canvas-enhance?style=social)](https://github.com/joeytoday/obsidian-canvas-enhance)
+
+## ☕️ 支持作者
+
+如果插件帮助到您，欢迎请作者喝杯咖啡～
+
+<img width="200" align="center" alt="wechat-qrcode B_u09Tgq_Z2qC86T" src="https://github.com/user-attachments/assets/c849f9cf-8ed2-443f-9f27-01cd9fc65f13" />
 
 ## 许可证
 
