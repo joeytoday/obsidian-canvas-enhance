@@ -137,11 +137,13 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
   private async updateNodeOverlay(node: CanvasNode) {
     const nodeData = node.getData()
     if (nodeData.type === 'group' || nodeData.type === 'link') return
+    if (!node.nodeEl.isConnected) return
 
     const title = await this.getTitle(node)
     // The node may have been removed or the canvas deactivated while awaiting the title
     if (!node.canvas.nodes.has(node.id)) return
     if (!this.activeCanvases.has(node.canvas.wrapperEl)) return
+    if (!node.nodeEl.isConnected) return
 
     if (!title) {
       this.removeOverlay(node)

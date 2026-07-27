@@ -326,8 +326,9 @@ export default class CanvasPatcher extends Patcher {
     this.plugin.registerEditorExtension([EditorView.updateListener.of((update: ViewUpdate) => {
       if (!update.docChanged) return
 
-      const editor = update.state.field(editorInfoField) as any
-      const node = editor.node as CanvasNode | undefined
+      let editor: any
+      try { editor = update.state.field(editorInfoField) } catch { return }
+      const node = editor?.node as CanvasNode | undefined
       if (!node) return
 
       that.plugin.app.workspace.trigger('canvas-enhance:node-text-content-changed', node.canvas, node, update)

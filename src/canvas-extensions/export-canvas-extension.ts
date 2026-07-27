@@ -1,6 +1,6 @@
 import * as HtmlToImage from 'html-to-image'
 import { Options } from 'html-to-image/lib/types'
-import { Modal, Notice, Setting } from "obsidian"
+import { Modal, Notice, Platform, Setting } from "obsidian"
 import { BBox, Canvas, CanvasNode } from "src/@types/Canvas"
 import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper from "src/utils/canvas-helper"
@@ -9,7 +9,7 @@ import CanvasExtension from "./canvas-extension"
 const MAX_ALLOWED_LOADING_TIME = 10_000
 
 export default class ExportCanvasExtension extends CanvasExtension {
-  isEnabled() { return 'betterExportFeatureEnabled' as const }
+  isEnabled() { return Platform.isDesktop && 'betterExportFeatureEnabled' as const }
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(

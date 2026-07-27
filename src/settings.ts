@@ -10,6 +10,10 @@ import CssStylesConfigManager from "./managers/css-styles-config-manager"
 
 const README_URL = 'https://github.com/joeytoday/obsidian-canvas-enhance?tab=readme-ov-file'
 
+function openExternalUrl(url: string) {
+  window.open(url, '_blank')
+}
+
 export interface CanvasEnhancePluginSettingsValues {
   nodeTypeOnDoubleClick: keyof typeof SETTINGS.general.children.nodeTypeOnDoubleClick.options
   alignNewNodesToGrid: boolean
@@ -372,12 +376,7 @@ export const SETTINGS = {
         label: '自定义节点样式设置',
         description: '为节点添加自定义样式设置。（前往 GitHub 了解更多信息）',
         type: 'button',
-        onClick: () => {
-          const anchor = activeDocument.createElement('a')
-          anchor.href = "https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/README.md#自定义样式"
-          anchor.target = '_blank'
-          anchor.click()
-        },
+        onClick: () => openExternalUrl("https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/README.md#自定义样式"),
       } as ButtonSetting,
       defaultTextNodeColor: {
         label: '默认文本节点颜色',
@@ -407,12 +406,7 @@ export const SETTINGS = {
         label: '自定义边样式设置',
         description: '为边添加自定义样式设置。（前往 GitHub 了解更多信息）',
         type: 'button',
-        onClick: () => {
-          const anchor = activeDocument.createElement('a')
-          anchor.href = "https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/README.md#自定义样式"
-          anchor.target = '_blank'
-          anchor.click()
-        },
+        onClick: () => openExternalUrl("https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/README.md#自定义样式"),
       } as ButtonSetting,
       inheritEdgeColorFromNode: {
         label: '从节点继承边颜色',
@@ -808,12 +802,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     const linksEl = containerEl.createDiv()
     linksEl.classList.add('ce-settings-links')
 
-    const openUrl = (url: string) => {
-      const anchor = activeDocument.createElement('a')
-      anchor.href = url
-      anchor.target = '_blank'
-      anchor.click()
-    }
+    const openUrl = openExternalUrl
 
     new SettingEl(linksEl)
       .setName('Canvas Enhance')
@@ -916,12 +905,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
       setting.addExtraButton(button => button
         .setTooltip("Open GitHub documentation")
         .setIcon('info')
-        .onClick(async () => {
-          const anchor = activeDocument.createElement('a')
-          anchor.href = `${README_URL}#${infoSection}`
-          anchor.target = '_blank'
-          anchor.click()
-        })
+        .onClick(() => openExternalUrl(`${README_URL}#${infoSection}`))
       )
     }
 

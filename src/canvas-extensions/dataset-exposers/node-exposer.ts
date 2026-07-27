@@ -28,8 +28,9 @@ export default class NodeExposerExtension extends CanvasExtension {
 
         this.setDataAttributes(node.nodeEl, nodeData)
 
-        const iframe = node.nodeEl.querySelector('iframe')?.contentDocument?.body
-        if (iframe) this.setDataAttributes(iframe, nodeData)
+        let iframeBody: HTMLElement | null = null
+        try { iframeBody = node.nodeEl.querySelector('iframe')?.contentDocument?.body ?? null } catch { /* cross-origin iframe */ }
+        if (iframeBody) this.setDataAttributes(iframeBody, nodeData)
       }
     ))
 
@@ -42,16 +43,17 @@ export default class NodeExposerExtension extends CanvasExtension {
         const nodeData = node.getData()
         if (!nodeData) return
 
-        const iframe = node.nodeEl.querySelector('iframe')?.contentDocument?.body
-        if (!iframe) return
+        let iframeBody: HTMLElement | null = null
+        try { iframeBody = node.nodeEl.querySelector('iframe')?.contentDocument?.body ?? null } catch { return }
+        if (!iframeBody) return
 
-        iframe.classList.add(CANVAS_NODE_IFRAME_BODY_CLASS)
-        new MutationObserver(() => iframe.classList.toggle(CANVAS_NODE_IFRAME_BODY_CLASS, true))
-          .observe(iframe, { attributes: true, attributeFilter: ['class'] })
-        this.setDataAttributes(iframe, nodeData)
+        iframeBody.classList.add(CANVAS_NODE_IFRAME_BODY_CLASS)
+        new MutationObserver(() => iframeBody!.classList.toggle(CANVAS_NODE_IFRAME_BODY_CLASS, true))
+          .observe(iframeBody, { attributes: true, attributeFilter: ['class'] })
+        this.setDataAttributes(iframeBody, nodeData)
 
         // Expose wrapper settings in the iframe too
-        CanvasWrapperExposerExtension.updateCanvasExposedSettings(this.plugin, iframe)
+        CanvasWrapperExposerExtension.updateCanvasExposedSettings(this.plugin, iframeBody)
       }
     ))
   }

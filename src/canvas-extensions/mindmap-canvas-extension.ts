@@ -408,6 +408,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const patch = (): boolean => {
       const editor = (plugin.app as any).workspace.activeEditor
       if (!editor?.containerEl) return false
+      if (typeof editor.constructor.prototype.showPreview !== 'function') return false
 
       const uninstaller = around(editor.constructor.prototype, {
         showPreview: (next: any) =>

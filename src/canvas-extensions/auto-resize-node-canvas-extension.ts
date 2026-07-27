@@ -92,7 +92,9 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
     await sleep(10)
 
     if (editing) {
-      void this.onNodeTextContentChanged(_canvas, node, node.child.editMode.cm.dom)
+      const cmDom = node.child?.editMode?.cm?.dom
+      if (!cmDom) return
+      void this.onNodeTextContentChanged(_canvas, node, cmDom)
       return
     }
 

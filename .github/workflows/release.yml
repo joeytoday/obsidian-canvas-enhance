@@ -29,22 +29,22 @@ jobs:
         run: npm run build
 
       - name: Verify Files Exist
-        run: ls -la dist/main.js dist/styles.css dist/manifest.json
+        run: ls -la main.js styles.css manifest.json
 
       - name: Generate artifact attestation
         uses: actions/attest@v4
         with:
           subject-path: |
-            dist/main.js
-            dist/styles.css
-            dist/manifest.json
+            main.js
+            styles.css
+            manifest.json
 
       - name: Upload Release Assets (Original Names)
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/main.js
-            dist/styles.css
-            dist/manifest.json
+            main.js
+            styles.css
+            manifest.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
