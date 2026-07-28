@@ -81,6 +81,19 @@ export default class ExportCanvasExtension extends CanvasExtension {
         })
       )
 
+    let detailedNodes = false
+    new Setting(modal.contentEl)
+      .setName('节点显示')
+      .setDesc('概览模式仅显示标题，详细模式显示完整内容。')
+      .addDropdown(dropdown => dropdown
+        .addOptions({
+          overview: '概览',
+          detailed: '详细'
+        })
+        .setValue(detailedNodes ? 'detailed' : 'overview')
+        .onChange(value => detailedNodes = value === 'detailed')
+      )
+
     let pixelRatioFactor = 1
     pixelRatioSetting = new Setting(modal.contentEl)
       .setName('像素比例')
@@ -157,7 +170,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
             theme,
             watermark,
             garbledText,
-            svg ? true : transparentBackground
+            svg ? true : transparentBackground,
+            detailedNodes
           )
         })
       )
@@ -166,7 +180,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
     modal.open()
   }
 
-  private async exportImage(canvas: Canvas, nodesToExport: CanvasNode[] | null, svg: boolean, pixelRatioFactor: number, noFontExport: boolean, theme: 'light' | 'dark', watermark: boolean, garbledText: boolean, transparentBackground: boolean) {
+  private async exportImage(canvas: Canvas, nodesToExport: CanvasNode[] | null, svg: boolean, pixelRatioFactor: number, noFontExport: boolean, theme: 'light' | 'dark', watermark: boolean, garbledText: boolean, transparentBackground: boolean, detailedNodes: boolean) {
     // Set theme
     const cachedTheme = activeDocument.body.classList.contains('theme-dark') ? 'dark' : 'light'
     if (theme !== cachedTheme) {
@@ -197,6 +211,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
     // Prepare the canvas
     canvas.screenshotting = true
     canvas.canvasEl.classList.add('is-exporting')
+    if (detailedNodes) canvas.canvasEl.classList.add('is-exporting-detailed')
     if (garbledText) canvas.wrapperEl.classList.add('is-text-garbled')
     let watermarkEl = null
 
@@ -206,7 +221,32 @@ export default class ExportCanvasExtension extends CanvasExtension {
     // Cache the current viewport
     const cachedViewport = { x: canvas.x, y: canvas.y, zoom: canvas.zoom }
 
+    // Pre-convert local images to data URIs so html-to-image can inline them
+    // (html-to-image uses fetch() which can't load app:// protocol URLs)
+    const cachedImageSrcs = new Map<HTMLImageElement, string>()
+
     try {
+      const convertImages = (root: Element) => {
+        root.querySelectorAll('img').forEach(img => {
+          if (img.complete && img.naturalWidth > 0) {
+            try {
+              const c = document.createElement('canvas')
+              c.width = img.naturalWidth
+              c.height = img.naturalHeight
+              c.getContext('2d')!.drawImage(img, 0, 0)
+              cachedImageSrcs.set(img, img.src)
+              img.src = c.toDataURL('image/png')
+            } catch { /* tainted canvas, skip */ }
+          }
+        })
+      }
+      convertImages(canvas.canvasEl)
+      canvas.canvasEl.querySelectorAll('iframe').forEach(iframe => {
+        try {
+          const body = iframe.contentDocument?.body
+          if (body) convertImages(body)
+        } catch { /* cross-origin iframe */ }
+      })
       // Calculate the bounding box of the elements to export
       const targetBoundingBox = CanvasHelper.getBBox([...nodesToExport, ...edgesToExport])
       let enlargedTargetBoundingBox = BBoxHelper.scaleBBox(targetBoundingBox, 1.1) // Enlarge the bounding box by 10%
@@ -344,10 +384,17 @@ export default class ExportCanvasExtension extends CanvasExtension {
         new Notice(ERROR_MESSAGE)
         console.error(ERROR_MESSAGE)
       }
+    } catch (e) {
+      new Notice('导出失败，请重试。')
+      console.error('Canvas export failed:', e)
     } finally {
+      // Restore original image sources
+      cachedImageSrcs.forEach((src, img) => { img.src = src })
+
       // Reset the canvas
       canvas.screenshotting = false
       canvas.canvasEl.classList.remove('is-exporting')
+      canvas.canvasEl.classList.remove('is-exporting-detailed')
       if (garbledText) canvas.wrapperEl.classList.remove('is-text-garbled')
       if (watermarkEl) canvas.canvasEl.removeChild(watermarkEl)
       canvas.updateSelection(() => canvas.selection = cachedSelection)

@@ -48,6 +48,15 @@
   }
 }
 
+.is-exporting-detailed {
+  .ce-overview-overlay {
+    display: none;
+  }
+  .canvas-node:has(.ce-overview-overlay) .canvas-node-content {
+    visibility: visible;
+  }
+}
+
 .canvas-node-group .canvas-node-label {
   transform: scale(var(--ce-group-label-scale, 1));
   transform-origin: left center;
