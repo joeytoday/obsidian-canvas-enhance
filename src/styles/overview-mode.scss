@@ -27,6 +27,13 @@
   max-width: 100%;
 }
 
+.ce-overview-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--ce-line-clamp);
+  overflow: hidden;
+}
+
 .ce-overview-overlay.ce-overview-colored {
   background: color-mix(in srgb, var(--ce-overview-node-color) 12%, var(--background-primary));
 }

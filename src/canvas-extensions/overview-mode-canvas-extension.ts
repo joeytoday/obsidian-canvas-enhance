@@ -275,15 +275,11 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     if (textEl.scrollHeight > availH) {
       const lineHeight = lo * 1.15
       const maxLines = Math.max(1, Math.floor(availH / lineHeight))
-      textEl.style.display = '-webkit-box'
-      textEl.style.setProperty('-webkit-line-clamp', `${maxLines}`)
-      textEl.style.setProperty('-webkit-box-orient', 'vertical')
-      textEl.style.overflow = 'hidden'
+      textEl.style.setProperty('--ce-line-clamp', `${maxLines}`)
+      textEl.classList.add('ce-overview-clamped')
     } else {
-      textEl.style.display = ''
-      textEl.style.removeProperty('-webkit-line-clamp')
-      textEl.style.removeProperty('-webkit-box-orient')
-      textEl.style.overflow = ''
+      textEl.classList.remove('ce-overview-clamped')
+      textEl.style.removeProperty('--ce-line-clamp')
     }
   }
 
