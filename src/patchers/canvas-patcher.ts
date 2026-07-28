@@ -355,12 +355,13 @@ export default class CanvasPatcher extends Patcher {
 
         // Save the data to the file (only if the canvas isn't loading)
         if (this.initialized) {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated -- Direct write required: setData() would recurse inside this patch
           this.canvas.data = this.canvas.getData()
           this.canvas.view.requestSave()
         }
 
         // Add to the undo stack
-        if (addHistory) this.canvas.pushHistory(this.canvas.data)
+        if (addHistory) this.canvas.pushHistory(this.canvas.getData())
 
         return result
       }),
@@ -473,6 +474,7 @@ export default class CanvasPatcher extends Patcher {
 
         // Save the data to the file (only if the canvas isn't loading)
         if (this.initialized) {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated -- Direct write required: setData() would recurse inside this patch
           this.canvas.data = this.canvas.getData()
           this.canvas.view.requestSave()
         }

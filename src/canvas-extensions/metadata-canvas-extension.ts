@@ -26,7 +26,7 @@ export default class MetadataCanvasExtension extends CanvasExtension {
   }
 
   private onCanvasChanged(canvas: Canvas): void {
-    const metadata = canvas.data?.metadata
+    const metadata = canvas.getData()?.metadata
     if (!metadata || metadata.version !== CURRENT_SPEC_VERSION)
       return void new Notice("未找到元数据节点或版本不匹配，应已迁移但未执行。")
 

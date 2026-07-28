@@ -1,6 +1,6 @@
 // LLM Agent: This file was created by an LLM agent as part of integrating Canvas-MindMap features into Canvas Enhance.
 
-import { TFile } from "obsidian"
+import { Platform, TFile } from "obsidian"
 import { around } from "monkey-around"
 import { Canvas, CanvasNode, CanvasView } from "src/@types/Canvas"
 import { CanvasEdgeData } from "src/@types/AdvancedJsonCanvas"
@@ -37,7 +37,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   }
 
   private focusNode(canvas: Canvas, node: CanvasNode) {
-    setTimeout(() => {
+    window.setTimeout(() => {
       const real = canvas.nodes.get(node.getData().id)
       real?.setIsEditing(true)
       canvas.zoomToSelection()
@@ -133,31 +133,33 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const scope = (view as any).scope
     if (!scope) return
 
-    scope.register([], 'Tab', (ev: KeyboardEvent) => {
-      if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
-      const node = this.getSelectedNode(canvas)
-      if (canvas.readonly || !node || node.isEditing) return
-      ev.preventDefault()
-      const child = this.createChildNode(canvas, false)
-      if (child) this.focusNode(canvas, child)
-    })
+    if (!Platform.isMobile) {
+      scope.register([], 'Tab', (ev: KeyboardEvent) => {
+        if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
+        const node = this.getSelectedNode(canvas)
+        if (canvas.readonly || !node || node.isEditing) return
+        ev.preventDefault()
+        const child = this.createChildNode(canvas, false)
+        if (child) this.focusNode(canvas, child)
+      })
 
-    scope.register([], 'Enter', (ev: KeyboardEvent) => {
-      if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
-      const node = this.getSelectedNode(canvas)
-      if (canvas.readonly || !node || node.isEditing) return
-      ev.preventDefault()
-      const sibling = this.createSiblingNode(canvas, false)
-      if (sibling) this.focusNode(canvas, sibling)
-    })
+      scope.register([], 'Enter', (ev: KeyboardEvent) => {
+        if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
+        const node = this.getSelectedNode(canvas)
+        if (canvas.readonly || !node || node.isEditing) return
+        ev.preventDefault()
+        const sibling = this.createSiblingNode(canvas, false)
+        if (sibling) this.focusNode(canvas, sibling)
+      })
 
-    scope.register([], 'Space', (ev: KeyboardEvent) => {
-      if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
-      const node = this.getSelectedNode(canvas)
-      if (canvas.readonly || !node || node.isEditing) return
-      ev.preventDefault()
-      node.setIsEditing(true)
-    })
+      scope.register([], 'Space', (ev: KeyboardEvent) => {
+        if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
+        const node = this.getSelectedNode(canvas)
+        if (canvas.readonly || !node || node.isEditing) return
+        ev.preventDefault()
+        node.setIsEditing(true)
+      })
+    }
 
     if (this.plugin.settings.getSetting('mindmapUseNavigationHotkeys')) {
       for (const dir of NAV_DIRECTIONS) {
@@ -296,7 +298,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
     canvas.selectOnly(real)
     canvas.zoomToSelection()
-    setTimeout(() => real.setIsEditing(true), 100)
+    window.setTimeout(() => real.setIsEditing(true), 100)
     return real
   }
 
@@ -428,7 +430,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     plugin.app.workspace.onLayoutReady(() => {
       if (patch()) return
       const evt = plugin.app.workspace.on("file-open", () => {
-        setTimeout(() => { if (patch()) plugin.app.workspace.offref(evt) }, 100)
+        window.setTimeout(() => { if (patch()) plugin.app.workspace.offref(evt) }, 100)
       })
       plugin.registerEvent(evt)
     })
