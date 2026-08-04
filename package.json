@@ -1,6 +1,6 @@
 {
   "name": "obsidian-canvas-enhance",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "AGPL-3.0-only",
   "main": "src/main.js",
   "scripts": {
