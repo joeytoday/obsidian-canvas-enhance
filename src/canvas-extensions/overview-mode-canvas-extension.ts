@@ -15,6 +15,8 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
   private titleCache = new Map<CanvasNode, string>()
   private activeCanvases = new Set<HTMLElement>()
   private rafIds = new Map<HTMLElement, number>()
+  private pendingRefit = new Set<CanvasNode>()
+  private reattachObservers = new Map<HTMLElement, MutationObserver>()
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
@@ -90,6 +92,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
       this.rafIds.delete(wrapperEl)
     }
     this.activeCanvases.delete(wrapperEl)
+    this.stopObservingReattaches(wrapperEl)
     wrapperEl.classList.remove('ce-overview-active')
     for (const node of canvas.nodes.values()) {
       this.removeOverlay(node)
@@ -112,13 +115,37 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
       if (shouldActivate) {
         this.activeCanvases.add(canvas.wrapperEl)
         canvas.wrapperEl.classList.add('ce-overview-active')
-        for (const node of canvas.nodes.values()) void this.updateNodeOverlay(node)
+        this.observeReattaches(canvas)
       } else {
         this.activeCanvases.delete(canvas.wrapperEl)
+        this.stopObservingReattaches(canvas.wrapperEl)
         canvas.wrapperEl.classList.remove('ce-overview-active')
         for (const node of canvas.nodes.values()) this.removeOverlay(node)
+        return
       }
     }
+
+    if (!shouldActivate) return
+
+    // Reconcile nodes whose overlay was missed or deferred while their element was detached
+    for (const node of canvas.nodes.values()) {
+      if (!this.overlayEls.has(node) || this.pendingRefit.has(node)) void this.updateNodeOverlay(node)
+    }
+  }
+
+  // Obsidian re-attaches culled node elements without calling render(),
+  // so node-rendered never fires for them; watch the DOM to catch the re-attachment
+  private observeReattaches(canvas: Canvas) {
+    const wrapperEl = canvas.wrapperEl
+    if (this.reattachObservers.has(wrapperEl)) return
+    const observer = new MutationObserver(() => this.scheduleUpdate(canvas))
+    observer.observe(wrapperEl, { childList: true, subtree: true })
+    this.reattachObservers.set(wrapperEl, observer)
+  }
+
+  private stopObservingReattaches(wrapperEl: HTMLElement) {
+    this.reattachObservers.get(wrapperEl)?.disconnect()
+    this.reattachObservers.delete(wrapperEl)
   }
 
   private updateGroupLabelScale(canvas: Canvas) {
@@ -137,13 +164,11 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
   private async updateNodeOverlay(node: CanvasNode) {
     const nodeData = node.getData()
     if (nodeData.type === 'group' || nodeData.type === 'link') return
-    if (!node.nodeEl.isConnected) return
 
     const title = await this.getTitle(node)
     // The node may have been removed or the canvas deactivated while awaiting the title
     if (!node.canvas.nodes.has(node.id)) return
     if (!this.activeCanvases.has(node.canvas.wrapperEl)) return
-    if (!node.nodeEl.isConnected) return
 
     if (!title) {
       this.removeOverlay(node)
@@ -167,7 +192,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
 
     this.applyNodeColor(overlay, node.color)
     textEl.textContent = title
-    this.fitText(textEl, node.width, node.height)
+    this.fitText(textEl, node)
   }
 
   private applyNodeColor(overlay: HTMLElement, color: string | undefined) {
@@ -245,9 +270,17 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
     return 0
   }
 
-  private fitText(textEl: HTMLElement, cardWidth: number, cardHeight: number) {
-    const availW = cardWidth - CARD_PADDING * 2
-    const availH = cardHeight - CARD_PADDING * 2
+  private fitText(textEl: HTMLElement, node: CanvasNode) {
+    if (!node.nodeEl.isConnected) {
+      // Obsidian culls off-viewport nodes and re-attaches them without render();
+      // defer measurement until the element is back in the DOM
+      this.pendingRefit.add(node)
+      return
+    }
+    this.pendingRefit.delete(node)
+
+    const availW = node.width - CARD_PADDING * 2
+    const availH = node.height - CARD_PADDING * 2
     if (availW <= 0 || availH <= 0) return
 
     // Constrain width so text wraps, then binary-search the largest font that fits height
@@ -289,5 +322,6 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
       overlay.remove()
       this.overlayEls.delete(node)
     }
+    this.pendingRefit.delete(node)
   }
 }

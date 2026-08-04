@@ -1,6 +1,7 @@
 // LLM Agent: This file was created by an LLM agent as part of integrating Canvas-MindMap features into Canvas Enhance.
 
 import { Platform, TFile } from "obsidian"
+import type { MarkdownFileInfo, Scope } from "obsidian"
 import { around } from "monkey-around"
 import { Canvas, CanvasNode, CanvasView } from "src/@types/Canvas"
 import { CanvasEdgeData } from "src/@types/AdvancedJsonCanvas"
@@ -12,6 +13,26 @@ const FLOATING_DIR: Record<NavDirection, { dx: number; dy: number }> = {
   down:  { dx: 0,  dy:  1 },
   left:  { dx: -1, dy:  0 },
   right: { dx:  1, dy:  0 },
+}
+
+// Structural shapes for private Obsidian APIs missing from the local typings;
+// type aliases (not interfaces) to satisfy monkey-around's Record<string, any> constraint
+type ViewWithScope = { scope?: Scope }
+// The real setColor takes an optional silent flag that Canvas.d.ts omits
+type NodeSetColorPrototype = {
+  setColor(this: CanvasNode, color: string | undefined, silent?: boolean): void
+}
+type EdgeWithSetColor = {
+  setColor(color: string | undefined, silent?: boolean): void
+}
+// containerEl is not declared on MarkdownFileInfo
+type ActiveEditorLike = MarkdownFileInfo & { containerEl: HTMLElement }
+// `node` is the canvas file node hosting the markdown when opened from a canvas
+type MarkdownEditorWithNode = {
+  node?: CanvasNode | null
+}
+type ShowPreviewPrototype = {
+  showPreview(this: MarkdownEditorWithNode, e?: unknown): void
 }
 
 export default class MindmapCanvasExtension extends CanvasExtension {
@@ -130,7 +151,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     if (this.registeredViews.has(view)) return
     this.registeredViews.add(view)
 
-    const scope = (view as any).scope
+    const scope = (view as ViewWithScope).scope
     if (!scope) return
 
     if (!Platform.isMobile) {
@@ -369,22 +390,22 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const plugin = this.plugin
 
     const patch = (): boolean => {
-      const view = plugin.app.workspace.getLeavesOfType("canvas").first()?.view as CanvasView
-      const canvas = (view as any)?.canvas
+      const view = plugin.app.workspace.getLeavesOfType("canvas").first()?.view as CanvasView | undefined
+      const canvas = view?.canvas
       if (!canvas?.nodes?.size) return false
 
-      const sample = canvas.nodes.values().next().value
+      const sample = canvas.nodes.values().next().value as CanvasNode | undefined
       if (!sample) return false
 
-      const uninstaller = around(sample.constructor.prototype, {
-        setColor: (next: any) =>
-          function(this: any, color: any, t: any) {
-            next.call(this, color, t)
+      const uninstaller = around(sample.constructor.prototype as NodeSetColorPrototype, {
+        setColor: (next) =>
+          function(this: CanvasNode, color: string | undefined, silent?: boolean) {
+            next.call(this, color, silent)
             if (!plugin.settings.getSetting('mindmapFeatureEnabled')) return
             if (!plugin.settings.getSetting('mindmapPropagateColorToEdges')) return
-            this.canvas.getEdgesForNode(this).forEach((edge: any) => {
+            this.canvas.getEdgesForNode(this).forEach((edge) => {
               if (edge.from.node === this) {
-                edge.setColor(color, true)
+                (edge as EdgeWithSetColor).setColor(color, true)
                 edge.render()
               }
             })
@@ -408,13 +429,15 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const plugin = this.plugin
 
     const patch = (): boolean => {
-      const editor = (plugin.app as any).workspace.activeEditor
+      const editor = plugin.app.workspace.activeEditor as ActiveEditorLike | null
       if (!editor?.containerEl) return false
-      if (typeof editor.constructor.prototype.showPreview !== 'function') return false
 
-      const uninstaller = around(editor.constructor.prototype, {
-        showPreview: (next: any) =>
-          function(this: any, e: any) {
+      const proto = editor.constructor.prototype as ShowPreviewPrototype
+      if (typeof proto.showPreview !== 'function') return false
+
+      const uninstaller = around(proto, {
+        showPreview: (next) =>
+          function(this: MarkdownEditorWithNode, e?: unknown) {
             next.call(this, e)
             if (!plugin.settings.getSetting('mindmapFeatureEnabled')) return
             if (e) {

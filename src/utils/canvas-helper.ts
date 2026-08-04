@@ -508,7 +508,7 @@ export default class CanvasHelper {
   }
 
   static copyWikilinkToNode(file: TFile, nodeData: CanvasNodeData) {
-    const nodeTypeString = TextHelper.toTitleCase(nodeData.type as string)
+    const nodeTypeString = TextHelper.toTitleCase(nodeData.type)
     const wikilink = `[[${file.path}#${nodeData.id}|${file.name} (${nodeTypeString} node)]]`
 
     navigator.clipboard.writeText(wikilink).then(() =>

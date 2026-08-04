@@ -165,7 +165,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
         (canvas: Canvas) => {
           const selectedNodes = canvas.getSelectionData().nodes
             .map(nodeData => canvas.nodes.get(nodeData.id))
-            .filter(node => node !== undefined) as CanvasNode[]
+            .filter(node => node !== undefined)
           if (selectedNodes.length !== 2) return
 
           const [nodeA, nodeB] = selectedNodes as [CanvasNode, CanvasNode]

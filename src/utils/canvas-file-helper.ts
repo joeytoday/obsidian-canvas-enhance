@@ -11,11 +11,11 @@ export default class CanvasFileHelper {
 
   static withMdExtension<T>(file: TFile | undefined, fn: () => T): T {
     const isCanvas = file?.extension === 'canvas'
-    if (isCanvas) file!.extension = 'md'
+    if (isCanvas) file.extension = 'md'
     try {
       return fn()
     } finally {
-      if (isCanvas) file!.extension = 'canvas'
+      if (isCanvas) file.extension = 'canvas'
     }
   }
 }

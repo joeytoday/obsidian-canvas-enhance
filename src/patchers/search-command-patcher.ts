@@ -1,4 +1,3 @@
-import { CanvasView } from "src/@types/Canvas"
 import CanvasSearchView from "src/canvas-search-view"
 import Patcher from "./patcher"
 

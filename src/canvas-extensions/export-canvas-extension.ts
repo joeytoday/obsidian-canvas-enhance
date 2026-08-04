@@ -99,7 +99,6 @@ export default class ExportCanvasExtension extends CanvasExtension {
       .setName('像素比例')
       .setDesc('像素比例越高，图片分辨率越高，但文件也越大。')
       .addSlider(slider => slider
-        .setDynamicTooltip()
         .setLimits(0.2, 5, 0.1)
         .setValue(pixelRatioFactor)
         .onChange(value => pixelRatioFactor = value)
