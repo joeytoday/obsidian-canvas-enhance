@@ -199,11 +199,13 @@ export default class CanvasPatcher extends Patcher {
         return next.call(this, edge)
       }),
       removeNode: Patcher.OverrideExisting(next => function (node: CanvasNode): void {
+        that.releaseElement(node)
         const result = next.call(this, node)
         if (!this.isClearing) that.plugin.app.workspace.trigger('canvas-enhance:node-removed', this, node)
         return result
       }),
       removeEdge: Patcher.OverrideExisting(next => function (edge: CanvasEdge): void {
+        that.releaseElement(edge)
         const result = next.call(this, edge)
         if (!this.isClearing) that.plugin.app.workspace.trigger('canvas-enhance:edge-removed', this, edge)
         return result
@@ -335,9 +337,21 @@ export default class CanvasPatcher extends Patcher {
     })])
   }
 
+  private elementUninstallers = new Map<CanvasElement, () => void>()
+
+  // Instance patches accumulate until plugin unload otherwise; release them when the element is removed
+  private releaseElement(element: CanvasElement) {
+    const uninstaller = this.elementUninstallers.get(element)
+    if (uninstaller) {
+      uninstaller()
+      this.elementUninstallers.delete(element)
+    }
+  }
+
   private patchNode(node: CanvasNode) {
     const that = this // eslint-disable-line @typescript-eslint/no-this-alias -- For patcher
 
+    const uninstallers: Array<() => void> = []
     Patcher.patch<CanvasNode>(this.plugin, node, {
       render: Patcher.OverrideExisting(next => function (...args: any): void {
         const result = next.call(this, ...args)
@@ -345,22 +359,24 @@ export default class CanvasPatcher extends Patcher {
         return result
       }),
       setData: Patcher.OverrideExisting(next => function (data: CanvasNodeData, addHistory?: boolean): void {
+        // Skip serialization/save/event fan-out when the value didn't change
+        const unchanged = JSON.stringify(this.getData()) === JSON.stringify(data)
         const result = next.call(this, data)
 
-        if (node.initialized && !node.isDirty) {
+        if (!unchanged && node.initialized && !node.isDirty) {
           node.isDirty = true
           that.plugin.app.workspace.trigger('canvas-enhance:node-changed', this.canvas, node)
           delete node.isDirty
         }
 
         // Save the data to the file (only if the canvas isn't loading)
-        if (this.initialized) {
+        if (this.initialized && !unchanged) {
           this.canvas.data = this.canvas.getData()
           this.canvas.view.requestSave()
         }
 
         // Add to the undo stack
-        if (addHistory) this.canvas.pushHistory(this.canvas.getData())
+        if (addHistory && !unchanged) this.canvas.pushHistory(this.canvas.getData())
 
         return result
       }),
@@ -450,7 +466,8 @@ export default class CanvasPatcher extends Patcher {
         that.plugin.app.workspace.trigger('canvas-enhance:node-changed', this.canvas, this)
         return result
       }
-    })
+    }, false, uninstallers)
+    if (uninstallers[0]) this.elementUninstallers.set(node, uninstallers[0])
 
     this.runAfterInitialized(node, () => {
       this.plugin.app.workspace.trigger('canvas-enhance:node-added', node.canvas, node)
@@ -461,24 +478,27 @@ export default class CanvasPatcher extends Patcher {
   private patchEdge(edge: CanvasEdge) {
     const that = this // eslint-disable-line @typescript-eslint/no-this-alias -- For patcher
 
+    const uninstallers: Array<() => void> = []
     Patcher.patch<CanvasEdge>(this.plugin, edge, {
       setData: Patcher.OverrideExisting(next => function (data: CanvasEdgeData, addHistory?: boolean): void {
+        // Skip serialization/save/event fan-out when the value didn't change
+        const unchanged = JSON.stringify(this.getData()) === JSON.stringify(data)
         const result = next.call(this, data)
 
-        if (this.initialized && !this.isDirty) {
+        if (!unchanged && this.initialized && !this.isDirty) {
           this.isDirty = true
           that.plugin.app.workspace.trigger('canvas-enhance:edge-changed', this.canvas, this)
           delete this.isDirty
         }
 
         // Save the data to the file (only if the canvas isn't loading)
-        if (this.initialized) {
+        if (this.initialized && !unchanged) {
           this.canvas.data = this.canvas.getData()
           this.canvas.view.requestSave()
         }
 
         // Add to the undo stack
-        if (addHistory) this.canvas.pushHistory(this.canvas.getData())
+        if (addHistory && !unchanged) this.canvas.pushHistory(this.canvas.getData())
 
         return result
       }),
@@ -519,7 +539,8 @@ export default class CanvasPatcher extends Patcher {
 
         return result
       }),
-    })
+    }, false, uninstallers)
+    if (uninstallers[0]) this.elementUninstallers.set(edge, uninstallers[0])
 
     this.runAfterInitialized(edge, () => {
       this.plugin.app.workspace.trigger('canvas-enhance:edge-added', edge.canvas, edge)

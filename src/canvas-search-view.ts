@@ -86,13 +86,28 @@ export default class CanvasSearchView {
     }
   }
 
+  private searchDebounceId: number | null = null
+
   private onInput() {
     const hasQuery = this.searchInput.value.length > 0
     this.searchCount.style.display = hasQuery ? "block" : "none"
 
-    if (!hasQuery) this.searchMatches = []
-    else {
-      this.searchMatches = Array.from(this.view.canvas.nodes.values()).map(node => {
+    if (!hasQuery) {
+      this.searchMatches = []
+      this.changeMatch(0)
+      return
+    }
+
+    // Full-canvas scan per keystroke is wasteful while typing
+    if (this.searchDebounceId !== null) window.clearTimeout(this.searchDebounceId)
+    this.searchDebounceId = window.setTimeout(() => {
+      this.searchDebounceId = null
+      this.performSearch()
+    }, 150)
+  }
+
+  private performSearch() {
+    this.searchMatches = Array.from(this.view.canvas.nodes.values()).map(node => {
         const nodeData = node.getData()
 
         let content: string | undefined = undefined
@@ -111,8 +126,7 @@ export default class CanvasSearchView {
         }
 
         return { nodeId: node.id, content: content, matches: matches }
-      }).filter(match => match && match.matches.length > 0) as SearchMatch[]
-    }
+    }).filter(match => match && match.matches.length > 0) as SearchMatch[]
 
     // Update match index and update the count display
     this.changeMatch(0)

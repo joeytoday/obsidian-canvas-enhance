@@ -84,10 +84,14 @@ export default class PortalsCanvasExtension extends CanvasExtension {
   }
 
   private onFileModified(canvas: Canvas, file: TFile) {
-    const isAffected = Object.values(canvas.nodes).filter((nodeData: CanvasNode) =>
-      nodeData.getData().type === 'file' &&
-      nodeData.currentPortalFile === file.path
-    ).length > 0
+    // Object.values() on a Map is always empty, so this never matched before
+    let isAffected = false
+    for (const node of canvas.nodes.values()) {
+      if (node.getData().type === 'file' && node.currentPortalFile === file.path) {
+        isAffected = true
+        break
+      }
+    }
     if (!isAffected) return
 
     // Update whole canvas data

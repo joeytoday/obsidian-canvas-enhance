@@ -1,8 +1,18 @@
 import { Canvas, CanvasNode } from 'src/@types/Canvas'
 import CanvasExtension from './canvas-extension'
 
+// Internal markdown preview renderer shape, not declared in the local typings
+type PreviewRendererLike = {
+  text?: string
+  set(text: string): void
+  onRendered(callback: () => void): void
+}
+
 export default class ReadingModeFixCanvasExtension extends CanvasExtension {
   isEnabled() { return 'readingModeFixEnabled' as const }
+
+  // node-rendered fires on every render; hooking the same renderer repeatedly accumulates callbacks
+  private hookedRenderers = new WeakSet<object>()
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
@@ -20,13 +30,15 @@ export default class ReadingModeFixCanvasExtension extends CanvasExtension {
   }
 
   private updateNodeRenderer(node: CanvasNode) {
-    const renderer = (node.child as any)?.previewMode?.renderer
+    const renderer = (node.child as unknown as { previewMode?: { renderer?: PreviewRendererLike } })?.previewMode?.renderer
     if (!renderer) return
+    if (this.hookedRenderers.has(renderer)) return
+    this.hookedRenderers.add(renderer)
 
     renderer.onRendered(() => {
       let text = renderer.text ?? ""
-      text = text.replaceAll('<span class="vertical-space">&nbsp;</span>\n', '\n')
-      text = text.replaceAll('\n', '<span class="vertical-space">&nbsp;</span>\n')
+      text = text.split('<span class="vertical-space">&nbsp;</span>\n').join('\n')
+      text = text.split('\n').join('<span class="vertical-space">&nbsp;</span>\n')
 
       renderer.set(text)
     })

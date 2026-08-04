@@ -10,6 +10,9 @@ const MIN_CONTENT_HEIGHT = "min-content"
 export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
   isEnabled() { return 'autoResizeNodeFeatureEnabled' as const }
 
+  private pendingResizes = new Map<CanvasNode, HTMLElement>()
+  private resizeRafId: number | null = null
+
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-created',
@@ -112,7 +115,22 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
     if (!this.isValidNodeType(node.getData())) return
     if (!this.canBeResized(node)) return
 
-    const cmScroller = dom.querySelector(".cm-scroller") as HTMLElement
+    // Coalesce to one measurement per frame while typing
+    this.pendingResizes.set(node, dom)
+    if (this.resizeRafId !== null) return
+    this.resizeRafId = window.requestAnimationFrame(() => {
+      this.resizeRafId = null
+      for (const [pendingNode, pendingDom] of this.pendingResizes) {
+        this.pendingResizes.delete(pendingNode)
+        this.resizeFromEditor(pendingNode, pendingDom)
+      }
+    })
+  }
+
+  private resizeFromEditor(node: CanvasNode, dom: HTMLElement) {
+    if (!node.nodeEl.isConnected) return
+
+    const cmScroller = dom.querySelector(".cm-scroller") as HTMLElement | null
     if (!cmScroller) return
 
     cmScroller.style.height = MIN_CONTENT_HEIGHT
@@ -135,6 +153,8 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
 
     if (this.plugin.settings.getSetting('autoResizeNodeSnapToGrid'))
       height = Math.ceil(height / CanvasHelper.GRID_SIZE) * CanvasHelper.GRID_SIZE
+
+    if (height === nodeData.height) return
 
     node.setData({
       ...nodeData,

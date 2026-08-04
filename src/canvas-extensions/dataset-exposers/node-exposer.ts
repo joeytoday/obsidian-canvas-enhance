@@ -19,6 +19,9 @@ export function getExposedNodeData(settings: SettingsManager): (keyof CanvasNode
 export default class NodeExposerExtension extends CanvasExtension {
   isEnabled() { return true }
 
+  // One observer per iframe body; entering edit mode repeatedly must not accumulate observers
+  private observedIframeBodies = new WeakSet<HTMLElement>()
+
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-changed',
@@ -47,9 +50,12 @@ export default class NodeExposerExtension extends CanvasExtension {
         try { iframeBody = node.nodeEl.querySelector('iframe')?.contentDocument?.body ?? null } catch { return }
         if (!iframeBody) return
 
-        iframeBody.classList.add(CANVAS_NODE_IFRAME_BODY_CLASS)
-        new MutationObserver(() => iframeBody!.classList.toggle(CANVAS_NODE_IFRAME_BODY_CLASS, true))
-          .observe(iframeBody, { attributes: true, attributeFilter: ['class'] })
+        if (!this.observedIframeBodies.has(iframeBody)) {
+          this.observedIframeBodies.add(iframeBody)
+          iframeBody.classList.add(CANVAS_NODE_IFRAME_BODY_CLASS)
+          new MutationObserver(() => iframeBody!.classList.toggle(CANVAS_NODE_IFRAME_BODY_CLASS, true))
+            .observe(iframeBody, { attributes: true, attributeFilter: ['class'] })
+        }
         this.setDataAttributes(iframeBody, nodeData)
 
         // Expose wrapper settings in the iframe too

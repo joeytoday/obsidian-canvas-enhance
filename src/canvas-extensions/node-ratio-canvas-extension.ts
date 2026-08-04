@@ -62,10 +62,10 @@ export default class NodeRatioCanvasExtension extends CanvasExtension {
     const nodeData = node.getData()
     if (!nodeData.ratio) return
 
-    const nodeBBox = node.getBBox()
+    // Use the data dimensions; getBBox() would force layout and fire bbox events on a hot path
     const nodeSize = {
-      width: nodeBBox.maxX - nodeBBox.minX,
-      height: nodeBBox.maxY - nodeBBox.minY
+      width: node.width,
+      height: node.height
     }
     const nodeAspectRatio = nodeSize.width / nodeSize.height
 

@@ -18,7 +18,7 @@ export default class AutoFileNodeEdgesCanvasExtension extends CanvasExtension {
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-added',
-      (canvas: Canvas, node: CanvasNode) => this.onNodeChanged(canvas, node)
+      (canvas: Canvas, node: CanvasNode) => this.onNodeAdded(canvas, node)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
@@ -29,21 +29,27 @@ export default class AutoFileNodeEdgesCanvasExtension extends CanvasExtension {
 
   private onMetadataChanged(canvas: Canvas, file: TFile) {
     for (const node of canvas.nodes.values()) {
-      if (node.getData().type !== 'file' || node.file?.path !== file.path) continue
+      if (node.file?.path !== file.path || node.getData().type !== 'file') continue
 
       this.updateFileNodeEdges(canvas, node)
+    }
+  }
+
+  // Existing nodes may link to the added node, so re-check all of them
+  private onNodeAdded(canvas: Canvas, node: CanvasNode) {
+    if (node.getData().type !== 'file') return
+
+    for (const candidate of canvas.nodes.values()) {
+      if (candidate.getData().type !== 'file') continue
+
+      this.updateFileNodeEdges(canvas, candidate)
     }
   }
 
   private onNodeChanged(canvas: Canvas, node: CanvasNode) {
     if (node.getData().type !== 'file') return
 
-    // Update all nodes (a node could've been added)
-    for (const node of canvas.nodes.values()) {
-      if (node.getData().type !== 'file') continue
-
-      this.updateFileNodeEdges(canvas, node)
-    }
+    this.updateFileNodeEdges(canvas, node)
   }
 
   private updateFileNodeEdges(canvas: Canvas, node: CanvasNode) {
@@ -53,8 +59,9 @@ export default class AutoFileNodeEdgesCanvasExtension extends CanvasExtension {
     const newEdges = Array.from(edges.values())
       .filter(edge => !canvas.edges.has(edge.id))
 
-    // Add new edges
-    canvas.importData({ nodes: [], edges: newEdges }, false, false)
+    // Add new edges (silent: skip plugin event fan-out, addEdge still fires edge-created)
+    if (newEdges.length > 0)
+      canvas.importData({ nodes: [], edges: newEdges }, false, true)
 
     // Remove old edges
     for (const edge of canvas.edges.values()) {
