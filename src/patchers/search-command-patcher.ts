@@ -24,5 +24,24 @@ export default class SearchCommandPatcher extends Patcher {
         return true
       })
     })
+
+    // editor:open-search has no default hotkey on canvas, so bind our own command
+    this.plugin.addCommand({
+      id: 'open-canvas-search',
+      name: '画布内搜索',
+      hotkeys: [{ modifiers: ['Mod'], key: 'f' }],
+      checkCallback: (checking: boolean) => {
+        // Leave Mod+F to the native editor search when an editor is active
+        if (that.plugin.app.workspace.activeEditor) return false
+
+        const activeCanvasView = that.plugin.getCurrentCanvasView()
+        if (!activeCanvasView) return false
+
+        if (checking) return true
+
+        if (!activeCanvasView.canvas.searchEl) new CanvasSearchView(activeCanvasView)
+        return true
+      }
+    })
   }
 }

@@ -56,7 +56,18 @@ export default class CanvasPatcher extends Patcher {
           }
         }
 
-        // Select and zoom to the node if match exists (backlink) but no nodeId is specified (metadataCache limitation) - if nodeId exists, it comes from search
+        // Select and zoom to the node a canvas-search match belongs to
+        if (state.match?.nodeId) {
+          const node = this.canvas.nodes.get(state.match.nodeId)
+
+          if (node) {
+            this.canvas.selectOnly(node)
+            this.canvas.zoomToSelection()
+            return
+          }
+        }
+
+        // Select and zoom to the node if match exists (backlink) but no nodeId is specified (metadataCache limitation)
         if (state.match?.matches?.[0] && !state.match?.nodeId) {
           const match = state.match.matches[0]
 
