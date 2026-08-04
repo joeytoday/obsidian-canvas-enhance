@@ -37,6 +37,7 @@ import AutoResizeNodeCanvasExtension from './canvas-extensions/auto-resize-node-
 import PortalsCanvasExtension from './canvas-extensions/portals-canvas-extension'
 import FrontmatterControlButtonCanvasExtension from './canvas-extensions/frontmatter-control-button-canvas-extension'
 import BetterDefaultSettingsCanvasExtension from './canvas-extensions/better-default-settings-canvas-extension'
+import FileNodeSplitCanvasExtension from './canvas-extensions/file-node-split-canvas-extension'
 import ColorPaletteCanvasExtension from './canvas-extensions/color-palette-canvas-extension'
 import CollapsibleGroupsCanvasExtension from './canvas-extensions/collapsible-groups-canvas-extension'
 import FocusModeCanvasExtension from './canvas-extensions/focus-mode-canvas-extension'
@@ -103,6 +104,7 @@ const CANVAS_EXTENSIONS: typeof CanvasExtension[] = [
 
   FrontmatterControlButtonCanvasExtension,
   BetterDefaultSettingsCanvasExtension,
+  FileNodeSplitCanvasExtension,
   CommandsCanvasExtension,
   BetterReadonlyCanvasExtension,
   ReadingModeFixCanvasExtension,

@@ -16,6 +16,7 @@ function openExternalUrl(url: string) {
 
 export interface CanvasEnhancePluginSettingsValues {
   nodeTypeOnDoubleClick: keyof typeof SETTINGS.general.children.nodeTypeOnDoubleClick.options
+  openFileNodeInSplit: boolean
   alignNewNodesToGrid: boolean
   defaultTextNodeDimensions: [number, number]
   defaultFileNodeDimensions: [number, number]
@@ -118,6 +119,7 @@ export interface CanvasEnhancePluginSettingsValues {
 
 export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   nodeTypeOnDoubleClick: 'text',
+  openFileNodeInSplit: true,
   alignNewNodesToGrid: true,
   defaultTextNodeDimensions: [260, 60],
   defaultFileNodeDimensions: [400, 400],
@@ -671,6 +673,12 @@ export const SETTINGS = {
       }
     }
   },
+  openFileNodeInSplit: {
+    label: '文件卡片分屏打开',
+    description: '启用后，点击文件卡片标题或右键「在侧边栏打开」时，在右侧新窗格打开文件，画布保持可见。',
+    infoSection: '节点',
+    children: { }
+  },
   fileNodeTemplateEnabled: {
     label: '文件模板',
     description: '新建文件节点时，用指定的 Obsidian 模板生成文件内容。',
@@ -701,6 +709,7 @@ const SETTINGS_TABS = {
     label: '基础设置',
     groups: [
       'general',
+      'openFileNodeInSplit',
       'fileNodeTemplateEnabled',
       'overviewModeFeatureEnabled',
       'commandsFeatureEnabled',
