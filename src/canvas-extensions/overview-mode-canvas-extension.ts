@@ -177,7 +177,7 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
       return
     }
     // Preset colors 1-6 resolve via Obsidian's --canvas-color-N variables; custom colors are used as-is
-    const colorValue = /^[1-6]$/.test(color) ? `rgb(var(--canvas-color-${color}))` : color
+    const colorValue = /^[1-6]$/.test(color) ? `var(--canvas-color-${color})` : color
     overlay.style.setProperty('--ce-overview-node-color', colorValue)
     overlay.classList.add('ce-overview-colored')
   }
