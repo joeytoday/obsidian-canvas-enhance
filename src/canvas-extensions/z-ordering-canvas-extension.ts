@@ -1,6 +1,7 @@
 import { Menu } from "obsidian"
 import { Canvas, CanvasNode } from "src/@types/Canvas"
 import BBoxHelper from "src/utils/bbox-helper"
+import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
 
 export default class ZOrderingCanvasExtension  extends CanvasExtension {
@@ -23,9 +24,7 @@ export default class ZOrderingCanvasExtension  extends CanvasExtension {
   }
 
   private selectionContextMenu(canvas: Canvas, menu: Menu) {
-    const selectedNodes = canvas.getSelectionData().nodes
-      .map(nodeData => canvas.nodes.get(nodeData.id))
-      .filter(node => node !== undefined) as CanvasNode[]
+    const selectedNodes = CanvasHelper.getSelectedNodes(canvas)
 
     this.addZOrderingContextMenuItems(canvas, selectedNodes, menu)
   }

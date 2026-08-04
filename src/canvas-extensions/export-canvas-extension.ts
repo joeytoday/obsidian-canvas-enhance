@@ -37,9 +37,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
         (canvas: Canvas) => canvas.selection.size > 0,
         (canvas: Canvas) => void this.showExportImageSettingsModal(
           canvas,
-          canvas.getSelectionData().nodes
-            .map(nodeData => canvas.nodes.get(nodeData.id))
-            .filter(node => node !== undefined) as CanvasNode[]
+          CanvasHelper.getSelectedNodes(canvas)
         )
       )
     })
@@ -135,15 +133,6 @@ export default class ExportCanvasExtension extends CanvasExtension {
         .onChange(value => watermark = value)
       )
 
-    let garbledText = false
-    new Setting(modal.contentEl)
-      .setName('隐私模式')
-      .setDesc('将模糊化画布上的所有文本。')
-      .addToggle(toggle => toggle
-        .setValue(garbledText)
-        .onChange(value => garbledText = value)
-      )
-
     let transparentBackground = false
     transparentBackgroundSetting = new Setting(modal.contentEl)
       .setName('透明背景')
@@ -168,7 +157,6 @@ export default class ExportCanvasExtension extends CanvasExtension {
             svg ? noFontExport : false,
             theme,
             watermark,
-            garbledText,
             svg ? true : transparentBackground,
             detailedNodes
           )
@@ -179,7 +167,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
     modal.open()
   }
 
-  private async exportImage(canvas: Canvas, nodesToExport: CanvasNode[] | null, svg: boolean, pixelRatioFactor: number, noFontExport: boolean, theme: 'light' | 'dark', watermark: boolean, garbledText: boolean, transparentBackground: boolean, detailedNodes: boolean) {
+  private async exportImage(canvas: Canvas, nodesToExport: CanvasNode[] | null, svg: boolean, pixelRatioFactor: number, noFontExport: boolean, theme: 'light' | 'dark', watermark: boolean, transparentBackground: boolean, detailedNodes: boolean) {
     // Set theme
     const cachedTheme = activeDocument.body.classList.contains('theme-dark') ? 'dark' : 'light'
     if (theme !== cachedTheme) {
@@ -211,7 +199,6 @@ export default class ExportCanvasExtension extends CanvasExtension {
     canvas.screenshotting = true
     canvas.canvasEl.classList.add('is-exporting')
     if (detailedNodes) canvas.canvasEl.classList.add('is-exporting-detailed')
-    if (garbledText) canvas.wrapperEl.classList.add('is-text-garbled')
     let watermarkEl = null
 
     const cachedSelection = new Set(canvas.selection)
@@ -394,7 +381,6 @@ export default class ExportCanvasExtension extends CanvasExtension {
       canvas.screenshotting = false
       canvas.canvasEl.classList.remove('is-exporting')
       canvas.canvasEl.classList.remove('is-exporting-detailed')
-      if (garbledText) canvas.wrapperEl.classList.remove('is-text-garbled')
       if (watermarkEl) canvas.canvasEl.removeChild(watermarkEl)
       canvas.updateSelection(() => canvas.selection = cachedSelection)
       canvas.setViewport(cachedViewport.x, cachedViewport.y, cachedViewport.zoom)

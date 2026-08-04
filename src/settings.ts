@@ -92,7 +92,6 @@ export interface CanvasEnhancePluginSettingsValues {
   canvasEncapsulationEnabled: boolean
 
   portalsFeatureEnabled: boolean
-  showEdgesIntoDisabledPortals: boolean
 
   autoFileNodeEdgesFeatureEnabled: boolean
   autoFileNodeEdgesFrontmatterKey: string
@@ -195,7 +194,6 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   canvasEncapsulationEnabled: false,
 
   portalsFeatureEnabled: true,
-  showEdgesIntoDisabledPortals: true,
 
   autoFileNodeEdgesFeatureEnabled: false,
   autoFileNodeEdgesFrontmatterKey: 'canvas-edges',
@@ -344,13 +342,7 @@ export const SETTINGS = {
     label: '门户',
     description: '在当前画布中嵌入其他画布。',
     infoSection: '交互与工作流',
-    children: {
-      showEdgesIntoDisabledPortals: {
-        label: '显示连入已禁用门户的边',
-        description: '启用后，连入已禁用门户的边将显示出来。',
-        type: 'boolean'
-      }
-    }
+    children: { }
   },
   collapsibleGroupsFeatureEnabled: {
     label: '可折叠分组',

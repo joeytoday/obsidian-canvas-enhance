@@ -69,9 +69,7 @@ export default class EdgeStylesExtension extends CanvasExtension {
       (canvas: Canvas, isDragging: boolean) => {
         if (isDragging) return
 
-        const selectedNodes = canvas.getSelectionData().nodes
-          .map(nodeData => canvas.nodes.get(nodeData.id))
-          .filter(node => node !== undefined) as CanvasNode[]
+        const selectedNodes = CanvasHelper.getSelectedNodes(canvas)
         const selectedNodeBBoxes = selectedNodes.map(node => node.getBBox())
         const selectedNodeBBox = BBoxHelper.combineBBoxes(selectedNodeBBoxes)
 

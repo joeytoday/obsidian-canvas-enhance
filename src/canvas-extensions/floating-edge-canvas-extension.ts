@@ -36,7 +36,10 @@ export default class FloatingEdgeCanvasExtension  extends CanvasExtension {
   private onLoadData(canvas: Canvas, data: CanvasData) {
     for (const edgeData of data.edges) {
       const edge = canvas.edges.get(edgeData.id)
-      if (!edge) return console.warn("Imported edge is not yet loaded :(")
+      if (!edge) {
+        console.warn("Imported edge is not yet loaded :(")
+        continue
+      }
 
       this.updateEdgeConnectionSide(edge)
     }

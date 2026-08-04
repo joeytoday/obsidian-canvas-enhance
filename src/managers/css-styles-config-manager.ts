@@ -32,7 +32,13 @@ export default class CssStylesConfigManager<T> {
 
       const styleSheetConfigs = this.parseStyleConfigsFromCSS(sheet)
       for (const config of styleSheetConfigs) {
-        const validConfig = this.validate(config)
+        // A malformed snippet must not break menu/settings rendering
+        let validConfig: T | null
+        try {
+          validConfig = this.validate(config)
+        } catch {
+          continue
+        }
         if (!validConfig) continue
 
         this.cachedConfig.push(validConfig)
@@ -53,7 +59,13 @@ export default class CssStylesConfigManager<T> {
       const yamlString = match[1]
       if (!yamlString) continue
 
-      const configYaml = parseYaml(yamlString)
+      // parseYaml throws on invalid YAML; skip the snippet instead of crashing
+      let configYaml: Record<string, unknown>
+      try {
+        configYaml = parseYaml(yamlString)
+      } catch {
+        continue
+      }
       configs.push(configYaml)
     }
 

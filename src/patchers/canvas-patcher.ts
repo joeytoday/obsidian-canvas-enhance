@@ -1,7 +1,7 @@
 /* eslint-disable-next-line import/no-extraneous-dependencies -- Included in Obsidian */
 import { EditorView, ViewUpdate } from "@codemirror/view"
 import { around } from "monkey-around"
-import { editorInfoField, requireApiVersion, Side, WorkspaceLeaf } from "obsidian"
+import { editorInfoField, Side, WorkspaceLeaf } from "obsidian"
 import { BBox, Canvas, CanvasEdge, CanvasElement, CanvasElementsData, CanvasNode, CanvasPopupMenu, CanvasView, NodeInteractionLayer, Position, SelectionData } from "src/@types/Canvas"
 import JSONC from "tiny-jsonc"
 import Patcher from "./patcher"
@@ -11,9 +11,17 @@ import MigrationHelper from "src/utils/migration-helper"
 
 export default class CanvasPatcher extends Patcher {
   protected async patch() {
+    // Restore instance patches when the plugin is unloaded
+    this.plugin.register(() => {
+      for (const uninstall of this.elementUninstallers.values()) uninstall()
+      this.elementUninstallers.clear()
+      for (const uninstall of this.pendingInitUninstallers.values()) uninstall()
+      this.pendingInitUninstallers.clear()
+    })
+
     // Check if there are already loaded canvas view leafs
     const loadedCanvasViewLeafs = this.plugin.app.workspace.getLeavesOfType("canvas")
-      .filter((leaf: WorkspaceLeaf) => !requireApiVersion('1.7.2') || !leaf.isDeferred)
+      .filter((leaf: WorkspaceLeaf) => !leaf.isDeferred)
 
     if (loadedCanvasViewLeafs.length > 0) {
       console.debug(`Patching and reloading loaded canvas views (Count: ${loadedCanvasViewLeafs.length})`)
@@ -338,13 +346,19 @@ export default class CanvasPatcher extends Patcher {
   }
 
   private elementUninstallers = new Map<CanvasElement, () => void>()
+  private pendingInitUninstallers = new Map<CanvasElement, () => void>()
 
-  // Instance patches accumulate until plugin unload otherwise; release them when the element is removed
+  // Instance patches are released when the element is removed, not at plugin unload
   private releaseElement(element: CanvasElement) {
     const uninstaller = this.elementUninstallers.get(element)
     if (uninstaller) {
       uninstaller()
       this.elementUninstallers.delete(element)
+    }
+    const pendingUninstaller = this.pendingInitUninstallers.get(element)
+    if (pendingUninstaller) {
+      pendingUninstaller()
+      this.pendingInitUninstallers.delete(element)
     }
   }
 
@@ -466,7 +480,7 @@ export default class CanvasPatcher extends Patcher {
         that.plugin.app.workspace.trigger('canvas-enhance:node-changed', this.canvas, this)
         return result
       }
-    }, false, uninstallers)
+    }, false, uninstallers, false)
     if (uninstallers[0]) this.elementUninstallers.set(node, uninstallers[0])
 
     this.runAfterInitialized(node, () => {
@@ -539,7 +553,7 @@ export default class CanvasPatcher extends Patcher {
 
         return result
       }),
-    }, false, uninstallers)
+    }, false, uninstallers, false)
     if (uninstallers[0]) this.elementUninstallers.set(edge, uninstallers[0])
 
     this.runAfterInitialized(edge, () => {
@@ -563,11 +577,12 @@ export default class CanvasPatcher extends Patcher {
 
         onReady()
         uninstall() // Uninstall the patch
+        that.pendingInitUninstallers.delete(canvasElement)
 
         return result
       }
     })
 
-    that.plugin.register(uninstall)
+    that.pendingInitUninstallers.set(canvasElement, uninstall)
   }
 }

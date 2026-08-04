@@ -21,11 +21,3 @@
 .canvas-wrapper[data-collapsible-groups-feature-enabled="true"] .canvas.is-exporting .canvas-node .canvas-group-label {
   left: 0;
 }
-
-.progress-bar-modal-ac {
-  margin-top: .75em;
-
-  &.error .setting-progress-bar {
-    color: var(--color-error);
-  }
-}

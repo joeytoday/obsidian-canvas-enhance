@@ -125,7 +125,6 @@ export default class EdgePathfindingAStar extends EdgePathfindingMethod {
     return {
       svgPath: svgPath,
       center: pathArray[Math.floor(pathArray.length / 2)],
-      rotateArrows: false
     }
   }
 

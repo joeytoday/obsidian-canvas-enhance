@@ -2,12 +2,6 @@ import { Menu, TFile, WorkspaceLeaf, WorkspaceTabs } from 'obsidian'
 import { Canvas, CanvasNode } from 'src/@types/Canvas'
 import CanvasExtension from './canvas-extension'
 
-// Not declared in the public typings; the argument is the tab group
-// (getLeaf('tab') instead follows recency)
-type WorkspaceWithTabGroup = {
-  createLeafInTabGroup(tabGroup: WorkspaceTabs): WorkspaceLeaf
-}
-
 export default class FileNodeSplitCanvasExtension extends CanvasExtension {
   isEnabled() { return 'openFileNodeInSplit' as const }
 
@@ -116,7 +110,10 @@ export default class FileNodeSplitCanvasExtension extends CanvasExtension {
       return
     }
 
-    const tab = (workspace as unknown as WorkspaceWithTabGroup).createLeafInTabGroup(tabGroup)
+    // getLeaf('tab') creates the tab in the most recent leaf's tab group,
+    // so make the side leaf the most recent first
+    workspace.setActiveLeaf(existing, { focus: false })
+    const tab = workspace.getLeaf('tab')
     this.sideLeaf = tab
     void tab.openFile(file)
     if (canvasLeaf !== tab) workspace.setActiveLeaf(canvasLeaf, { focus: false })

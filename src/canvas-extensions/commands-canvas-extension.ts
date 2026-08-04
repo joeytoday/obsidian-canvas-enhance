@@ -163,9 +163,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.getSelectionData().nodes.length === 2,
         (canvas: Canvas) => {
-          const selectedNodes = canvas.getSelectionData().nodes
-            .map(nodeData => canvas.nodes.get(nodeData.id))
-            .filter(node => node !== undefined)
+          const selectedNodes = CanvasHelper.getSelectedNodes(canvas)
           if (selectedNodes.length !== 2) return
 
           const [nodeA, nodeB] = selectedNodes as [CanvasNode, CanvasNode]
@@ -238,17 +236,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
             }
           }
 
-          // Create outgoing links filter for those that are already on the canvas
-          const existingFileNodes: Set<TFile> = new Set([canvas.view.file])
-          for (const node of canvas.nodes.values()) {
-            if (node.getData().type !== 'file' || !node.file) continue
-            existingFileNodes.add(node.file)
-          }
-
-          for (const outgoingLink of outgoingLinks) {
-            if (existingFileNodes.has(outgoingLink)) continue
-            void this.createFileNode(canvas, outgoingLink)
-          }
+          this.createNodesForFiles(canvas, outgoingLinks)
         }
       )
     })
@@ -297,17 +285,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
             }
           }
 
-          // Create backlinks filter for those that are already on the canvas
-          const existingFileNodes: Set<TFile> = new Set([canvas.view.file])
-          for (const node of canvas.nodes.values()) {
-            if (node.getData().type !== 'file' || !node.file) continue
-            existingFileNodes.add(node.file)
-          }
-
-          for (const backlink of backlinks) {
-            if (existingFileNodes.has(backlink)) continue
-            void this.createFileNode(canvas, backlink)
-          }
+          this.createNodesForFiles(canvas, backlinks)
         }
       )
     })
@@ -371,6 +349,19 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     const pos = CanvasHelper.getCenterCoordinates(canvas, size)
 
     canvas.createTextNode({ pos: pos, size: size, focus: true })
+  }
+
+  private createNodesForFiles(canvas: Canvas, files: Set<TFile>) {
+    const existingFileNodes: Set<TFile> = new Set([canvas.view.file])
+    for (const node of canvas.nodes.values()) {
+      if (node.getData().type !== 'file' || !node.file) continue
+      existingFileNodes.add(node.file)
+    }
+
+    for (const file of files) {
+      if (existingFileNodes.has(file)) continue
+      void this.createFileNode(canvas, file)
+    }
   }
 
   private async createFileNode(canvas: Canvas, file?: TFile) {

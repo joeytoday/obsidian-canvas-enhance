@@ -113,7 +113,7 @@ export default class CanvasSearchView {
         let content: string | undefined = undefined
         if (nodeData.type === "text") content = (nodeData as CanvasTextNodeData).text
         else if (nodeData.type === "group") content = (nodeData as CanvasGroupNodeData).label
-        else if (nodeData.type === "file") content = node.child.data
+        else if (nodeData.type === "file") content = node.child?.data
 
         if (!content) return null
 

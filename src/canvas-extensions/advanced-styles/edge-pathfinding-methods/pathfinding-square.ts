@@ -215,7 +215,7 @@ export default class EdgePathfindingSquare extends EdgePathfindingMethod {
       ? SvgPathHelper.pathArrayToRoundedSvgPath(pathArray, ROUNDED_EDGE_RADIUS)
       : SvgPathHelper.pathArrayToSvgPath(pathArray)
 
-    return { svgPath, center, rotateArrows: false }
+    return { svgPath, center }
   }
 
   private getUPath(fromPos: Position, toPos: Position, fromSide: Side, toSide: Side): PartialPath {

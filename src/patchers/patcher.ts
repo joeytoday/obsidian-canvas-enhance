@@ -88,7 +88,8 @@ export default abstract class Patcher {
     object: T | undefined,
     patches: FunctionPatchObject<T>,
     prototype = false,
-    uninstallers?: Array<() => void>
+    uninstallers?: Array<() => void>,
+    registerWithPlugin = true
   ): T | null {
     if (!object) return null
     const target = prototype ? object.constructor.prototype : object
@@ -104,7 +105,9 @@ export default abstract class Patcher {
 
     const uninstaller = around(target, patches)
     if (uninstallers) uninstallers.push(uninstaller)
-    plugin.register(uninstaller)
+    // Instance-level patches are released by the caller when the element is removed;
+    // registering them here would pin every created node/edge until plugin unload
+    if (registerWithPlugin) plugin.register(uninstaller)
 
     return object
   }
@@ -123,29 +126,4 @@ export default abstract class Patcher {
     return value
   }
 
-  static tryPatchWorkspacePrototype<T>(
-    plugin: Plugin,
-    getTarget: () => T | undefined,
-    patches: FunctionPatchObject<T>,
-    uninstallers?: Array<() => void>
-  ): Promise<T> {
-    return new Promise((resolve) => {
-      const result = Patcher.patchPrototype(plugin, getTarget(), patches, uninstallers)
-      if (result) {
-        resolve(result)
-        return
-      }
-
-      const listener = plugin.app.workspace.on('layout-change', () => {
-        const result = Patcher.patchPrototype(plugin, getTarget(), patches, uninstallers)
-
-        if (result) {
-          plugin.app.workspace.offref(listener)
-          resolve(result)
-        }
-      })
-
-      plugin.registerEvent(listener)
-    })
-  }
 }

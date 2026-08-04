@@ -55,10 +55,8 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
   private onPopupMenuCreated(canvas: Canvas) {
     if (canvas.readonly) return
 
-    const selectedNodes = canvas.getSelectionData().nodes
-      .filter(nodeData => this.isValidNodeType(nodeData))
-      .map(nodeData => canvas.nodes.get(nodeData.id))
-      .filter(node => node !== undefined) as CanvasNode[]
+    const selectedNodes = CanvasHelper.getSelectedNodes(canvas)
+      .filter(node => this.isValidNodeType(node.getData()))
     if (selectedNodes.length === 0) return
 
     const autoResizeHeightEnabled = selectedNodes.some(node => node.getData().dynamicHeight)

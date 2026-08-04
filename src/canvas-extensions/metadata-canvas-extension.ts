@@ -61,8 +61,11 @@ export default class MetadataCanvasExtension extends CanvasExtension {
     const oldCssClasses = this.canvasCssclassesCache.get(canvas.view)
     if (oldCssClasses) canvas.wrapperEl.classList.remove(...oldCssClasses)
 
-    // Set new cssclasses
-    const currentClasses = canvas.metadata?.frontmatter?.cssclasses as string[] ?? []
+    // Set new cssclasses (YAML allows a string or a list)
+    const rawClasses = canvas.metadata?.frontmatter?.cssclasses
+    const currentClasses = Array.isArray(rawClasses)
+      ? rawClasses as string[]
+      : typeof rawClasses === 'string' ? rawClasses.split(/\s+/).filter(cls => cls) : []
     this.canvasCssclassesCache.set(canvas.view, currentClasses)
 
     if (currentClasses.length > 0) canvas.wrapperEl.classList.add(...currentClasses)

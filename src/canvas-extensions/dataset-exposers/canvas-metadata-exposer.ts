@@ -17,6 +17,9 @@ export default class CanvasMetadataExposerExtension extends CanvasExtension {
   }
 
   private updateExposedSettings(canvas: Canvas) {
+    // metadata is only injected when the canvas spec version matches
+    if (!canvas.metadata) return
+
     // Expose start node
     const startNodeId = canvas.metadata['startNode']
     for (const [nodeId, node] of canvas.nodes) {

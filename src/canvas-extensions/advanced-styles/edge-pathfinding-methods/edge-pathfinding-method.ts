@@ -22,5 +22,4 @@ export default abstract class EdgePathfindingMethod {
 export interface EdgePath {
   svgPath: string
   center: Position
-  rotateArrows: boolean
 }

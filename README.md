@@ -6,7 +6,8 @@
     <a href="https://github.com/joeytoday/obsidian-canvas-enhance/stargazers"><img src="https://img.shields.io/github/stars/joeytoday/obsidian-canvas-enhance?colorA=363a4f&colorB=e0ac00&style=for-the-badge" alt="GitHub star count"></a>
     <a href="https://github.com/joeytoday/obsidian-canvas-enhance/issues"><img src="https://img.shields.io/github/issues/joeytoday/obsidian-canvas-enhance?colorA=363a4f&colorB=e93147&style=for-the-badge" alt="Open issues on GitHub"></a>
     <br/>
-    <a href="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/LICENSE"><img src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=GPL-3.0&colorA=363a4f&colorB=b7bdf8" alt="GPL-3.0 license"/></a>
+    <a href="https://raw.githubusercontent.com/joeytoday/obsidian-canvas-enhance/main/LICENSE"><img src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=AGPL-3.0&colorA=363a4f&colorB=b7bdf8" alt="AGPL-3.0 license"/></a>
+    <a href="https://github.com/joeytoday/obsidian-canvas-enhance/releases"><img src="https://img.shields.io/github/v/release/joeytoday/obsidian-canvas-enhance?colorA=363a4f&colorB=8dba37&style=for-the-badge" alt="Latest release version"/></a>
 </p>
 
 <p align="center"><b>⚡ 全面增强</b>你的 Obsidian Canvas 体验。流程图、脑图，一个插件搞定。</p>

@@ -2,10 +2,6 @@ import { Menu } from "obsidian"
 import { BBox, Canvas, CanvasEdge, CanvasEdgeEnd, CanvasElement, CanvasNode, CanvasView, Position, SelectionData } from "./Canvas"
 import { CanvasData } from "./AdvancedJsonCanvas"
 
-export interface EventRef {
-  fn: (...args: any) => any
-}
-
 export interface CustomWorkspaceEvents {
   // Plugin events
   'canvas-enhance:settings-changed': () => void

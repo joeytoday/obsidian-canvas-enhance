@@ -1,4 +1,4 @@
-import App, { FuzzyMatch, FuzzySuggestModal, SuggestModal, TFile } from 'obsidian'
+import App, { FuzzyMatch, FuzzySuggestModal, Notice, SuggestModal, TFile } from 'obsidian'
 import FilepathHelper from 'src/utils/filepath-helper'
 
 export class AbstractSelectionModal extends FuzzySuggestModal<string> {
@@ -128,7 +128,7 @@ export class FileSelectModal extends SuggestModal<string> {
   onChooseSuggestion(_path: string, _evt: MouseEvent | KeyboardEvent) {}
 
   awaitInput(): Promise<TFile> {
-    return new Promise((resolve, _reject) => {
+    return new Promise((resolve, reject) => {
       this.onChooseSuggestion = (path: string, _evt: MouseEvent | KeyboardEvent) => {
         const file = this.app.vault.getAbstractFileByPath(path)
 
@@ -138,8 +138,13 @@ export class FileSelectModal extends SuggestModal<string> {
         if (!this.suggestNewFile) return
 
         if (FilepathHelper.extension(path) === undefined) path += '.md'
-        const newFile = this.app.vault.create(path, '')
-        resolve(newFile)
+        // vault.create rejects on existing/invalid names; surface it instead of an unhandled rejection
+        this.app.vault.create(path, '')
+          .then(resolve)
+          .catch(error => {
+            new Notice(`无法创建文件：${error instanceof Error ? error.message : error}`)
+            reject(error instanceof Error ? error : new Error(String(error)))
+          })
       }
 
       this.open()

@@ -8,8 +8,7 @@ export default class EdgePathfindingDirect extends EdgePathfindingMethod {
       center: {
         x: (this.fromPos.x + this.toPos.x) / 2,
         y: (this.fromPos.y + this.toPos.y) / 2
-      },
-      rotateArrows: true
+      }
     }
   }
 }
