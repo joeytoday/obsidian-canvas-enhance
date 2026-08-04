@@ -29,6 +29,8 @@ Obsidian Canvas 原生功能够用，但不够好用。Canvas Enhance 在不改�
 
 所有功能均可在设置中独立开关，不用的功能零开销。
 
+https://github.com/user-attachments/assets/86da3869-f637-467e-a2dd-4042e3c7c74b
+
 ## 功能
 
 ### 概览模式
