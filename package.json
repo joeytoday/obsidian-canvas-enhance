@@ -1,6 +1,7 @@
 {
   "name": "obsidian-canvas-enhance",
-  "version": "0.8.8",
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
   "main": "src/main.js",
   "scripts": {
     "postinstall": "patch-package",

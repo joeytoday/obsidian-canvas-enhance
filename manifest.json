@@ -1,7 +1,7 @@
 {
   "id": "canvas-enhance",
   "name": "Canvas Enhance",
-  "version": "0.8.8",
+  "version": "1.0.0",
   "minAppVersion": "1.13.0",
   "description": "Supercharge your canvas experience! Overview mode, mindmaps, flowcharts and more!",
   "author": "joeytoday",
