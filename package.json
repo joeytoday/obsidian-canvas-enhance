@@ -1,6 +1,6 @@
 {
   "name": "obsidian-canvas-enhance",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "main": "src/main.js",
   "scripts": {
     "postinstall": "patch-package",
