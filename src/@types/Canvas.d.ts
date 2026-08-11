@@ -133,6 +133,7 @@ export interface CanvasNode extends CanvasElement {
 
   // Custom
   collapseEl?: HTMLElement
+  mindmapCollapseEl?: HTMLElement
 
   breakpoint?: number | null
   prevX: number

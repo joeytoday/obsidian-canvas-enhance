@@ -1,0 +1,36 @@
+.canvas-wrapper .ce-mindmap-hidden {
+  display: none;
+}
+
+.mindmap-collapse-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  // Clear the right connection point (10px on-screen radius) at every zoom level
+  transform: translate(calc(100% + 16px * var(--zoom-multiplier)), -50%) scale(var(--zoom-multiplier));
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: var(--size-4-1);
+  border-radius: 50%;
+
+  color: var(--text-muted);
+  background-color: var(--background-secondary);
+  box-shadow: 0 0 0 1px var(--background-modifier-border);
+
+  pointer-events: initial;
+  cursor: pointer;
+  z-index: 1;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  // Keep the background opaque on hover so edges don't show through
+  &:hover {
+    color: var(--text-normal);
+  }
+}

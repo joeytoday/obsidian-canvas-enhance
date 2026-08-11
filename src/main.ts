@@ -47,6 +47,7 @@ import FloatingEdgeCanvasExtension from './canvas-extensions/floating-edge-canva
 import EdgeHighlightCanvasExtension from './canvas-extensions/edge-highlight-canvas-extension'
 import ReadingModeFixCanvasExtension from './canvas-extensions/reading-mode-fix-canvas-extension'
 import MindmapCanvasExtension from './canvas-extensions/mindmap-canvas-extension'
+import MindmapCollapseCanvasExtension from './canvas-extensions/mindmap-collapse-canvas-extension'
 import OverviewModeCanvasExtension from './canvas-extensions/overview-mode-canvas-extension'
 
 // Advanced Styles
@@ -117,6 +118,7 @@ const CANVAS_EXTENSIONS: typeof CanvasExtension[] = [
   FocusModeCanvasExtension,
   EncapsulateCanvasExtension,
   MindmapCanvasExtension,
+  MindmapCollapseCanvasExtension,
   OverviewModeCanvasExtension
 ]
 
