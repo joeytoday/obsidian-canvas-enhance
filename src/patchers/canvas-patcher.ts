@@ -184,7 +184,14 @@ export default class CanvasPatcher extends Patcher {
         return result
       }),
       createTextNode: Patcher.OverrideExisting(next => function (...args: any): CanvasNode {
+        let headingPrefix: string | null = null
+        const options = args[0] as { text?: string } | undefined
+        if (options && !options.text && that.plugin.settings.getSetting('textCardHeadingEnabled')) {
+          headingPrefix = '#'.repeat(Number(that.plugin.settings.getSetting('textCardHeadingLevel'))) + ' '
+          args[0] = { ...options, text: headingPrefix }
+        }
         const node = next.call(this, ...args)
+        if (headingPrefix) that.placeCaretAt(node, headingPrefix.length)
         that.plugin.app.workspace.trigger('canvas-enhance:node-created', this, node)
         return node
       }),
@@ -354,6 +361,17 @@ export default class CanvasPatcher extends Patcher {
 
       that.plugin.app.workspace.trigger('canvas-enhance:node-text-content-changed', node.canvas, node, update)
     })])
+  }
+
+  // Places the caret after the injected heading prefix once the edit mode editor is mounted
+  private placeCaretAt(node: CanvasNode, pos: number, attempts = 0) {
+    const cm = node.child?.editMode?.cm as unknown as EditorView | undefined
+    if (cm) {
+      cm.dispatch({ selection: { anchor: pos } })
+      cm.focus()
+      return
+    }
+    if (attempts < 20) window.setTimeout(() => this.placeCaretAt(node, pos, attempts + 1), 50)
   }
 
   private elementUninstallers = new Map<CanvasElement, () => void>()

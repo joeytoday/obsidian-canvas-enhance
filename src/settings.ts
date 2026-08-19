@@ -22,6 +22,8 @@ export interface CanvasEnhancePluginSettingsValues {
   defaultFileNodeDimensions: [number, number]
   minNodeSize: number
   maxNodeWidth: number
+  textCardHeadingEnabled: boolean
+  textCardHeadingLevel: keyof typeof SETTINGS.general.children.textCardHeadingLevel.options
   disableFontSizeRelativeToZoom: boolean
 
   canvasMetadataCompatibilityEnabled: boolean
@@ -82,6 +84,7 @@ export interface CanvasEnhancePluginSettingsValues {
   autoResizeNodeFeatureEnabled: boolean
   autoResizeNodeEnabledByDefault: boolean
   autoResizeNodeMaxHeight: number
+  autoResizeNodeVerticalPadding: number
   autoResizeNodeSnapToGrid: boolean
 
   collapsibleGroupsFeatureEnabled: boolean
@@ -124,6 +127,8 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   defaultFileNodeDimensions: [400, 400],
   minNodeSize: 60,
   maxNodeWidth: -1,
+  textCardHeadingEnabled: false,
+  textCardHeadingLevel: '2',
   disableFontSizeRelativeToZoom: false,
 
   canvasMetadataCompatibilityEnabled: true,
@@ -184,6 +189,7 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   autoResizeNodeFeatureEnabled: false,
   autoResizeNodeEnabledByDefault: false,
   autoResizeNodeMaxHeight: -1,
+  autoResizeNodeVerticalPadding: 40,
   autoResizeNodeSnapToGrid: true,
 
   collapsibleGroupsFeatureEnabled: true,
@@ -271,6 +277,21 @@ export const SETTINGS = {
         type: 'number',
         parse: (value: string) => Math.max(-1, parseInt(value) || 0)
       },
+      textCardHeadingEnabled: {
+        label: '卡片标题',
+        description: '启用后，新建文本卡片时第一行自动添加标题前缀，光标停在前缀之后。',
+        type: 'boolean'
+      },
+      textCardHeadingLevel: {
+        label: '卡片标题级别',
+        description: '新建文本卡片时第一行标题的级别。',
+        type: 'dropdown',
+        options: {
+          '1': '一级标题',
+          '2': '二级标题',
+          '3': '三级标题'
+        }
+      } as DropdownSetting,
       disableFontSizeRelativeToZoom: {
         label: '禁用缩放时的字体缩放',
         description: '启用后，缩小画布时不会自动放大分组标题和边标签的字体。',
@@ -522,6 +543,12 @@ export const SETTINGS = {
         description: '自动调整时的最大高度（-1 表示不限制）。',
         type: 'number',
         parse: (value: string) => Math.max(-1, parseInt(value) ?? -1)
+      },
+      autoResizeNodeVerticalPadding: {
+        label: '垂直边距',
+        description: '自适应高度时，在内容上下预留的总边距（像素）。',
+        type: 'number',
+        parse: (value: string) => Math.max(0, parseInt(value) || 0)
       },
       autoResizeNodeSnapToGrid: {
         label: '对齐网格',

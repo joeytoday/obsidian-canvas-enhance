@@ -1,5 +1,3 @@
-/* eslint-disable-next-line import/no-extraneous-dependencies -- Included in Obsidian */
-import { ViewUpdate } from "@codemirror/view"
 import { Canvas, CanvasNode } from "src/@types/Canvas"
 import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
@@ -7,11 +5,37 @@ import { CanvasFileNodeData, CanvasNodeData } from "src/@types/AdvancedJsonCanva
 
 const MIN_CONTENT_HEIGHT = "min-content"
 
+// Content height of a node's editor (when editing) or rendered markdown preview
+export function measureNodeContentHeight(node: CanvasNode): number | null {
+  const cmDom = node.child?.editMode?.cm?.dom
+  if (cmDom) {
+    const cmScroller = cmDom.querySelector(".cm-scroller")
+    if (!(cmScroller instanceof HTMLElement)) return null
+
+    cmScroller.style.height = MIN_CONTENT_HEIGHT
+    const height = cmScroller.scrollHeight
+    cmScroller.style.removeProperty("height")
+    return height
+  }
+
+  const renderedMarkdownContainer = node.nodeEl.querySelector(".markdown-preview-view.markdown-rendered")
+  if (!(renderedMarkdownContainer instanceof HTMLElement)) return null
+
+  renderedMarkdownContainer.style.height = MIN_CONTENT_HEIGHT
+  const height = renderedMarkdownContainer.clientHeight
+  renderedMarkdownContainer.style.removeProperty("height")
+  return height
+}
+
 export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
   isEnabled() { return 'autoResizeNodeFeatureEnabled' as const }
 
-  private pendingResizes = new Map<CanvasNode, HTMLElement>()
+  private pendingResizes = new Set<CanvasNode>()
   private resizeRafId: number | null = null
+
+  private verticalPadding() {
+    return this.plugin.settings.getSetting('autoResizeNodeVerticalPadding')
+  }
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
@@ -31,7 +55,7 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-text-content-changed',
-      (canvas: Canvas, node: CanvasNode, viewUpdate: ViewUpdate) => void this.onNodeTextContentChanged(canvas, node, viewUpdate.view.dom)
+      (canvas: Canvas, node: CanvasNode) => void this.onNodeTextContentChanged(canvas, node)
     ))
   }
 
@@ -93,49 +117,40 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
     await sleep(10)
 
     if (editing) {
-      const cmDom = node.child?.editMode?.cm?.dom
-      if (!cmDom) return
-      void this.onNodeTextContentChanged(_canvas, node, cmDom)
+      if (!node.child?.editMode?.cm?.dom) return
+      void this.onNodeTextContentChanged(_canvas, node)
       return
     }
 
-    const renderedMarkdownContainer = node.nodeEl.querySelector(".markdown-preview-view.markdown-rendered") as HTMLElement
-    if (!renderedMarkdownContainer) return
+    const measured = measureNodeContentHeight(node)
+    if (measured === null) return
 
-    renderedMarkdownContainer.style.height = MIN_CONTENT_HEIGHT
-    const newHeight = renderedMarkdownContainer.clientHeight
-    renderedMarkdownContainer.style.removeProperty("height")
-
-    this.setNodeHeight(node, newHeight)
+    this.setNodeHeight(node, measured + this.verticalPadding())
   }
 
-  private async onNodeTextContentChanged(_canvas: Canvas, node: CanvasNode, dom: HTMLElement) {
+  private async onNodeTextContentChanged(_canvas: Canvas, node: CanvasNode) {
     if (!this.isValidNodeType(node.getData())) return
     if (!this.canBeResized(node)) return
 
     // Coalesce to one measurement per frame while typing
-    this.pendingResizes.set(node, dom)
+    this.pendingResizes.add(node)
     if (this.resizeRafId !== null) return
     this.resizeRafId = window.requestAnimationFrame(() => {
       this.resizeRafId = null
-      for (const [pendingNode, pendingDom] of this.pendingResizes) {
+      for (const pendingNode of this.pendingResizes) {
         this.pendingResizes.delete(pendingNode)
-        this.resizeFromEditor(pendingNode, pendingDom)
+        this.resizeFromEditor(pendingNode)
       }
     })
   }
 
-  private resizeFromEditor(node: CanvasNode, dom: HTMLElement) {
+  private resizeFromEditor(node: CanvasNode) {
     if (!node.nodeEl.isConnected) return
 
-    const cmScroller = dom.querySelector(".cm-scroller") as HTMLElement | null
-    if (!cmScroller) return
+    const measured = measureNodeContentHeight(node)
+    if (measured === null) return
 
-    cmScroller.style.height = MIN_CONTENT_HEIGHT
-    const newHeight = cmScroller.scrollHeight
-    cmScroller.style.removeProperty("height")
-
-    this.setNodeHeight(node, newHeight)
+    this.setNodeHeight(node, measured + this.verticalPadding())
   }
 
   private setNodeHeight(node: CanvasNode, height: number) {
