@@ -7,8 +7,13 @@
 - 画布底部工具栏新增「整体重排」：一键把整个画布排成整洁的思维导图，卡片高度自适应内容，最大高度跟随「自动调整节点大小」设置
 - 有多个上级节点时，重排会把它放在最后一个上级节点的分支之后，并相对所有上级节点垂直居中
 
+<img width="852" height="480" alt="canvas-node-rearrange" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
+
+
 **卡片标题**
 - 新增「卡片标题」「卡片标题级别」设置：新建文本卡片时第一行自动填一级/二级/三级标题，光标停在标题后
+
+https://github.com/user-attachments/assets/c78a55e6-309e-4150-92ee-d68c80d1d015
 
 **自动调整节点大小**
 - 新增「垂直边距」设置：调整高度时为内容预留上下边距
