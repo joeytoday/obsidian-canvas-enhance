@@ -49,7 +49,15 @@ https://github.com/user-attachments/assets/d98e9132-ad4f-4186-b1e3-f2f051ceabeb
 
 https://github.com/user-attachments/assets/9d0a7240-75b7-4c5c-bc42-cfba88a1e9f9
 
-将画布变成思维导图：`Tab` 创建下级节点，`Enter` 创建同级节点，`Alt+方向键` 在节点间导航。下级节点自动继承上级节点颜色。
+将画布变成思维导图：`Tab` 创建下级节点，`Enter` 创建同级节点，`Alt+方向键` 在节点间导航。下级节点自动继承上级节点颜色；新建节点自动避开已有节点，按层级顺序落位。
+
+<img width="852" height="480" alt="整体重排" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
+
+底部工具栏「整体重排」一键把整个画布排成整洁的思维导图，卡片高度自适应内容；有多个上级节点时，放在最后一个上级节点的分支之后，并相对所有上级节点垂直居中。
+
+卡片标题：新增「卡片标题」「卡片标题级别」设置，新建文本卡片时第一行自动填一级/二级/三级标题，光标停在标题后。
+
+https://github.com/user-attachments/assets/c78a55e6-309e-4150-92ee-d68c80d1d015
 
 ### 文件节点模板
 
@@ -78,6 +86,7 @@ https://github.com/user-attachments/assets/7ae37cf5-bc9d-427e-90d5-e86e044c1b79
 | 图片导出 | 导出为 PNG/SVG，支持透明度选项 |
 | 图层顺序 | 右键菜单调整节点前后叠放顺序 |
 | 浮动边 | 边自动调整连接侧，支持不连接到节点的浮动边 |
+| 自动调整节点大小 | 节点高度自适应内容，可配置最大高度与垂直边距 |
 | 20+ 命令 | 创建、导航、克隆、展开、翻转、交换等 |
 
 ### 自定义 CSS 样式
@@ -170,7 +179,15 @@ Zoom out and nodes become unreadable. Overview Mode automatically replaces card 
 
 #### Mindmap
 
-Turn your canvas into a mindmap: `Tab` creates a child node, `Enter` creates a sibling, `Alt+Arrow` navigates between nodes. Child nodes inherit the parent's color.
+Turn your canvas into a mindmap: `Tab` creates a child node, `Enter` creates a sibling, `Alt+Arrow` navigates between nodes. Child nodes inherit the parent's color. New nodes never cover existing ones — they are placed following the hierarchy order.
+
+<img width="852" height="480" alt="One-click rearrange" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
+
+"One-click Rearrange" in the bottom toolbar tidies the whole canvas into a clean mindmap, with card heights adapted to their content. Nodes with multiple parents are placed after the last parent's branch, centered on all of them.
+
+Card heading: new "Card Heading" / "Card Heading Level" settings — new text cards start with a H1/H2/H3 heading and the caret lands right after it.
+
+https://github.com/user-attachments/assets/c78a55e6-309e-4150-92ee-d68c80d1d015
 
 #### Node & Edge Styles
 
@@ -193,6 +210,7 @@ Flowchart shapes (terminal, process, decision, database…), border styles, text
 | Image Export | Export to PNG/SVG with transparency options |
 | Layer Order | Adjust node stacking order from the right-click menu |
 | Floating Edges | Edges auto-adjust connection side; support unattached edges |
+| Auto-resize Nodes | Node height adapts to content, with configurable max height and vertical padding |
 | 20+ Commands | Create, navigate, clone, expand, flip, swap, and more |
 
 #### Custom CSS Styles
