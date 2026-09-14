@@ -1,14 +1,16 @@
 // LLM Agent: This file was created by an LLM agent as part of integrating Canvas-MindMap features into Canvas Enhance.
 
-import { Platform, setIcon, setTooltip, TFile } from "obsidian"
+import { Notice, Platform, setIcon, setTooltip, TFile } from "obsidian"
 import type { MarkdownFileInfo, Scope } from "obsidian"
 import { around } from "monkey-around"
 import { Canvas, CanvasNode, CanvasView } from "src/@types/Canvas"
-import { CanvasEdgeData, CanvasFileNodeData } from "src/@types/AdvancedJsonCanvas"
+import { CanvasData, CanvasEdgeData, CanvasFileNodeData } from "src/@types/AdvancedJsonCanvas"
 import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper, { NavDirection, NAV_DIRECTIONS } from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
 import { measureNodeContentHeight } from "./auto-resize-node-canvas-extension"
+import { isMindmapEdge, layoutMindmap } from "src/utils/mindmap-layout"
+import { expandCanvasLayoutSnapshot, hasCanvasLayoutPortal } from "src/utils/canvas-layout-snapshot"
 
 const FLOATING_DIR: Record<NavDirection, { dx: number; dy: number }> = {
   up:    { dx: 0,  dy: -1 },
@@ -18,6 +20,7 @@ const FLOATING_DIR: Record<NavDirection, { dx: number; dy: number }> = {
 }
 
 type Rect = { x: number; y: number; width: number; height: number }
+type CollapseState = { collapsed?: boolean; mindmapCollapsed?: boolean }
 
 // Structural shapes for private Obsidian APIs missing from the local typings;
 // type aliases (not interfaces) to satisfy monkey-around's Record<string, any> constraint
@@ -42,10 +45,13 @@ type ShowPreviewPrototype = {
 export default class MindmapCanvasExtension extends CanvasExtension {
   private registeredViews: WeakSet<CanvasView> = new WeakSet()
   private cachedParent: { nodeId: string; parentId: string } | null = null
+  private rearranging = new WeakSet<Canvas>()
+  private unloaded = false
 
   isEnabled() { return 'mindmapFeatureEnabled' as const }
 
   init() {
+    this.plugin.register(() => { this.unloaded = true })
     this.registerCommands()
     this.registerKeyboardShortcuts()
     this.registerDeleteHandler()
@@ -96,7 +102,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
   private getChildNodes(canvas: Canvas, parent: CanvasNode): CanvasNode[] {
     return canvas.getEdgesForNode(parent)
-      .filter(e => e.from.node === parent && e.to.side === 'left')
+      .filter(e => e.from.node === parent && isMindmapEdge(e.getData()))
       .map(e => e.to.node)
       .sort((a, b) => a.y - b.y)
   }
@@ -111,7 +117,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const childrenOf = new Map<string, CanvasNode[]>()
     const incoming = new Set<string>()
     for (const edge of canvas.edges.values()) {
-      if (edge.to.side !== 'left') continue
+      if (!isMindmapEdge(edge.getData())) continue
       const fromId = edge.from.node.getData().id, toId = edge.to.node.getData().id
       if (!byId.has(fromId) || !byId.has(toId)) continue
       incoming.add(toId)
@@ -185,7 +191,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       n.setData({ ...n.getData(), y: n.y + delta })
       moved.push(n)
       for (const e of canvas.getEdgesForNode(n)) {
-        if (e.from.node === n && e.to.side === 'left') stack.push(e.to.node)
+        if (e.from.node === n && isMindmapEdge(e.getData())) stack.push(e.to.node)
       }
     }
     return moved
@@ -508,7 +514,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
         setIcon(button, 'folder-tree')
         setTooltip(button, '整体重排', { placement: 'top' })
         button.addEventListener('click', () => {
-          if (!canvas.readonly) void this.rearrangeMindmap(canvas)
+          if (!canvas.readonly) void this.rearrangeMindmap(canvas, button)
         })
         CanvasHelper.addCardMenuOption(canvas, button)
       }
@@ -517,187 +523,188 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
   // ── Auto-layout ──
 
-  // Tidies the whole canvas into a mindmap layout: depth defines the column,
-  // sibling subtrees stack as contiguous blocks, and a node with several
-  // parents is placed after its last parent's block, centered on the combined
-  // range of its parents. A per-column cursor guarantees no vertical overlaps.
-  private async rearrangeMindmap(canvas: Canvas) {
-    const cs = this.childSpacing()
-    const ss = this.siblingSpacing()
-
-    const nodes = [...canvas.nodes.values()].filter(n => n.getData().type !== 'group')
-    if (nodes.length === 0) return
-    const byId = new Map(nodes.map(n => [n.getData().id, n]))
-
-    const parentsOf = new Map<string, CanvasNode[]>()
-    for (const edge of canvas.edges.values()) {
-      if (edge.to.side !== 'left') continue
-      const from = edge.from.node, to = edge.to.node
-      if (!byId.has(from.getData().id) || !byId.has(to.getData().id)) continue
-      const list = parentsOf.get(to.getData().id)
-      if (list) list.push(from)
-      else parentsOf.set(to.getData().id, [from])
+  private async rearrangeMindmap(canvas: Canvas, button?: HTMLElement) {
+    if (this.unloaded || canvas.readonly || this.rearranging.has(canvas)) return
+    if (canvas.isDragging || [...canvas.nodes.values()].some(node => node.isEditing)) {
+      new Notice('请先结束卡片编辑或拖动，再进行整体重排。')
+      return
     }
-    for (const list of parentsOf.values()) list.sort((a, b) => a.y - b.y)
 
-    const childrenOf = new Map<string, CanvasNode[]>()
-    const ownedShared = new Map<string, CanvasNode[]>()
-    for (const [childId, parents] of parentsOf) {
-      const child = byId.get(childId)
-      if (!child) continue
-      for (const parent of parents) {
-        const list = childrenOf.get(parent.getData().id)
-        if (list) list.push(child)
-        else childrenOf.set(parent.getData().id, [child])
+    if (!this.supportsRearrangement(canvas)) return
+    const file = canvas.view.file
+    if (!file || canvas.nodes.size === 0) return
+    const viewport = { x: canvas.tx, y: canvas.ty, zoom: canvas.tZoom }
+    let layoutViewport = viewport
+    let applied = false
+    const sameCanvas = () => !this.unloaded && canvas.view.file === file &&
+      canvas.view.canvas === canvas && canvas.wrapperEl.isConnected
+    const sameViewport = () => canvas.tx === layoutViewport.x &&
+      canvas.ty === layoutViewport.y && canvas.tZoom === layoutViewport.zoom
+    const canContinue = () => sameCanvas() && !canvas.readonly && !canvas.isDragging &&
+      ![...canvas.nodes.values()].some(node => node.isEditing) && sameViewport()
+
+    this.rearranging.add(canvas)
+    button?.setAttribute('aria-busy', 'true')
+    try {
+      // Let pending editor/auto-height work finish before freezing the input.
+      await sleep(10)
+      if (!await this.waitForLayoutFrame(canvas) || !canContinue() || !this.supportsRearrangement(canvas)) return
+      const serialized = JSON.stringify(canvas.getData())
+      const before = expandCanvasLayoutSnapshot(JSON.parse(serialized) as CanvasData)
+      if (before.nodes.length === 0) return
+      const options = { childSpacing: this.childSpacing(), siblingSpacing: this.siblingSpacing() }
+      const initialLayout = layoutMindmap(before.nodes, before.edges, options)
+
+      // Mount offscreen cards without changing any saved node geometry.
+      canvas.zoomToRealBbox(CanvasHelper.getBBox(before.nodes))
+      canvas.setViewport(canvas.tx, canvas.ty, canvas.tZoom)
+      layoutViewport = { x: canvas.tx, y: canvas.ty, zoom: canvas.tZoom }
+      const heights = await this.measureLayoutHeights(canvas, before, initialLayout.rigidNodeIds, canContinue)
+      if (!heights || !canContinue()) return
+      if (JSON.stringify(canvas.getData()) !== serialized ||
+        this.childSpacing() !== options.childSpacing || this.siblingSpacing() !== options.siblingSpacing) {
+        new Notice('画布在重排期间发生变化，请重新重排。')
+        return
       }
-      if (parents.length > 1) {
-        const last = parents[parents.length - 1].getData().id
-        const list = ownedShared.get(last)
-        if (list) list.push(child)
-        else ownedShared.set(last, [child])
+
+      const after: CanvasData = {
+        ...before,
+        nodes: before.nodes.map(node => ({ ...node, height: heights.get(node.id) ?? node.height })),
       }
-    }
-    for (const list of childrenOf.values()) list.sort((a, b) => a.y - b.y)
-
-    const roots = nodes.filter(n => !parentsOf.has(n.getData().id)).sort((a, b) => a.y - b.y)
-    if (roots.length === 0) return
-
-    await this.fitNodesToContent(canvas, nodes)
-
-    // Longest-path depth so shared nodes sit one column after their deepest parent
-    const depthOf = new Map<string, number>()
-    const computeDepth = (node: CanvasNode, seen: Set<string>): number => {
-      const id = node.getData().id
-      const cached = depthOf.get(id)
-      if (cached !== undefined) return cached
-      if (seen.has(id)) return 0
-      seen.add(id)
-      const parents = parentsOf.get(id) ?? []
-      const depth = parents.length === 0 ? 0 : Math.max(...parents.map(p => computeDepth(p, seen))) + 1
-      seen.delete(id)
-      depthOf.set(id, depth)
-      return depth
-    }
-    for (const node of nodes) computeDepth(node, new Set())
-
-    const columnWidth: number[] = []
-    for (const node of nodes) {
-      const d = depthOf.get(node.getData().id) as number
-      columnWidth[d] = Math.max(columnWidth[d] ?? 0, node.width)
-    }
-    const columnX: number[] = []
-    for (let d = 0; d < columnWidth.length; d++) {
-      columnX[d] = d === 0
-        ? Math.min(...roots.map(r => r.x))
-        : columnX[d - 1] + columnWidth[d - 1] + cs
-    }
-
-    // Reserved vertical slot per node: its subtree plus any shared node that
-    // overflows its parents' combined block
-    const slotMemo = new Map<string, number>()
-    const extraMemo = new Map<string, number>()
-    const itemsTotal = (node: CanvasNode, seen: Set<string>): number => {
-      let items = 0, count = 0
-      for (const kid of childrenOf.get(node.getData().id) ?? []) {
-        items += slot(kid, seen)
-        count++
-        for (const shared of ownedShared.get(kid.getData().id) ?? []) {
-          items += extra(shared, seen)
-          count++
-        }
-      }
-      return count === 0 ? 0 : items + ss * (count - 1)
-    }
-    function slot(node: CanvasNode, seen: Set<string> = new Set()): number {
-      const id = node.getData().id
-      const cached = slotMemo.get(id)
-      if (cached !== undefined) return cached
-      if (seen.has(id)) return node.height
-      seen.add(id)
-      const result = Math.max(node.height, itemsTotal(node, seen))
-      seen.delete(id)
-      slotMemo.set(id, result)
-      return result
-    }
-    function extra(node: CanvasNode, seen: Set<string> = new Set()): number {
-      const id = node.getData().id
-      const cached = extraMemo.get(id)
-      if (cached !== undefined) return cached
-      const parents = parentsOf.get(id) ?? []
-      const range = parents.reduce((acc, p) => acc + slot(p, seen), -ss)
-      const result = Math.max(0, slot(node, seen) - range)
-      extraMemo.set(id, result)
-      return result
-    }
-
-    const columnEnd: number[] = []
-    const place = (node: CanvasNode, top: number) => {
-      const id = node.getData().id
-      const depth = depthOf.get(id) as number
-      const total = slot(node)
-
-      const actualTop = Math.max(top, (columnEnd[depth] ?? -Infinity) + ss)
-      columnEnd[depth] = actualTop + total
-      node.setData({
-        ...node.getData(),
-        x: columnX[depth],
-        y: actualTop + (total - node.height) / 2,
+      const result = heights.size > 0 ? layoutMindmap(after.nodes, after.edges, {
+        ...options, fixedGroups: initialLayout.rigidGroups,
+      }) : initialLayout
+      let changed = false
+      after.nodes = after.nodes.map((node, index) => {
+        const position = result.positions.get(node.id)!
+        const original = before.nodes[index]
+        const x = Math.abs(position.x - original.x) < 1e-6 ? original.x : position.x
+        const y = Math.abs(position.y - original.y) < 1e-6 ? original.y : position.y
+        changed ||= x !== original.x || y !== original.y || node.height !== original.height
+        return { ...node, x, y }
       })
+      if (!changed) return
 
-      let cursor = actualTop + (total - itemsTotal(node, new Set())) / 2
-      const slotTop = new Map<string, number>()
-      for (const kid of childrenOf.get(id) ?? []) {
-        place(kid, cursor)
-        slotTop.set(kid.getData().id, cursor)
-        cursor += slot(kid) + ss
-        for (const shared of ownedShared.get(kid.getData().id) ?? []) {
-          const parents = parentsOf.get(shared.getData().id) as CanvasNode[]
-          const rangeTop = slotTop.get(parents[0].getData().id) ?? cursor
-          const rangeBottom = cursor - ss
-          place(shared, (rangeTop + rangeBottom) / 2 - slot(shared) / 2)
-          cursor += extra(shared) + ss
-        }
+      this.applyMindmapLayout(canvas, before, after)
+      applied = true
+      const visible = [...canvas.nodes.values()].filter(node => node.nodeEl.getClientRects().length > 0)
+      if (visible.length > 0) {
+        canvas.zoomToRealBbox(BBoxHelper.enlargeBBox(CanvasHelper.getBBox(visible.map(node => node.getData())), 20))
+        canvas.setViewport(canvas.tx, canvas.ty, canvas.tZoom)
       }
+    } catch (error) {
+      console.error('Failed to rearrange canvas:', error)
+      new Notice('重排失败，请查看控制台。')
+    } finally {
+      // Preserve a viewport the user changed during the asynchronous measurement.
+      if (!applied && sameCanvas() && sameViewport())
+        canvas.setViewport(viewport.x, viewport.y, viewport.zoom)
+      this.rearranging.delete(canvas)
+      button?.removeAttribute('aria-busy')
     }
-
-    let cursor = Math.min(...roots.map(r => r.y))
-    for (const root of roots) {
-      place(root, cursor)
-      cursor += slot(root) + ss
-    }
-
-    canvas.requestSave()
-
-    // Show the tidied result
-    canvas.zoomToRealBbox(BBoxHelper.enlargeBBox(BBoxHelper.combineBBoxes(nodes.map(n => n.getBBox())), 1.1))
-    canvas.setViewport(canvas.tx, canvas.ty, canvas.tZoom)
   }
 
-  // Resizes text/markdown nodes to their content so the layout uses real heights
-  private async fitNodesToContent(canvas: Canvas, nodes: CanvasNode[]) {
-    // Offscreen node content renders lazily, so zoom out until everything is mounted
-    canvas.zoomToRealBbox(BBoxHelper.combineBBoxes(nodes.map(n => n.getBBox())))
-    canvas.setViewport(canvas.tx, canvas.ty, canvas.tZoom)
+  private supportsRearrangement(canvas: Canvas): boolean {
+    // Portal projections still need a separate adapter. Inspect stored children
+    // too: a closed group can hide a portal from the live node map.
+    const nodes = [...canvas.nodes.values()].map(node => node.getData())
+    if (hasCanvasLayoutPortal({ nodes })) {
+      new Notice('含传送门的画布暂不支持整体重排，卡片未移动。')
+      return false
+    }
+    return true
+  }
+
+  private waitForLayoutFrame(canvas: Canvas): Promise<boolean> {
+    const win = canvas.wrapperEl.ownerDocument.defaultView
+    if (!win) return Promise.resolve(false)
+    return new Promise(resolve => {
+      const timeout = window.setTimeout(() => {
+        win.cancelAnimationFrame(frame)
+        resolve(false)
+      }, 1000)
+      const frame = win.requestAnimationFrame(() => {
+        window.clearTimeout(timeout)
+        resolve(true)
+      })
+    })
+  }
+
+  private async measureLayoutHeights(
+    canvas: Canvas,
+    data: CanvasData,
+    rigidNodeIds: Set<string>,
+    canContinue: () => boolean,
+  ): Promise<Map<string, number> | null> {
+    const heights = new Map<string, number>()
+    const candidates = data.nodes.filter(node => !rigidNodeIds.has(node.id) && !node.ratio &&
+      (node.type === 'text' || (node.type === 'file' && (node as CanvasFileNodeData).file.endsWith('.md'))))
     await sleep(10)
     const start = performance.now()
-    while (nodes.some(n => n.initialized === false || n.isContentMounted === false) && performance.now() - start < 1000)
-      await sleep(10)
+    while (canContinue() && performance.now() - start < 1000 && candidates.some(data => {
+      const node = canvas.nodes.get(data.id)
+      return node?.nodeEl.isConnected && !node.nodeEl.classList.contains('ce-mindmap-hidden') &&
+        (node.initialized === false || node.isContentMounted === false)
+    })) await sleep(10)
+    // Rendering during the wait can queue another auto-height frame. Flush it
+    // before measuring; the caller then rejects a snapshot that changed.
+    if (!await this.waitForLayoutFrame(canvas) || !canContinue()) return null
 
     const padding = this.plugin.settings.getSetting('autoResizeNodeVerticalPadding')
     const maxHeight = this.plugin.settings.getSetting('autoResizeNodeMaxHeight')
-    for (const node of nodes) {
-      const data = node.getData()
-      const isMarkdownFile = data.type === 'file' && (data as CanvasFileNodeData).file.endsWith('.md')
-      if (data.type !== 'text' && !isMarkdownFile) continue
-
+    for (const data of candidates) {
+      const node = canvas.nodes.get(data.id)
+      if (!node?.nodeEl.isConnected || node.initialized === false || node.isContentMounted === false ||
+        node.nodeEl.getClientRects().length === 0) continue
       const measured = measureNodeContentHeight(node)
-      if (measured === null) continue
-
+      if (measured === null || !Number.isFinite(measured) || measured <= 0) continue
       let height = measured + padding
-      if (maxHeight != -1 && height > maxHeight) height = maxHeight
+      if (maxHeight !== -1) height = Math.min(height, maxHeight)
       height = Math.max(height, canvas.config.minContainerDimension)
-      if (height === node.height) continue
-      node.setData({ ...data, height })
+      if (Number.isFinite(height) && height > 0 && Math.abs(height - data.height) >= 1e-6)
+        heights.set(data.id, height)
+    }
+    return heights
+  }
+
+  private applyMindmapLayout(canvas: Canvas, before: CanvasData, after: CanvasData) {
+    // Flush pending edits and make the current history item match the on-screen
+    // state. Native history.push does not deduplicate entries.
+    canvas.overrideHistory()
+    const history = { data: [...canvas.history.data], current: canvas.history.current }
+    try {
+      // Group import hooks fold nodes into collapsedData in-place. Keep the
+      // logical plan intact for validation and for a possible rollback.
+      canvas.importData(JSON.parse(JSON.stringify(after)) as CanvasData, true)
+      const actual = expandCanvasLayoutSnapshot(canvas.getData())
+      const nodes = new Map(actual.nodes.map(node => [node.id, node]))
+      const edges = new Map(actual.edges.map(edge => [edge.id, edge]))
+      const geometryMatches = after.nodes.length === actual.nodes.length && after.nodes.every(expected => {
+        const node = nodes.get(expected.id)
+        return node && node.type === expected.type &&
+          (node as CollapseState).collapsed === (expected as CollapseState).collapsed &&
+          (node as CollapseState).mindmapCollapsed === (expected as CollapseState).mindmapCollapsed &&
+          (['x', 'y', 'width', 'height'] as const).every(key =>
+          Math.abs(node[key] - expected[key]) < 1e-6)
+      })
+      const connectionsMatch = after.edges.length === actual.edges.length && after.edges.every(expected => {
+        const edge = edges.get(expected.id)
+        return edge?.fromNode === expected.fromNode && edge.toNode === expected.toNode
+      })
+      if (!geometryMatches || !connectionsMatch)
+        throw new Error('Canvas geometry or connections changed while applying the layout')
+
+      // Floating-edge hooks may update sides during import. Record their final
+      // result so redo restores exactly the state that was shown to the user.
+      canvas.pushHistory(actual)
+      canvas.requestSave(false)
+    } catch (error) {
+      canvas.importData(JSON.parse(JSON.stringify(before)) as CanvasData, true)
+      canvas.history.data = history.data
+      canvas.history.current = history.current
+      canvas.updateHistoryUI()
+      canvas.requestSave(false)
+      throw error
     }
   }
 

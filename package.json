@@ -1,13 +1,14 @@
 {
   "name": "obsidian-canvas-enhance",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "AGPL-3.0-only",
   "main": "src/main.js",
   "scripts": {
     "postinstall": "patch-package",
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production",
-    "lint": "eslint src/ --ext .ts,.tsx"
+    "lint": "eslint src/ --ext .ts,.tsx",
+    "test": "node --test tests/*.test.cjs"
   },
   "devDependencies": {
     "@types/node": "^16.11.6",

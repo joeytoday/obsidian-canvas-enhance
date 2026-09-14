@@ -331,6 +331,8 @@ export interface Canvas {
 
   history: CanvasHistory
   pushHistory(data: CanvasElementsData): void
+  overrideHistory(): void
+  updateHistoryUI(): void
   undo(): void
   redo(): void
 
@@ -339,7 +341,7 @@ export interface Canvas {
   handleCopy(e: ClipboardEvent): void
 
   handlePaste(): void
-  requestSave(): void
+  requestSave(addHistory?: boolean): void
 
   onResize(): void
 

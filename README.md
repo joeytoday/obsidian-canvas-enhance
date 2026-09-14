@@ -53,7 +53,9 @@ https://github.com/user-attachments/assets/9d0a7240-75b7-4c5c-bc42-cfba88a1e9f9
 
 <img width="852" height="480" alt="整体重排" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
 
-底部工具栏「整体重排」一键把整个画布排成整洁的思维导图，卡片高度自适应内容；有多个上级节点时，放在最后一个上级节点的分支之后，并相对所有上级节点垂直居中。
+底部工具栏「整体重排」整理整个画布，普通思维导图保持分支连续，多条分支汇入的共享卡片只排布一次，并在避免重叠的前提下尽量对齐关联卡片。可见文本卡片高度自适应内容；折叠隐藏、固定宽高比及环形结构中的卡片保留尺寸。输入不变时重复重排不再漂移，重排支持一次撤销。
+
+分组框与内部卡片整体移动，保留组内排版、尺寸和折叠状态；嵌套、重叠分组以及压在组边界上的卡片一起平移。浮动连线按起点、终点识别层级，连接边仍自动选择。含传送门的画布暂不支持整体重排，会提示并保留原布局。
 
 卡片标题：新增「卡片标题」「卡片标题级别」设置，新建文本卡片时第一行自动填一级/二级/三级标题，光标停在标题后。
 
@@ -183,7 +185,9 @@ Turn your canvas into a mindmap: `Tab` creates a child node, `Enter` creates a s
 
 <img width="852" height="480" alt="One-click rearrange" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
 
-"One-click Rearrange" in the bottom toolbar tidies the whole canvas into a clean mindmap, with card heights adapted to their content. Nodes with multiple parents are placed after the last parent's branch, centered on all of them.
+"One-click Rearrange" keeps ordinary mindmap branches together and places shared cards once, aligning related cards where spacing allows. Visible text cards fit their content; hidden cards, cards with a fixed aspect ratio, and cards in cycles keep their sizes. Repeated rearrangement stays stable when the input is unchanged, and the layout can be undone in one step.
+
+Groups move together with their cards, preserving internal positions, sizes, and collapsed states. Nested or overlapping groups and cards crossing a group border move as one region. Floating connections retain their directed hierarchy while attachment sides adjust automatically. Canvases containing portals are not yet supported; they show a notice and keep their existing layout.
 
 Card heading: new "Card Heading" / "Card Heading Level" settings — new text cards start with a H1/H2/H3 heading and the caret lands right after it.
 

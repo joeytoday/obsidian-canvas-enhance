@@ -2,6 +2,7 @@ import { setIcon } from "obsidian"
 import { BBox, Canvas, CanvasEdge, CanvasNode, SelectionData } from "src/@types/Canvas"
 import { CanvasNodeData } from "src/@types/AdvancedJsonCanvas"
 import CanvasExtension from "./canvas-extension"
+import { isMindmapEdge } from "src/utils/mindmap-layout"
 
 // Not `collapsed` — that key is owned by the collapsible-groups feature
 // (dataset exposer, group CSS and group load logic all key on it)
@@ -73,9 +74,9 @@ export default class MindmapCollapseCanvasExtension extends CanvasExtension {
     this.refresh(canvas)
   }
 
-  // Mindmap hierarchy runs along edges that enter the child's left side
+  // Use the same hierarchy as rearrangement, including floating target sides.
   private isMindmapEdge(edge: CanvasEdge): boolean {
-    return edge.to.side === 'left'
+    return isMindmapEdge(edge.getData())
   }
 
   // A node is hidden when it has at least one mindmap parent and all of them
