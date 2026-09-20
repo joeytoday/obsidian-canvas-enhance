@@ -3,6 +3,7 @@ import { ExtendedMetadataCache, FrontmatterLinkCache, Notice, TFile } from "obsi
 import { ExtendedCachedMetadata, ExtendedEmbedCache, ExtendedLinkCache } from "src/@types/Obsidian"
 import HashHelper from "src/utils/hash-helper"
 import TaskQueue from "src/utils/task-queue"
+import { t } from "src/i18n"
 
 export default class CanvasMetadataHandler {
   static metadataQueue: TaskQueue = new TaskQueue()
@@ -57,7 +58,7 @@ export default class CanvasMetadataHandler {
     )
 
     const slowIndexingTimeout = window.setTimeout(() => {
-      new Notice(`Canvas 索引文件 ${file.path} 耗时较长`)
+      new Notice(t('notice.slowIndex', { path: file.path }))
     }, 10000)
 
     try {

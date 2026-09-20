@@ -2,6 +2,7 @@ import { Canvas, Position } from "src/@types/Canvas"
 import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
 import BBoxHelper from "src/utils/bbox-helper"
+import { t } from "src/i18n"
 
 const GROUP_NODE_SIZE = { width: 300, height: 300 }
 const GROUP_NODE_PADDING = 20
@@ -12,7 +13,7 @@ export default class GroupCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.addCommand({
       id: 'create-group-around-selection',
-      name: '组合选中节点',
+      name: t('cmd.groupSelection'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.selection.size > 0,
@@ -29,7 +30,7 @@ export default class GroupCanvasExtension extends CanvasExtension {
             canvas,
             {
               id: 'create-group',
-              label: '拖动添加分组',
+              label: t('menu.dragToAddGroup'),
               icon: 'group'
             },
             () => GROUP_NODE_SIZE,

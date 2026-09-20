@@ -6,24 +6,19 @@ import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper, { ConnectionDirection, MenuOption, NavDirection, NAV_DIRECTIONS } from "src/utils/canvas-helper"
 import { FileSelectModal } from "src/utils/modal-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 const EDGE_DIRECTION_MENU: Record<ConnectionDirection, MenuOption> = {
-  connected: { id: 'select-connected-edges', icon: 'arrows-selected', label: '选择相连的边' },
-  outgoing:  { id: 'select-outgoing-edges', icon: 'arrow-right-selected', label: '选择出边' },
-  incoming:  { id: 'select-incoming-edges', icon: 'arrow-left-selected', label: '选择入边' },
+  connected: { id: 'select-connected-edges', icon: 'arrows-selected', get label() { return t('cmd.edges.connected') } },
+  outgoing:  { id: 'select-outgoing-edges', icon: 'arrow-right-selected', get label() { return t('cmd.edges.outgoing') } },
+  incoming:  { id: 'select-incoming-edges', icon: 'arrow-left-selected', get label() { return t('cmd.edges.incoming') } },
 }
 
 const NAV_DIRECTION_LABELS: Record<NavDirection, string> = {
-  up: '向上',
-  down: '向下',
-  left: '向左',
-  right: '向右',
-}
-
-const EDGE_TYPE_LABELS: Record<'connected' | 'incoming' | 'outgoing', string> = {
-  connected: '相连的',
-  incoming: '入',
-  outgoing: '出',
+  get up() { return t('cmd.direction.up') },
+  get down() { return t('cmd.direction.down') },
+  get left() { return t('cmd.direction.left') },
+  get right() { return t('cmd.direction.right') },
 }
 
 export default class CommandsCanvasExtension extends CanvasExtension {
@@ -32,7 +27,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.addCommand({
       id: 'toggle-readonly',
-      name: '切换只读模式',
+      name: t('cmd.toggleReadonly'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (_canvas: Canvas) => true,
@@ -42,7 +37,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'create-text-node',
-      name: '创建文本节点',
+      name: t('cmd.createTextNode'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly,
@@ -52,7 +47,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'create-file-node',
-      name: '创建文件节点',
+      name: t('cmd.createFileNode'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly,
@@ -62,7 +57,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'select-all-edges',
-      name: '选择所有边',
+      name: t('cmd.selectAllEdges'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (_canvas: Canvas) => true,
@@ -74,7 +69,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'zoom-to-selection',
-      name: '缩放到选中区域',
+      name: t('cmd.zoomToSelection'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.selection.size > 0,
@@ -84,7 +79,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'zoom-to-fit',
-      name: '缩放以适应画布',
+      name: t('cmd.zoomToFit'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (_canvas: Canvas) => true,
@@ -95,7 +90,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     for (const direction of NAV_DIRECTIONS) {
       this.plugin.addCommand({
         id: `clone-node-${direction}`,
-        name: `克隆节点（${NAV_DIRECTION_LABELS[direction]}）`,
+        name: t('cmd.cloneNode', { direction: NAV_DIRECTION_LABELS[direction] }),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1 && canvas.selection.values().next().value?.getData().type === 'text',
@@ -105,7 +100,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
       this.plugin.addCommand({
         id: `expand-node-${direction}`,
-        name: `扩展节点（${NAV_DIRECTION_LABELS[direction]}）`,
+        name: t('cmd.expandNode', { direction: NAV_DIRECTION_LABELS[direction] }),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1,
@@ -115,7 +110,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
       this.plugin.addCommand({
         id: `navigate-${direction}`,
-        name: `导航（${NAV_DIRECTION_LABELS[direction]}）`,
+        name: t('cmd.navigate', { direction: NAV_DIRECTION_LABELS[direction] }),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (canvas: Canvas) => canvas.getSelectionData().nodes.length === 1,
@@ -126,7 +121,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'flip-selection-horizontally',
-      name: '水平翻转选中区域',
+      name: t('cmd.flipHorizontal'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.selection.size > 0,
@@ -136,7 +131,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'flip-selection-vertically',
-      name: '垂直翻转选中区域',
+      name: t('cmd.flipVertical'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.selection.size > 0,
@@ -147,7 +142,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     for (const type of ['connected', 'incoming', 'outgoing'] as const) {
       this.plugin.addCommand({
         id: `select-${type}-edges`,
-        name: `选择${EDGE_TYPE_LABELS[type]}边`,
+        name: EDGE_DIRECTION_MENU[type].label,
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (canvas: Canvas) => canvas.selection.size > 0,
@@ -158,7 +153,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'swap-nodes',
-      name: '交换节点',
+      name: t('cmd.swapNodes'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.getSelectionData().nodes.length === 2,
@@ -180,7 +175,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'copy-wikilink-to-node',
-      name: '复制节点 Wikilink',
+      name: t('cmd.copyWikilink'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1,
@@ -198,7 +193,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'pull-outgoing-links-to-canvas',
-      name: '拉取出链到画布',
+      name: t('cmd.pullOutgoingLinks'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly,
@@ -243,7 +238,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'pull-backlinks-to-canvas',
-      name: '拉取反向链接到画布',
+      name: t('cmd.pullBacklinks'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly,
@@ -337,7 +332,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     if (this.plugin.settings.getSetting('enableSingleNodePopupReferenceCopy') && selectionNodeData.length === 1) {
       CanvasHelper.addPopupMenuOption(canvas, CanvasHelper.createPopupMenuOption({
         id: 'node-popup-menu-option-copy-reference',
-        label: '复制节点 Wikilink',
+        label: t('cmd.copyWikilink'),
         icon: 'link',
         callback: () => CanvasHelper.copyWikilinkToNode(canvas.view.file, selectionNodeData[0])
       }))

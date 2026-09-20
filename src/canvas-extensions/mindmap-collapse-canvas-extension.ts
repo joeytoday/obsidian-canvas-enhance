@@ -3,6 +3,7 @@ import { BBox, Canvas, CanvasEdge, CanvasNode, SelectionData } from "src/@types/
 import { CanvasNodeData } from "src/@types/AdvancedJsonCanvas"
 import CanvasExtension from "./canvas-extension"
 import { isMindmapEdge } from "src/utils/mindmap-layout"
+import { t } from "src/i18n"
 
 // Not `collapsed` — that key is owned by the collapsible-groups feature
 // (dataset exposer, group CSS and group load logic all key on it)
@@ -160,7 +161,7 @@ export default class MindmapCollapseCanvasExtension extends CanvasExtension {
 
     const collapsed = this.isCollapsed(node)
     setIcon(node.mindmapCollapseEl, collapsed ? 'plus-circle' : 'minus-circle')
-    node.mindmapCollapseEl.setAttribute('aria-label', collapsed ? '展开下级节点' : '折叠下级节点')
+    node.mindmapCollapseEl.setAttribute('aria-label', collapsed ? t('mindmap.expandChildren') : t('mindmap.collapseChildren'))
   }
 
   // ── Structure changes ──

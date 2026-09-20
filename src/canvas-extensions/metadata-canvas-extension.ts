@@ -2,6 +2,7 @@ import { Notice } from "obsidian"
 import { Canvas, CanvasView } from "src/@types/Canvas"
 import { CURRENT_SPEC_VERSION } from "src/utils/migration-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 export default class MetadataCanvasExtension extends CanvasExtension {
   isEnabled() { return true }
@@ -28,7 +29,7 @@ export default class MetadataCanvasExtension extends CanvasExtension {
   private onCanvasChanged(canvas: Canvas): void {
     const metadata = canvas.getData()?.metadata
     if (!metadata || metadata.version !== CURRENT_SPEC_VERSION)
-      return void new Notice("未找到元数据节点或版本不匹配，应已迁移但未执行。")
+      return void new Notice(t('notice.metadataNodeMissing'))
 
     // Add proxy to metadata to listen for changes
     const that = this // eslint-disable-line @typescript-eslint/no-this-alias -- For patcher

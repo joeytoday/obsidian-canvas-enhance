@@ -2,6 +2,7 @@ import { Canvas } from "src/@types/Canvas"
 import CanvasExtension from "./canvas-extension"
 import CanvasHelper from "src/utils/canvas-helper"
 import { Notice } from "obsidian"
+import { t } from "src/i18n"
 
 export default class FrontmatterControlButtonCanvasExtension extends CanvasExtension {
   isEnabled() { return 'canvasMetadataCompatibilityEnabled' as const }
@@ -24,11 +25,11 @@ export default class FrontmatterControlButtonCanvasExtension extends CanvasExten
       CanvasHelper.createControlMenuButton({
         id: 'properties-button',
         icon: 'info',
-        label: '属性',
+        label: t('menu.properties'),
         callback: () => {
           const propertiesPlugin = this.plugin.app.internalPlugins.plugins['properties']
           if (!propertiesPlugin?._loaded) {
-            new Notice(`未找到核心插件"属性视图"或未启用。请启用并重启 Obsidian。`)
+            new Notice(t('notice.propertiesMissing'))
             return
           }
 

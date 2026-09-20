@@ -1,29 +1,32 @@
 import type { StyleAttribute } from "src/canvas-extensions/advanced-styles/style-config"
+import { t } from "src/i18n"
+import type { LanguageSetting } from "src/i18n"
 
 export const NODE_TYPE_OPTIONS = {
-  'native': '原生',
-  'text': '文本',
-  'file': '文件'
+  get native() { return t('settings.general.nodeTypeOnDoubleClick.option.native') },
+  get text() { return t('settings.general.nodeTypeOnDoubleClick.option.text') },
+  get file() { return t('settings.general.nodeTypeOnDoubleClick.option.file') }
 } as const
 
 export const TEXT_CARD_HEADING_LEVEL_OPTIONS = {
-  '1': '一级标题',
-  '2': '二级标题',
-  '3': '三级标题'
+  get '1'() { return t('settings.general.textCardHeadingLevel.option.1') },
+  get '2'() { return t('settings.general.textCardHeadingLevel.option.2') },
+  get '3'() { return t('settings.general.textCardHeadingLevel.option.3') }
 } as const
 
 export const EDGE_LINE_DIRECTION_OPTIONS = {
-  'nondirectional': '无方向',
-  'unidirectional': '单向',
-  'bidirectional': '双向'
+  get nondirectional() { return t('settings.edgesStylingFeatureEnabled.defaultEdgeLineDirection.option.nondirectional') },
+  get unidirectional() { return t('settings.edgesStylingFeatureEnabled.defaultEdgeLineDirection.option.unidirectional') },
+  get bidirectional() { return t('settings.edgesStylingFeatureEnabled.defaultEdgeLineDirection.option.bidirectional') }
 } as const
 
 export const OVERVIEW_FILE_NODE_TITLE_OPTIONS = {
-  'filename': '文件名',
-  'first-line': '第一行标题'
+  get filename() { return t('settings.overviewModeFeatureEnabled.overviewModeFileNodeTitle.option.filename') },
+  get 'first-line'() { return t('settings.overviewModeFeatureEnabled.overviewModeFileNodeTitle.option.first-line') }
 } as const
 
 export interface CanvasEnhancePluginSettingsValues {
+  language: LanguageSetting
   nodeTypeOnDoubleClick: keyof typeof NODE_TYPE_OPTIONS
   openFileNodeInSplit: boolean
   alignNewNodesToGrid: boolean
@@ -129,6 +132,7 @@ export interface CanvasEnhancePluginSettingsValues {
 }
 
 export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
+  language: 'auto',
   nodeTypeOnDoubleClick: 'text',
   openFileNodeInSplit: true,
   alignNewNodesToGrid: true,

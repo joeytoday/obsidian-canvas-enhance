@@ -1,6 +1,7 @@
 import { setIcon } from "obsidian"
 import { CanvasView } from "src/@types/Canvas"
 import { CanvasGroupNodeData, CanvasTextNodeData } from "src/@types/AdvancedJsonCanvas"
+import { t } from "src/i18n"
 
 interface SearchMatch {
   nodeId: string
@@ -49,21 +50,21 @@ export default class CanvasSearchView {
 
     const previousButton = documentSearchButtons.createEl("button")
     previousButton.className = "clickable-icon document-search-button"
-    previousButton.setAttribute("aria-label", "Previous\nShift + F3")
+    previousButton.setAttribute("aria-label", t('search.previous'))
     previousButton.setAttribute("data-tooltip-position", "top")
     setIcon(previousButton, "arrow-up")
     previousButton.addEventListener("click", () => this.changeMatch(this.matchIndex - 1))
 
     const nextButton = documentSearchButtons.createEl("button")
     nextButton.className = "clickable-icon document-search-button"
-    nextButton.setAttribute("aria-label", "Next\nF3")
+    nextButton.setAttribute("aria-label", t('search.next'))
     nextButton.setAttribute("data-tooltip-position", "top")
     setIcon(nextButton, "arrow-down")
     nextButton.addEventListener("click", () => this.changeMatch(this.matchIndex + 1))
 
     const closeButton = documentSearch.createEl("button")
     closeButton.className = "clickable-icon document-search-close-button"
-    closeButton.setAttribute("aria-label", "Exit search")
+    closeButton.setAttribute("aria-label", t('search.exit'))
     closeButton.setAttribute("data-tooltip-position", "top")
     setIcon(closeButton, "x")
     closeButton.addEventListener("click", () => this.close())

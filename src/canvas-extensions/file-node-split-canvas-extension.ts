@@ -1,6 +1,7 @@
 import { Menu, TFile, WorkspaceLeaf, WorkspaceTabs } from 'obsidian'
 import { Canvas, CanvasNode } from 'src/@types/Canvas'
 import CanvasExtension from './canvas-extension'
+import { t } from "src/i18n"
 
 export default class FileNodeSplitCanvasExtension extends CanvasExtension {
   isEnabled() { return 'openFileNodeInSplit' as const }
@@ -27,7 +28,7 @@ export default class FileNodeSplitCanvasExtension extends CanvasExtension {
     if (!file) return
 
     menu.addItem(item => {
-      item.setTitle('在侧边栏打开')
+      item.setTitle(t('menu.openInSidebar'))
         .setIcon('lucide-panel-right')
         .setSection('canvas')
         .onClick(() => this.openInSidePane(file, node.canvas.view.leaf))

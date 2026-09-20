@@ -1,5 +1,6 @@
 import { CanvasNodeType } from "src/@types/AdvancedJsonCanvas"
 import TextHelper from "src/utils/text-helper"
+import { t } from "src/i18n"
 
 export interface StyleAttributeOption {
   icon: string
@@ -49,95 +50,95 @@ export function styleAttributeValidator(json: Record<string, any>): StyleAttribu
 export const BUILTIN_NODE_STYLE_ATTRIBUTES = [
   {
     key: 'textAlign',
-    label: '文本对齐',
+    get label() { return t('style.textAlign.label') },
     nodeTypes: ['text'],
     options: [
       {
         icon: 'align-left',
-        label: '左对齐',
+        get label() { return t('style.textAlign.option.align-left') },
         value: null
       },
       {
         icon: 'align-center',
-        label: '居中',
+        get label() { return t('style.textAlign.option.align-center') },
         value: 'center'
       },
       {
         icon: 'align-right',
-        label: '右对齐',
+        get label() { return t('style.textAlign.option.align-right') },
         value: 'right'
       }
     ]
   },
   {
     key: 'shape',
-    label: '形状',
+    get label() { return t('style.shape.label') },
     nodeTypes: ['text'],
     options: [
       {
         icon: 'rectangle-horizontal',
-        label: '圆角矩形',
+        get label() { return t('style.shape.option.rectangle-horizontal') },
         value: null
       },
       {
         icon: 'shape-pill',
-        label: '胶囊',
+        get label() { return t('style.shape.option.shape-pill') },
         value: 'pill'
       },
       {
         icon: 'diamond',
-        label: '菱形',
+        get label() { return t('style.shape.option.diamond') },
         value: 'diamond'
       },
       {
         icon: 'shape-parallelogram',
-        label: '平行四边形',
+        get label() { return t('style.shape.option.shape-parallelogram') },
         value: 'parallelogram'
       },
       {
         icon: 'circle',
-        label: '圆形',
+        get label() { return t('style.shape.option.circle') },
         value: 'circle'
       },
       {
         icon: 'shape-predefined-process',
-        label: '预定义流程',
+        get label() { return t('style.shape.option.shape-predefined-process') },
         value: 'predefined-process'
       },
       {
         icon: 'shape-document',
-        label: '文档',
+        get label() { return t('style.shape.option.shape-document') },
         value: 'document'
       },
       {
         icon: 'shape-database',
-        label: '数据库',
+        get label() { return t('style.shape.option.shape-database') },
         value: 'database'
       }
     ]
   },
   {
     key: 'border',
-    label: '边框',
+    get label() { return t('style.border.label') },
     options: [
       {
         icon: 'border-solid',
-        label: '实线',
+        get label() { return t('style.border.option.border-solid') },
         value: null
       },
       {
         icon: 'border-dashed',
-        label: '虚线',
+        get label() { return t('style.border.option.border-dashed') },
         value: 'dashed'
       },
       {
         icon: 'border-dotted',
-        label: '点线',
+        get label() { return t('style.border.option.border-dotted') },
         value: 'dotted'
       },
       {
         icon: 'eye-off',
-        label: '隐藏',
+        get label() { return t('style.border.option.eye-off') },
         value: 'invisible'
       }
     ]
@@ -147,103 +148,103 @@ export const BUILTIN_NODE_STYLE_ATTRIBUTES = [
 export const BUILTIN_EDGE_STYLE_ATTRIBUTES = [
   {
     key: 'path',
-    label: '路径样式',
+    get label() { return t('style.path.label') },
     options: [
       {
         icon: 'path-solid',
-        label: '实线',
+        get label() { return t('style.path.option.path-solid') },
         value: null
       },
       {
         icon: 'path-dotted',
-        label: '点线',
+        get label() { return t('style.path.option.path-dotted') },
         value: 'dotted'
       },
       {
         icon: 'path-short-dashed',
-        label: '短虚线',
+        get label() { return t('style.path.option.path-short-dashed') },
         value: 'short-dashed'
       },
       {
         icon: 'path-long-dashed',
-        label: '长虚线',
+        get label() { return t('style.path.option.path-long-dashed') },
         value: 'long-dashed'
       }
     ]
   },
   {
     key: 'arrow',
-    label: '箭头样式',
+    get label() { return t('style.arrow.label') },
     options: [
       {
         icon: 'arrow-triangle',
-        label: '三角形',
+        get label() { return t('style.arrow.option.arrow-triangle') },
         value: null
       },
       {
         icon: 'arrow-triangle-outline',
-        label: '三角形轮廓',
+        get label() { return t('style.arrow.option.arrow-triangle-outline') },
         value: 'triangle-outline'
       },
       {
         icon: 'arrow-thin-triangle',
-        label: '细三角形',
+        get label() { return t('style.arrow.option.arrow-thin-triangle') },
         value: 'thin-triangle'
       },
       {
         icon: 'arrow-halved-triangle',
-        label: '半三角形',
+        get label() { return t('style.arrow.option.arrow-halved-triangle') },
         value: 'halved-triangle'
       },
       {
         icon: 'arrow-diamond',
-        label: '菱形',
+        get label() { return t('style.arrow.option.arrow-diamond') },
         value: 'diamond'
       },
       {
         icon: 'arrow-diamond-outline',
-        label: '菱形轮廓',
+        get label() { return t('style.arrow.option.arrow-diamond-outline') },
         value: 'diamond-outline'
       },
       {
         icon: 'arrow-circle',
-        label: '圆形',
+        get label() { return t('style.arrow.option.arrow-circle') },
         value: 'circle'
       },
       {
         icon: 'arrow-circle-outline',
-        label: '圆形轮廓',
+        get label() { return t('style.arrow.option.arrow-circle-outline') },
         value: 'circle-outline'
       },
       {
         icon: 'tally-1',
-        label: '平头',
+        get label() { return t('style.arrow.option.tally-1') },
         value: 'blunt'
       }
     ]
   },
   {
     key: 'pathfindingMethod',
-    label: '连线走向',
+    get label() { return t('style.pathfindingMethod.label') },
     options: [
       {
         icon: 'pathfinding-method-bezier',
-        label: '曲线',
+        get label() { return t('style.pathfindingMethod.option.pathfinding-method-bezier') },
         value: null
       },
       {
         icon: 'slash',
-        label: '直线',
+        get label() { return t('style.pathfindingMethod.option.slash') },
         value: 'direct'
       },
       {
         icon: 'pathfinding-method-square',
-        label: '直角折线',
+        get label() { return t('style.pathfindingMethod.option.pathfinding-method-square') },
         value: 'square'
       },
       {
         icon: 'map',
-        label: '自动避障',
+        get label() { return t('style.pathfindingMethod.option.map') },
         value: 'a-star'
       }
     ]

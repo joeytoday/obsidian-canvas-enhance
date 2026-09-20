@@ -4,6 +4,7 @@ import { BBox, Canvas, CanvasNode, SelectionData } from "src/@types/Canvas"
 import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 export default class CollapsibleGroupsCanvasExtension extends CanvasExtension {
   isEnabled() { return 'collapsibleGroupsFeatureEnabled' as const }
@@ -36,7 +37,7 @@ export default class CollapsibleGroupsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'toggle-collapse-group',
-      name: '折叠/展开分组',
+      name: t('cmd.toggleGroupCollapse'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.selection.size === 1 && canvas.selection.values().next().value.getData().type === 'group',

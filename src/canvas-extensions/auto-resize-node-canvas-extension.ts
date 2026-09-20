@@ -3,6 +3,7 @@ import CanvasHelper from "src/utils/canvas-helper"
 import { measureNodeContentHeight } from "src/utils/node-content-measurement"
 import CanvasExtension from "./canvas-extension"
 import { CanvasFileNodeData, CanvasNodeData } from "src/@types/AdvancedJsonCanvas"
+import { t } from "src/i18n"
 
 export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
   isEnabled() { return 'autoResizeNodeFeatureEnabled' as const }
@@ -66,7 +67,7 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
       canvas,
       CanvasHelper.createPopupMenuOption({
         id: 'auto-resize-height',
-        label: autoResizeHeightEnabled ? '禁用自动调整尺寸' : '启用自动调整尺寸',
+        label: autoResizeHeightEnabled ? t('menu.autoResize.disable') : t('menu.autoResize.enable'),
         icon: autoResizeHeightEnabled ? 'scan-text' : 'lock',
         callback: () => this.toggleAutoResizeHeightEnabled(canvas, selectedNodes, autoResizeHeightEnabled)
       })

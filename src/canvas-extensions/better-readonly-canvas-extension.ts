@@ -2,6 +2,7 @@ import { Canvas } from "src/@types/Canvas"
 import { CanvasEnhancePluginSettingsValues } from "src/settings"
 import CanvasHelper, { MenuOption } from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 export default class BetterReadonlyCanvasExtension extends CanvasExtension {
   isEnabled() { return 'betterReadonlyEnabled' as const }
@@ -77,7 +78,7 @@ export default class BetterReadonlyCanvasExtension extends CanvasExtension {
       settingsContainer,
       this.createToggle({
         id: 'disable-node-popup',
-        label: '隐藏节点弹出菜单',
+        label: t('readonly.hidePopup'),
         icon: 'arrow-up-right-from-circle',
         callback: () => this.updatePopupMenu(canvas)
       }, 'disableNodePopup')
@@ -87,7 +88,7 @@ export default class BetterReadonlyCanvasExtension extends CanvasExtension {
       settingsContainer,
       this.createToggle({
         id: 'disable-zoom',
-        label: '禁用缩放',
+        label: t('readonly.disableZoom'),
         icon: 'zoom-in',
         callback: () => this.updateLockedZoom(canvas)
       }, 'disableZoom')
@@ -97,7 +98,7 @@ export default class BetterReadonlyCanvasExtension extends CanvasExtension {
       settingsContainer,
       this.createToggle({
         id: 'disable-pan',
-        label: '禁用平移',
+        label: t('readonly.disablePan'),
         icon: 'move',
         callback: () => this.updateLockedPan(canvas)
       }, 'disablePan')
