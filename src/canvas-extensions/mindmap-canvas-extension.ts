@@ -8,7 +8,7 @@ import { CanvasData, CanvasEdgeData, CanvasFileNodeData } from "src/@types/Advan
 import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper, { NavDirection, NAV_DIRECTIONS } from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
-import { measureNodeContentHeight } from "./auto-resize-node-canvas-extension"
+import { measureNodeContentHeight } from "src/utils/node-content-measurement"
 import { isMindmapEdge, layoutMindmap } from "src/utils/mindmap-layout"
 import { expandCanvasLayoutSnapshot, hasCanvasLayoutPortal } from "src/utils/canvas-layout-snapshot"
 

@@ -1,21 +1,12 @@
 import { Canvas } from "src/@types/Canvas"
 import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "../canvas-extension"
-import { BUILTIN_NODE_STYLE_ATTRIBUTES, StyleAttribute, styleAttributeValidator } from "./style-config"
-import CssStylesConfigManager from "src/managers/css-styles-config-manager"
-import CanvasEnhancePlugin from "src/main"
-
-export const GET_NODE_CSS_STYLES_MANAGER = (plugin: CanvasEnhancePlugin) =>
-  new CssStylesConfigManager(plugin, 'canvas-enhance-node-style', styleAttributeValidator)
+import { BUILTIN_NODE_STYLE_ATTRIBUTES, StyleAttribute } from "./style-config"
 
 export default class NodeStylesExtension extends CanvasExtension {
-  cssStylesManager: CssStylesConfigManager<StyleAttribute>
-
   isEnabled() { return 'nodeStylingFeatureEnabled' as const }
 
   init() {
-    this.cssStylesManager = GET_NODE_CSS_STYLES_MANAGER(this.plugin)
-
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.onPopupMenuCreated(canvas)
@@ -28,7 +19,7 @@ export default class NodeStylesExtension extends CanvasExtension {
       return
 
     const selectedNodeTypes = new Set(selectionNodeData.map(node => node.type))
-    const availableNodeStyles = [...BUILTIN_NODE_STYLE_ATTRIBUTES, /* Legacy */ ...this.plugin.settings.getSetting('customNodeStyleAttributes'), ...this.cssStylesManager.getStyles()]
+    const availableNodeStyles = [...BUILTIN_NODE_STYLE_ATTRIBUTES, /* Legacy */ ...this.plugin.settings.getSetting('customNodeStyleAttributes'), ...this.plugin.settings.nodeCssStylesManager.getStyles()]
       .filter(style => !style.nodeTypes || style.nodeTypes.some(type => selectedNodeTypes.has(type)))
 
     CanvasHelper.addStyleAttributesToPopup(

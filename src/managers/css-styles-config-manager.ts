@@ -2,7 +2,7 @@ import { parseYaml } from "obsidian"
 import CanvasEnhancePlugin from "src/main"
 
 export default class CssStylesConfigManager<T> {
-  private cachedConfig: T[] | null = null
+  private cachedConfigs = new WeakMap<Document, T[]>()
   private configRegex
 
   constructor(
@@ -15,37 +15,40 @@ export default class CssStylesConfigManager<T> {
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'css-change',
-      () => { this.cachedConfig = null }
+      () => { this.cachedConfigs = new WeakMap() }
     ))
   }
 
   getStyles(): T[] {
-    if (this.cachedConfig) return this.cachedConfig
+    const document = activeDocument
+    const cachedConfig = this.cachedConfigs.get(document)
+    if (cachedConfig) return cachedConfig
 
-    this.cachedConfig = []
+    const config: T[] = []
+    this.cachedConfigs.set(document, config)
 
     // Parse config from CSS
-    const styleSheets = activeDocument.styleSheets
+    const styleSheets = document.styleSheets
     for (let i = 0; i < styleSheets.length; i++) {
       const sheet = styleSheets.item(i)
       if (!sheet) continue
 
       const styleSheetConfigs = this.parseStyleConfigsFromCSS(sheet)
-      for (const config of styleSheetConfigs) {
+      for (const styleConfig of styleSheetConfigs) {
         // A malformed snippet must not break menu/settings rendering
         let validConfig: T | null
         try {
-          validConfig = this.validate(config)
+          validConfig = this.validate(styleConfig)
         } catch {
           continue
         }
         if (!validConfig) continue
 
-        this.cachedConfig.push(validConfig)
+        config.push(validConfig)
       }
     }
 
-    return this.cachedConfig
+    return config
   }
 
   private parseStyleConfigsFromCSS(sheet: CSSStyleSheet): Record<string, unknown>[] {

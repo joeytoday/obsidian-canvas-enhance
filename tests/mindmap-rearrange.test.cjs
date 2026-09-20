@@ -9,7 +9,7 @@ const bundleExtension = filename => buildSync({
   platform: 'node',
   format: 'cjs',
   write: false,
-  external: ['obsidian', 'monkey-around', './auto-resize-node-canvas-extension'],
+  external: ['obsidian', 'monkey-around', 'src/utils/node-content-measurement'],
 }).outputFiles[0].text
 const code = bundleExtension('mindmap-canvas-extension.ts')
 const collapseCode = bundleExtension('mindmap-collapse-canvas-extension.ts')
@@ -69,7 +69,7 @@ function fixture(data = sample(), hooks = {}) {
   const mockRequire = name => {
     if (name === 'obsidian') return { Notice: class { constructor(message) { notices.push(message) } }, TFile: class {} }
     if (name === 'monkey-around') return { around() { throw new Error('unexpected patch installation') } }
-    if (name === './auto-resize-node-canvas-extension') return {
+    if (name === 'src/utils/node-content-measurement') return {
       measureNodeContentHeight(node) {
         calls.measurements.push(node.getData().id)
         return hooks.measure ? hooks.measure(node) : null

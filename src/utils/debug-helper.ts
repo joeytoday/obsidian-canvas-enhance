@@ -26,32 +26,32 @@ export default class DebugHelper {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-added',
       (_canvas: Canvas, _node: CanvasNode) => {
-        if (this.logging) console.count('🟢 NodeAdded')
         this.nodeAddedCount++
+        if (this.logging) console.debug('🟢 NodeAdded:', this.nodeAddedCount)
       }
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-changed',
       (_canvas: Canvas, _node: CanvasNode) => {
-        if (this.logging) console.count('🟡 NodeChanged')
         this.nodeChangedCount++
+        if (this.logging) console.debug('🟡 NodeChanged:', this.nodeChangedCount)
       }
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:edge-added',
       (_canvas: Canvas, _edge: CanvasEdge) => {
-        if (this.logging) console.count('🟢 EdgeAdded')
         this.edgeAddedCount++
+        if (this.logging) console.debug('🟢 EdgeAdded:', this.edgeAddedCount)
       }
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:edge-changed',
       (_canvas: Canvas, _edge: CanvasEdge) => {
-        if (this.logging) console.count('🟡 EdgeChanged')
         this.edgeChangedCount++
+        if (this.logging) console.debug('🟡 EdgeChanged:', this.edgeChangedCount)
       }
     ))
   }
@@ -67,11 +67,11 @@ export default class DebugHelper {
     const canvas = this.plugin.getCurrentCanvas()
     if (!canvas) return
 
-    console.log('NodeAdded Efficiency:', this.nodeAddedCount / canvas.nodes.size)
-    console.log('NodeChanged Efficiency:', this.nodeChangedCount / canvas.nodes.size)
+    console.debug('NodeAdded Efficiency:', this.nodeAddedCount / canvas.nodes.size)
+    console.debug('NodeChanged Efficiency:', this.nodeChangedCount / canvas.nodes.size)
 
-    console.log('EdgeAdded Efficiency:', this.edgeAddedCount / canvas.edges.size)
-    console.log('EdgeChanged Efficiency:', this.edgeChangedCount / canvas.edges.size)
+    console.debug('EdgeAdded Efficiency:', this.edgeAddedCount / canvas.edges.size)
+    console.debug('EdgeChanged Efficiency:', this.edgeChangedCount / canvas.edges.size)
   }
 
   static markBBox(canvas: Canvas, bbox: BBox, duration = -1) {

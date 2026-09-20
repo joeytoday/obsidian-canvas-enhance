@@ -1,4 +1,3 @@
-/* eslint-disable-next-line import/no-extraneous-dependencies -- Included in Obsidian */
 import { EditorView, ViewUpdate } from "@codemirror/view"
 import { around } from "monkey-around"
 import { editorInfoField, Side, WorkspaceLeaf } from "obsidian"

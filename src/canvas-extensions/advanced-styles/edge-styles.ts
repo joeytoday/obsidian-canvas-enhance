@@ -7,12 +7,7 @@ import EdgePathfindingMethod from "./edge-pathfinding-methods/edge-pathfinding-m
 import EdgePathfindingAStar from "./edge-pathfinding-methods/pathfinding-a-star"
 import EdgePathfindingDirect from "./edge-pathfinding-methods/pathfinding-direct"
 import EdgePathfindingSquare from "./edge-pathfinding-methods/pathfinding-square"
-import { BUILTIN_EDGE_STYLE_ATTRIBUTES, StyleAttribute, styleAttributeValidator } from "./style-config"
-import CssStylesConfigManager from "src/managers/css-styles-config-manager"
-import CanvasEnhancePlugin from "src/main"
-
-export const GET_EDGE_CSS_STYLES_MANAGER = (plugin: CanvasEnhancePlugin) =>
-  new CssStylesConfigManager(plugin, 'canvas-enhance-edge-style', styleAttributeValidator)
+import { BUILTIN_EDGE_STYLE_ATTRIBUTES, StyleAttribute } from "./style-config"
 
 const EDGE_PATHFINDING_METHODS: { [key: string]: typeof EdgePathfindingMethod } = {
   'direct': EdgePathfindingDirect,
@@ -22,13 +17,9 @@ const EDGE_PATHFINDING_METHODS: { [key: string]: typeof EdgePathfindingMethod } 
 
 const MAX_LIVE_UPDATE_SELECTION_SIZE = 5
 export default class EdgeStylesExtension extends CanvasExtension {
-  cssStylesManager: CssStylesConfigManager<StyleAttribute>
-
   isEnabled() { return 'edgesStylingFeatureEnabled' as const }
 
   init() {
-    this.cssStylesManager = GET_EDGE_CSS_STYLES_MANAGER(this.plugin)
-
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:popup-menu-created',
       (canvas: Canvas) => this.onPopupMenuCreated(canvas)
@@ -89,7 +80,7 @@ export default class EdgeStylesExtension extends CanvasExtension {
       return
 
     CanvasHelper.addStyleAttributesToPopup(
-      this.plugin, canvas,  [...BUILTIN_EDGE_STYLE_ATTRIBUTES, /* Legacy */ ...this.plugin.settings.getSetting('customEdgeStyleAttributes'), ...this.cssStylesManager.getStyles()],
+      this.plugin, canvas,  [...BUILTIN_EDGE_STYLE_ATTRIBUTES, /* Legacy */ ...this.plugin.settings.getSetting('customEdgeStyleAttributes'), ...this.plugin.settings.edgeCssStylesManager.getStyles()],
       selectedEdges[0].getData().styleAttributes ?? {},
       (attribute, value) => this.setStyleAttributeForSelection(canvas, attribute, value)
     )

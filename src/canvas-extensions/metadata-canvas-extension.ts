@@ -47,7 +47,6 @@ export default class MetadataCanvasExtension extends CanvasExtension {
         return true
       }
     }
-    /* eslint-enable @typescript-eslint/no-explicit-any -- Generic wrapper */
 
     // Set canvas metadata
     canvas.metadata = new Proxy(metadata, validator)
