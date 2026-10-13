@@ -311,6 +311,7 @@ export const en: Record<TranslationKey, string> = {
   'cmd.toggleGroupCollapse': 'Collapse/expand group',
   'cmd.createChildNode': 'Create child node',
   'cmd.createSiblingNode': 'Create sibling node',
+  'cmd.editSelectedNode': 'Edit selected node',
   'cmd.createFloatingNode': 'Create floating node',
   'cmd.splitByH1': 'Split into mindmap by H1 headings',
   'mindmap.rearrange': 'Rearrange all',

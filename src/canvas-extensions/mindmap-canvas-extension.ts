@@ -1,6 +1,6 @@
 // LLM Agent: This file was created by an LLM agent as part of integrating Canvas-MindMap features into Canvas Enhance.
 
-import { Notice, Platform, setIcon, setTooltip, TFile } from "obsidian"
+import { Notice, setIcon, setTooltip, TFile } from "obsidian"
 import type { MarkdownFileInfo, Scope } from "obsidian"
 import { around } from "monkey-around"
 import { Canvas, CanvasNode, CanvasView } from "src/@types/Canvas"
@@ -201,28 +201,44 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   // ── Commands ──
 
   private registerCommands() {
-    const check = (canvas: Canvas) =>
-      !canvas.readonly && canvas.getSelectionData().nodes.length === 1
+    const nodeCommand = (run: (canvas: Canvas, node: CanvasNode) => void) => (checking: boolean) => {
+      const canvas = this.plugin.getCurrentCanvas()
+      if (!canvas || canvas.readonly || !this.plugin.settings.getSetting('mindmapFeatureEnabled')) return false
+      const node = this.getSelectedNode(canvas)
+      if (!node || node.isEditing || canvas.nodes.get(node.getData().id) !== node) return false
+      if (!checking) run(canvas, node)
+      return true
+    }
 
+    // Keep the existing single-key defaults, now configurable in Obsidian Hotkeys.
     this.plugin.addCommand({
       id: 'mindmap-create-child-node',
       name: t('cmd.createChildNode'),
-      checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
-        (canvas) => void this.createChildNode(canvas, true))
+      // eslint-disable-next-line obsidianmd/commands/no-default-hotkeys
+      hotkeys: [{ modifiers: [], key: 'Tab' }],
+      checkCallback: nodeCommand((canvas) => this.createChildNode(canvas, false))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-create-sibling-node',
       name: t('cmd.createSiblingNode'),
-      checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
-        (canvas) => void this.createSiblingNode(canvas, true))
+      // eslint-disable-next-line obsidianmd/commands/no-default-hotkeys
+      hotkeys: [{ modifiers: [], key: 'Enter' }],
+      checkCallback: nodeCommand((canvas) => this.createSiblingNode(canvas, false))
+    })
+
+    this.plugin.addCommand({
+      id: 'mindmap-edit-selected-node',
+      name: t('cmd.editSelectedNode'),
+      // eslint-disable-next-line obsidianmd/commands/no-default-hotkeys
+      hotkeys: [{ modifiers: [], key: ' ' }],
+      checkCallback: nodeCommand((_canvas, node) => node.setIsEditing(true))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-create-floating-node',
       name: t('cmd.createFloatingNode'),
-      checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
-        (canvas) => this.createFloatingNode(canvas, 'right'))
+      checkCallback: nodeCommand((canvas) => this.createFloatingNode(canvas, 'right'))
     })
 
     this.plugin.addCommand({
@@ -255,34 +271,6 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
     const scope = (view as ViewWithScope).scope
     if (!scope) return
-
-    if (!Platform.isMobile) {
-      scope.register([], 'Tab', (ev: KeyboardEvent) => {
-        if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
-        const node = this.getSelectedNode(canvas)
-        if (canvas.readonly || !node || node.isEditing) return
-        ev.preventDefault()
-        const child = this.createChildNode(canvas, false)
-        if (child) this.focusNode(canvas, child)
-      })
-
-      scope.register([], 'Enter', (ev: KeyboardEvent) => {
-        if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
-        const node = this.getSelectedNode(canvas)
-        if (canvas.readonly || !node || node.isEditing) return
-        ev.preventDefault()
-        const sibling = this.createSiblingNode(canvas, false)
-        if (sibling) this.focusNode(canvas, sibling)
-      })
-
-      scope.register([], 'Space', (ev: KeyboardEvent) => {
-        if (!this.plugin.settings.getSetting('mindmapFeatureEnabled')) return
-        const node = this.getSelectedNode(canvas)
-        if (canvas.readonly || !node || node.isEditing) return
-        ev.preventDefault()
-        node.setIsEditing(true)
-      })
-    }
 
     if (this.plugin.settings.getSetting('mindmapUseNavigationHotkeys')) {
       for (const dir of NAV_DIRECTIONS) {

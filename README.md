@@ -49,7 +49,7 @@ https://github.com/user-attachments/assets/d98e9132-ad4f-4186-b1e3-f2f051ceabeb
 
 https://github.com/user-attachments/assets/9d0a7240-75b7-4c5c-bc42-cfba88a1e9f9
 
-将画布变成思维导图：`Tab` 创建下级节点，`Enter` 创建同级节点，`Alt+方向键` 在节点间导航。下级节点自动继承上级节点颜色；新建节点自动避开已有节点，按层级顺序落位。
+将画布变成思维导图：`Tab` 创建下级节点，`Enter` 创建同级节点，`Space` 编辑选中节点，`Alt+方向键` 在节点间导航。前三项均可在 Obsidian「设置 → 快捷键」中修改。下级节点自动继承上级节点颜色；新建节点自动避开已有节点，按层级顺序落位。
 
 <img width="852" height="480" alt="整体重排" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
 
@@ -181,7 +181,7 @@ Zoom out and nodes become unreadable. Overview Mode automatically replaces card 
 
 #### Mindmap
 
-Turn your canvas into a mindmap: `Tab` creates a child node, `Enter` creates a sibling, `Alt+Arrow` navigates between nodes. Child nodes inherit the parent's color. New nodes never cover existing ones — they are placed following the hierarchy order.
+Turn your canvas into a mindmap: `Tab` creates a child node, `Enter` creates a sibling, `Space` edits the selected node, and `Alt+Arrow` navigates between nodes. The first three shortcuts can be changed in Obsidian under Settings → Hotkeys. Child nodes inherit the parent's color. New nodes never cover existing ones — they are placed following the hierarchy order.
 
 <img width="852" height="480" alt="One-click rearrange" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
 

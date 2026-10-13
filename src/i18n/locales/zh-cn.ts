@@ -310,6 +310,7 @@ export const zhCn = {
   'cmd.toggleGroupCollapse': '折叠/展开分组',
   'cmd.createChildNode': '创建下级节点',
   'cmd.createSiblingNode': '创建同级节点',
+  'cmd.editSelectedNode': '编辑选中节点',
   'cmd.createFloatingNode': '创建浮动节点',
   'cmd.splitByH1': '按 H1 标题拆分为思维导图',
   'mindmap.rearrange': '整体重排',
