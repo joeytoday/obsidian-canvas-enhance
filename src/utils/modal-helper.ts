@@ -1,5 +1,6 @@
 import App, { FuzzyMatch, FuzzySuggestModal, Notice, SuggestModal, TFile } from 'obsidian'
 import FilepathHelper from 'src/utils/filepath-helper'
+import { t } from "src/i18n"
 
 export class AbstractSelectionModal extends FuzzySuggestModal<string> {
   suggestions: string[]
@@ -14,10 +15,10 @@ export class AbstractSelectionModal extends FuzzySuggestModal<string> {
     this.setPlaceholder(placeholder)
     this.setInstructions([{
         command: '↑↓',
-        purpose: '导航'
+        purpose: t('modal.navigate')
     }, {
         command: 'esc',
-        purpose: '关闭'
+        purpose: t('modal.close')
     }])
   }
 
@@ -92,19 +93,19 @@ export class FileSelectModal extends SuggestModal<string> {
       .filter(path => FilepathHelper.extension(path)?.match(extensionsRegex ?? /.*/))
     this.suggestNewFile = suggestNewFile
 
-    this.setPlaceholder('输入以搜索...')
+    this.setPlaceholder(t('modal.searchPlaceholder'))
     this.setInstructions([{
         command: '↑↓',
-        purpose: '导航'
+        purpose: t('modal.navigate')
     }, {
         command: '↵',
-        purpose: '打开'
+        purpose: t('common.open')
     }, {
         command: 'shift ↵',
-        purpose: '创建'
+        purpose: t('modal.create')
     }, {
         command: 'esc',
-        purpose: '关闭'
+        purpose: t('modal.close')
     }])
 
     this.scope.register(['Shift'], 'Enter', ((e) => {
@@ -142,7 +143,7 @@ export class FileSelectModal extends SuggestModal<string> {
         this.app.vault.create(path, '')
           .then(resolve)
           .catch(error => {
-            new Notice(`无法创建文件：${error instanceof Error ? error.message : error}`)
+            new Notice(t('notice.createFileFailed', { error: error instanceof Error ? error.message : String(error) }))
             reject(error instanceof Error ? error : new Error(String(error)))
           })
       }

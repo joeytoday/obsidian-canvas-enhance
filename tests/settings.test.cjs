@@ -61,6 +61,7 @@ function fixture(saved = null) {
       }
     },
     parseYaml(text) { calls.parses++; return JSON.parse(text) },
+    getLanguage: () => 'zh',
   }
   function load(code) {
     const loaded = { exports: {} }

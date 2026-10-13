@@ -2,6 +2,7 @@ import { Canvas } from "src/@types/Canvas"
 import CanvasHelper from "src/utils/canvas-helper"
 import { createFileNodeFromTemplate } from "src/utils/file-template-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 export default class NodeTemplatesCanvasExtension extends CanvasExtension {
   isEnabled() { return 'fileNodeTemplateEnabled' as const }
@@ -9,7 +10,7 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.addCommand({
       id: 'create-file-node-from-template',
-      name: '创建模板笔记节点',
+      name: t('cmd.createTemplateNode'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         () => !!this.plugin.settings.getSetting('fileNodeTemplatePath'),

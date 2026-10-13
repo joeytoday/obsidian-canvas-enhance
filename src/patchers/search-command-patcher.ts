@@ -1,5 +1,6 @@
 import CanvasSearchView from "src/canvas-search-view"
 import Patcher from "./patcher"
+import { t } from "src/i18n"
 
 export default class SearchCommandPatcher extends Patcher {
   protected async patch() {
@@ -28,7 +29,7 @@ export default class SearchCommandPatcher extends Patcher {
     // editor:open-search has no default hotkey on canvas, so bind our own command
     this.plugin.addCommand({
       id: 'open-canvas-search',
-      name: '画布内搜索',
+      name: t('cmd.searchInCanvas'),
       hotkeys: [{ modifiers: ['Mod'], key: 'f' }],
       checkCallback: (checking: boolean) => {
         // Leave Mod+F to the native editor search when an editor is active

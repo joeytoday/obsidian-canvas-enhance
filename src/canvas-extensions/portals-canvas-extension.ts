@@ -3,6 +3,7 @@ import { CanvasData, CanvasEdgeData, CanvasFileNodeData, CanvasNodeData } from "
 import { BBox, Canvas, CanvasEdge, CanvasEdgeEnd, CanvasElement, CanvasElementsData, CanvasNode } from "src/@types/Canvas"
 import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 const PORTAL_ID_DELIMITER = '||'
 const PORTAL_ID_PREFIX = `acportal${PORTAL_ID_DELIMITER}`
@@ -77,7 +78,7 @@ export default class PortalsCanvasExtension extends CanvasExtension {
           setData(newData)
         }).catch((error) => {
           console.error('Error loading portal data:', error)
-          new Notice('加载传送门数据时出错，请查看控制台了解详情。')
+          new Notice(t('portal.notice.loadError'))
         })
       }
     ))
@@ -203,7 +204,7 @@ export default class PortalsCanvasExtension extends CanvasExtension {
     if (!PortalsCanvasExtension.isPortalElement(edge.id)) return
 
     cancelRef.value = true // Cancel dragging
-    new Notice('暂不支持更新传送门中的边。')
+    new Notice(t('portal.notice.updateEdge'))
   }
 
   private onEdgeConnectionDraggingAfter(canvas: Canvas, edge: CanvasEdge, _event: PointerEvent, _newEdge: boolean, _side: 'from' | 'to', _previousEnds?: { from: CanvasEdgeEnd, to: CanvasEdgeEnd }) {
@@ -211,7 +212,7 @@ export default class PortalsCanvasExtension extends CanvasExtension {
     if (!PortalsCanvasExtension.isPortalElement(edge.from.node.id) || !PortalsCanvasExtension.isPortalElement(edge.to.node.id)) return // Do not cancel if at least one end is not from a portal
 
     canvas.removeEdge(edge)
-    new Notice('暂不支持创建两端都在传送门中的边。')
+    new Notice(t('portal.notice.createEdge'))
   }
 
   private onPopupMenu(canvas: Canvas) {
@@ -244,7 +245,7 @@ export default class PortalsCanvasExtension extends CanvasExtension {
       canvas,
       CanvasHelper.createPopupMenuOption({
         id: 'toggle-portal',
-        label: portalNodeData.portal ? '关闭传送门' : '打开传送门',
+        label: portalNodeData.portal ? t('portal.close') : t('portal.open'),
         icon: portalNodeData.portal ? 'door-open' : 'door-closed',
         callback: () => {
           this.setPortalOpen(canvas, portalNode, !portalNodeData.portal)

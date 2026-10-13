@@ -11,6 +11,7 @@ import CanvasExtension from "./canvas-extension"
 import { measureNodeContentHeight } from "src/utils/node-content-measurement"
 import { isMindmapEdge, layoutMindmap } from "src/utils/mindmap-layout"
 import { expandCanvasLayoutSnapshot, hasCanvasLayoutPortal } from "src/utils/canvas-layout-snapshot"
+import { t } from "src/i18n"
 
 const FLOATING_DIR: Record<NavDirection, { dx: number; dy: number }> = {
   up:    { dx: 0,  dy: -1 },
@@ -205,28 +206,28 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'mindmap-create-child-node',
-      name: '创建下级节点',
+      name: t('cmd.createChildNode'),
       checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
         (canvas) => void this.createChildNode(canvas, true))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-create-sibling-node',
-      name: '创建同级节点',
+      name: t('cmd.createSiblingNode'),
       checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
         (canvas) => void this.createSiblingNode(canvas, true))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-create-floating-node',
-      name: '创建浮动节点',
+      name: t('cmd.createFloatingNode'),
       checkCallback: CanvasHelper.canvasCommand(this.plugin, check,
         (canvas) => this.createFloatingNode(canvas, 'right'))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-split-heading-into-mindmap',
-      name: '按 H1 标题拆分为思维导图',
+      name: t('cmd.splitByH1'),
       checkCallback: (checking: boolean) => {
         const canvas = this.plugin.getCurrentCanvas()
         if (!canvas || canvas.readonly || canvas.selection.size !== 1) return false
@@ -512,7 +513,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
         button.id = 'mindmap-rearrange-all'
         button.classList.add('canvas-card-menu-button', 'mod-draggable')
         setIcon(button, 'folder-tree')
-        setTooltip(button, '整体重排', { placement: 'top' })
+        setTooltip(button, t('mindmap.rearrange'), { placement: 'top' })
         button.addEventListener('click', () => {
           if (!canvas.readonly) void this.rearrangeMindmap(canvas, button)
         })
@@ -526,7 +527,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   private async rearrangeMindmap(canvas: Canvas, button?: HTMLElement) {
     if (this.unloaded || canvas.readonly || this.rearranging.has(canvas)) return
     if (canvas.isDragging || [...canvas.nodes.values()].some(node => node.isEditing)) {
-      new Notice('请先结束卡片编辑或拖动，再进行整体重排。')
+      new Notice(t('mindmap.notice.finishEditing'))
       return
     }
 
@@ -563,7 +564,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       if (!heights || !canContinue()) return
       if (JSON.stringify(canvas.getData()) !== serialized ||
         this.childSpacing() !== options.childSpacing || this.siblingSpacing() !== options.siblingSpacing) {
-        new Notice('画布在重排期间发生变化，请重新重排。')
+        new Notice(t('mindmap.notice.changedDuringRearrange'))
         return
       }
 
@@ -594,7 +595,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       }
     } catch (error) {
       console.error('Failed to rearrange canvas:', error)
-      new Notice('重排失败，请查看控制台。')
+      new Notice(t('mindmap.notice.rearrangeFailed'))
     } finally {
       // Preserve a viewport the user changed during the asynchronous measurement.
       if (!applied && sameCanvas() && sameViewport())
@@ -609,7 +610,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     // too: a closed group can hide a portal from the live node map.
     const nodes = [...canvas.nodes.values()].map(node => node.getData())
     if (hasCanvasLayoutPortal({ nodes })) {
-      new Notice('含传送门的画布暂不支持整体重排，卡片未移动。')
+      new Notice(t('mindmap.notice.portalsUnsupported'))
       return false
     }
     return true

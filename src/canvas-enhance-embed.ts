@@ -1,5 +1,6 @@
 import App, { Component, EmbedContext, MarkdownRenderer, TFile } from "obsidian"
 import { CanvasData, CanvasFileNodeData, CanvasGroupNodeData, CanvasTextNodeData } from "./@types/AdvancedJsonCanvas"
+import { t } from "src/i18n"
 
 export default class CanvasEnhanceEmbed extends Component {
   private context: EmbedContext
@@ -42,7 +43,7 @@ export default class CanvasEnhanceEmbed extends Component {
     // Show node not found error
     if (!canvasNode) {
       this.context.containerEl.classList.add("mod-empty")
-      this.context.containerEl.textContent = "未找到节点"
+      this.context.containerEl.textContent = t('embed.nodeNotFound')
 
       return
     }

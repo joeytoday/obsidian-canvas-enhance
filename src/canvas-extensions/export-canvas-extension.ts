@@ -5,6 +5,7 @@ import { BBox, Canvas, CanvasNode } from "src/@types/Canvas"
 import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 const MAX_ALLOWED_LOADING_TIME = 10_000
 
@@ -21,7 +22,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'export-all-as-image',
-      name: '导出画布为图片',
+      name: t('export.cmd.canvas'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.nodes.size > 0,
@@ -31,7 +32,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'export-selected-as-image',
-      name: '导出选中节点为图片',
+      name: t('export.cmd.selection'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.selection.size > 0,
@@ -45,7 +46,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
   private async showExportImageSettingsModal(canvas: Canvas, nodesToExport: CanvasNode[] | null) {
     const modal = new Modal(this.plugin.app)
-    modal.setTitle('导出图片设置')
+    modal.setTitle(t('export.dialog.title'))
 
     // Create ref to dynamic settings
     let pixelRatioSetting: Setting | null = null
@@ -65,8 +66,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let svg = false
     new Setting(modal.contentEl)
-      .setName('导出文件格式')
-      .setDesc('选择导出画布的文件格式。')
+      .setName(t('export.format.label'))
+      .setDesc(t('export.format.description'))
       .addDropdown(dropdown => dropdown
         .addOptions({
           png: 'PNG',
@@ -81,12 +82,12 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let detailedNodes = false
     new Setting(modal.contentEl)
-      .setName('节点显示')
-      .setDesc('概览模式仅显示标题，详细模式显示完整内容。')
+      .setName(t('export.nodeDisplay.label'))
+      .setDesc(t('export.nodeDisplay.description'))
       .addDropdown(dropdown => dropdown
         .addOptions({
-          overview: '概览',
-          detailed: '详细'
+          overview: t('export.nodeDisplay.overview'),
+          detailed: t('export.nodeDisplay.detailed')
         })
         .setValue(detailedNodes ? 'detailed' : 'overview')
         .onChange(value => detailedNodes = value === 'detailed')
@@ -94,8 +95,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let pixelRatioFactor = 1
     pixelRatioSetting = new Setting(modal.contentEl)
-      .setName('像素比例')
-      .setDesc('像素比例越高，图片分辨率越高，但文件也越大。')
+      .setName(t('export.pixelRatio.label'))
+      .setDesc(t('export.pixelRatio.description'))
       .addSlider(slider => slider
         .setLimits(0.2, 5, 0.1)
         .setValue(pixelRatioFactor)
@@ -104,8 +105,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let noFontExport = true
     noFontExportSetting = new Setting(modal.contentEl)
-      .setName('跳过字体导出')
-      .setDesc('导出的 SVG 将不包含字体，从而减小文件体积。')
+      .setName(t('export.skipFonts.label'))
+      .setDesc(t('export.skipFonts.description'))
       .addToggle(toggle => toggle
         .setValue(noFontExport)
         .onChange(value => noFontExport = value)
@@ -113,12 +114,12 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let theme: 'light' | 'dark' = activeDocument.body.classList.contains('theme-dark') ? 'dark' : 'light'
     new Setting(modal.contentEl)
-      .setName('主题')
-      .setDesc('导出时使用的主题。')
+      .setName(t('export.theme.label'))
+      .setDesc(t('export.theme.description'))
       .addDropdown(dropdown => dropdown
         .addOptions({
-          light: '浅色',
-          dark: '深色'
+          light: t('export.theme.light'),
+          dark: t('export.theme.dark')
         })
         .setValue(theme)
         .onChange(value => theme = value as 'light' | 'dark')
@@ -126,8 +127,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let watermark = false
     new Setting(modal.contentEl)
-      .setName('显示水印')
-      .setDesc('在左下角添加 Obsidian + Canvas Enhance 水印。')
+      .setName(t('export.watermark.label'))
+      .setDesc(t('export.watermark.description'))
       .addToggle(toggle => toggle
         .setValue(watermark)
         .onChange(value => watermark = value)
@@ -135,8 +136,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     let transparentBackground = false
     transparentBackgroundSetting = new Setting(modal.contentEl)
-      .setName('透明背景')
-      .setDesc('使图片背景透明。')
+      .setName(t('export.transparent.label'))
+      .setDesc(t('export.transparent.description'))
       .addToggle(toggle => toggle
         .setValue(transparentBackground)
         .onChange(value => transparentBackground = value)
@@ -144,7 +145,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     new Setting(modal.contentEl)
       .addButton(button => button
-        .setButtonText('保存')
+        .setButtonText(t('export.save'))
         .setCta()
         .onClick(async () => {
           modal.close()
@@ -191,7 +192,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
       window.getComputedStyle(canvas.canvasEl).getPropertyValue('--canvas-background')
 
     // Create loading overlay
-    new Notice('正在导出 Canvas，请稍候...')
+    new Notice(t('export.notice.exporting'))
     const interactionBlocker = this.getInteractionBlocker()
     activeDocument.body.appendChild(interactionBlocker)
 
@@ -357,8 +358,8 @@ export default class ExportCanvasExtension extends CanvasExtension {
         }
 
         // Download the image
-        let baseFilename = `${canvas.view.file?.basename || '未命名'}`
-        if (!isWholeCanvas) baseFilename += ` - 选中 ${nodesToExport.length} 个节点`
+        let baseFilename = `${canvas.view.file?.basename || t('export.filename.untitled')}`
+        if (!isWholeCanvas) baseFilename += t('export.filename.selectedSuffix', { count: nodesToExport.length })
         const filename = `${baseFilename}.${svg ? 'svg' : 'png'}`
 
         const downloadEl = activeDocument.createElement('a')
@@ -366,12 +367,12 @@ export default class ExportCanvasExtension extends CanvasExtension {
         downloadEl.download = filename
         downloadEl.click()
       } else {
-        const ERROR_MESSAGE = '导出已取消：节点未能在限定时间内加载完成'
+        const ERROR_MESSAGE = t('export.notice.timeout')
         new Notice(ERROR_MESSAGE)
         console.error(ERROR_MESSAGE)
       }
     } catch (e) {
-      new Notice('导出失败，请重试。')
+      new Notice(t('export.notice.failed'))
       console.error('Canvas export failed:', e)
     } finally {
       // Restore original image sources
@@ -406,7 +407,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     const progressBarMessage = progressBar.createDiv()
     progressBarMessage.classList.add('progress-bar-message', 'u-center-text')
-    progressBarMessage.innerText = '正在生成图片...'
+    progressBarMessage.innerText = t('export.progress.generating')
 
     const progressBarIndicator = progressBar.createDiv()
     progressBarIndicator.classList.add('progress-bar-indicator')

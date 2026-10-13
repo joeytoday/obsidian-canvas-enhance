@@ -1,6 +1,7 @@
 import { Notice, PluginSettingTab, Setting as SettingEl, TextComponent } from "obsidian"
 import type CanvasEnhancePlugin from "src/main"
 import { getTemplatesFolder, listTemplateFiles, listVaultFolders } from "src/utils/file-template-helper"
+import { getActiveLanguage, resolveLanguage, t } from "src/i18n"
 import type SettingsManager from "./settings-manager"
 import { DEFAULT_SETTINGS_VALUES } from "./values"
 import type { CanvasEnhancePluginSettingsValues } from "./values"
@@ -35,13 +36,15 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     new SettingEl(linksEl)
       .setName('Canvas Enhance')
       .addButton(button => button
-        .setButtonText('使用指南')
-        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md')))
+        .setButtonText(t('settings.guideButton'))
+        .onClick(() => openUrl(getActiveLanguage() === 'en'
+          ? `${README_URL}#english`
+          : 'https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md')))
       .addButton(button => button
-        .setButtonText('更新日志')
+        .setButtonText(t('settings.changelogButton'))
         .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md')))
       .addButton(button => button
-        .setButtonText('给个 Star ⭐')
+        .setButtonText(t('settings.starButton'))
         .setCta()
         .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance')))
 
@@ -131,7 +134,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
 
     if (infoSection !== undefined) {
       setting.addExtraButton(button => button
-        .setTooltip("Open GitHub documentation")
+        .setTooltip(t('settings.infoTooltip'))
         .setIcon('info')
         .onClick(() => openExternalUrl(`${README_URL}#${infoSection}`))
       )
@@ -140,11 +143,11 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     if (settingsKey !== null) {
       setting.addToggle((toggle) =>
         toggle
-          .setTooltip("Requires a reload to take effect.")
+          .setTooltip(t('settings.reloadTooltip'))
           .setValue(this.settingsManager.getSetting(settingsKey) as boolean)
           .onChange(async (value) => {
             await this.settingsManager.setSetting({ [settingsKey]: value })
-            new Notice("重新加载 Obsidian 以应用更改。")
+            new Notice(t('notice.reloadToApply'))
           })
       )
     }
@@ -206,6 +209,13 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
   }
 
   private createDropdownSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues, setting: DropdownSetting) {
+    // The language only changes after a reload, so warn right above the setting while the chosen one is not active yet
+    let reloadWarningEl: HTMLElement | null = null
+    if (settingId === 'language') {
+      reloadWarningEl = containerEl.createDiv({ cls: 'ce-settings-warning', text: t('settings.language.reloadWarning') })
+      reloadWarningEl.hidden = !this.isLanguageReloadPending()
+    }
+
     new SettingEl(containerEl)
       .setName(setting.label)
       .setDesc(setting.description)
@@ -214,8 +224,14 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
         .setValue(this.settingsManager.getSetting(settingId) as string)
         .onChange(async (value) => {
           await this.settingsManager.setSetting({ [settingId]: value })
+
+          if (reloadWarningEl) reloadWarningEl.hidden = !this.isLanguageReloadPending()
         })
       )
+  }
+
+  private isLanguageReloadPending(): boolean {
+    return resolveLanguage(this.settingsManager.getSetting('language')) !== getActiveLanguage()
   }
 
   private createButtonSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues, setting: ButtonSetting) {
@@ -223,7 +239,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
       .setName(setting.label)
       .setDesc(setting.description)
       .addButton(button => button
-        .setButtonText('打开')
+        .setButtonText(t('common.open'))
         .onClick(() => setting.onClick())
       )
   }
@@ -239,7 +255,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
       new SettingEl(nestedContainerEl)
         .setName(styleAttribute.label)
         .addDropdown(dropdown => dropdown
-          .addOptions(Object.fromEntries(styleAttribute.options.map(option => [String(option.value), option.value === null ? `${option.label} (default)` : option.label] as const)))
+          .addOptions(Object.fromEntries(styleAttribute.options.map(option => [String(option.value), option.value === null ? t('settings.styles.defaultSuffix', { label: option.label }) : option.label] as const)))
           .setValue((this.settingsManager.getSetting(settingId) as { [key: string]: string })[styleAttribute.key] ?? 'null')
           .onChange(async (value) => {
             const newValue = this.settingsManager.getSetting(settingId) as { [key: string]: string }
@@ -260,12 +276,12 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     const templates = listTemplateFiles(this.canvasPlugin)
 
     new SettingEl(containerEl)
-      .setName('选择模板')
+      .setName(t('settings.templateSelect.label'))
       .setDesc(hasFolder
-        ? '新建文件节点时使用的模板。'
-        : '未检测到 Obsidian 核心「模板」插件或其文件夹。请先在核心插件中启用「模板」并设置模板文件夹。')
+        ? t('settings.templateSelect.description')
+        : t('settings.templateSelect.noFolder'))
       .addDropdown(dropdown => {
-        dropdown.addOption('', '（不使用模板）')
+        dropdown.addOption('', t('settings.templateSelect.none'))
         for (const template of templates)
           dropdown.addOption(template, template.replace(/\.md$/, ''))
         dropdown.setValue(this.settingsManager.getSetting(settingId) as string)
@@ -279,10 +295,10 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     const folders = listVaultFolders(this.canvasPlugin)
 
     new SettingEl(containerEl)
-      .setName('新建文件所在文件夹')
-      .setDesc('新建模板文件存放的文件夹。留空则存放在当前画布所在文件夹。')
+      .setName(t('settings.folderSelect.label'))
+      .setDesc(t('settings.folderSelect.description'))
       .addDropdown(dropdown => {
-        dropdown.addOption('', '（画布所在文件夹）')
+        dropdown.addOption('', t('settings.folderSelect.none'))
         for (const folder of folders)
           dropdown.addOption(folder, folder)
         dropdown.setValue(this.settingsManager.getSetting(settingId) as string)

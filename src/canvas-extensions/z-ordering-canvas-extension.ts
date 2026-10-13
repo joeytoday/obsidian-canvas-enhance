@@ -3,6 +3,7 @@ import { Canvas, CanvasNode } from "src/@types/Canvas"
 import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 export default class ZOrderingCanvasExtension  extends CanvasExtension {
   isEnabled() { return 'zOrderingControlFeatureEnabled' as const }
@@ -34,33 +35,33 @@ export default class ZOrderingCanvasExtension  extends CanvasExtension {
 
     if (this.plugin.settings.getSetting('zOrderingControlShowOneLayerShiftOptions') && nodes.length === 1) {
       menu.addItem(item => {
-        item.setTitle('上移一层')
+        item.setTitle(t('menu.zOrder.up'))
         item.setIcon('arrow-up')
         item.onClick(() => this.moveOneLayer(canvas, nodes.first()!, true))
       })
 
       menu.addItem(item => {
-        item.setTitle('下移一层')
+        item.setTitle(t('menu.zOrder.down'))
         item.setIcon('arrow-down')
         item.onClick(() => this.moveOneLayer(canvas, nodes.first()!, false))
       })
     }
 
     menu.addItem(item => {
-      item.setTitle('置于顶层')
+      item.setTitle(t('menu.zOrder.front'))
       item.setIcon('bring-to-front')
       item.onClick(() => this.moveMaxLayers(canvas, nodes, true))
     })
 
     menu.addItem(item => {
-      item.setTitle('置于底层')
+      item.setTitle(t('menu.zOrder.back'))
       item.setIcon('send-to-back')
       item.onClick(() => this.moveMaxLayers(canvas, nodes, false))
     })
 
     if (nodes.some(node => node.getData().zIndex !== undefined)) {
       menu.addItem(item => {
-        item.setTitle('移除固定图层顺序')
+        item.setTitle(t('menu.zOrder.reset'))
         item.setIcon('pin-off')
         item.onClick(() => this.removePersistentZIndexes(canvas, nodes))
       })

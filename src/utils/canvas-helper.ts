@@ -5,6 +5,7 @@ import CanvasEnhancePlugin from "src/main"
 import BBoxHelper from "./bbox-helper"
 import TextHelper from "./text-helper"
 import { CanvasNodeData, Side } from "src/@types/AdvancedJsonCanvas"
+import { t } from "src/i18n"
 
 export interface MenuOption {
   id?: string
@@ -224,7 +225,7 @@ export default class CanvasHelper {
     styleMenuButtonElement.classList.add('clickable-icon')
 
     setIcon(styleMenuButtonElement, 'paintbrush')
-    setTooltip(styleMenuButtonElement, 'Style', { placement: 'top' })
+    setTooltip(styleMenuButtonElement, t('canvas.style'), { placement: 'top' })
 
     // Add click event
     styleMenuButtonElement.addEventListener('click', () => {
@@ -500,7 +501,7 @@ export default class CanvasHelper {
     const wikilink = `[[${file.path}#${nodeData.id}|${file.name} (${nodeTypeString} node)]]`
 
     navigator.clipboard.writeText(wikilink).then(() =>
-      new Notice("已复制节点 Wikilink 到剪贴板。", 2000)
-    ).catch(() => new Notice("复制节点 Wikilink 到剪贴板失败。", 2000))
+      new Notice(t('notice.wikilinkCopied'), 2000)
+    ).catch(() => new Notice(t('notice.wikilinkCopyFailed'), 2000))
   }
 }

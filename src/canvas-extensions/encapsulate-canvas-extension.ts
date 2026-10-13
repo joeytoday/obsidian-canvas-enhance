@@ -3,6 +3,7 @@ import { Canvas } from "src/@types/Canvas"
 import CanvasHelper from "src/utils/canvas-helper"
 import { FileNameModal } from "src/utils/modal-helper"
 import CanvasExtension from "./canvas-extension"
+import { t } from "src/i18n"
 
 const ENCAPSULATED_FILE_NODE_SIZE = { width: 300, height: 300 }
 
@@ -13,7 +14,7 @@ export default class EncapsulateCanvasExtension extends CanvasExtension {
     /* Add command to encapsulate selection */
     this.plugin.addCommand({
       id: 'encapsulate-selection',
-      name: '封装选区',
+      name: t('cmd.encapsulate'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.selection.size > 0,
@@ -27,7 +28,7 @@ export default class EncapsulateCanvasExtension extends CanvasExtension {
       (menu: Menu, canvas: Canvas) => {
         menu.addItem((item) =>
           item
-            .setTitle('封装')
+            .setTitle(t('menu.encapsulate'))
             .setIcon('file-plus')
             .onClick(() => this.encapsulateSelection(canvas))
         )
