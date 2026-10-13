@@ -37,7 +37,9 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
       .setName('Canvas Enhance')
       .addButton(button => button
         .setButtonText(t('settings.guideButton'))
-        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md')))
+        .onClick(() => openUrl(getActiveLanguage() === 'en'
+          ? `${README_URL}#english`
+          : 'https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md')))
       .addButton(button => button
         .setButtonText(t('settings.changelogButton'))
         .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md')))
