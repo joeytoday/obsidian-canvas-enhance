@@ -1,7 +1,7 @@
 // LLM Agent: This file was created by an LLM agent as part of integrating Canvas-MindMap features into Canvas Enhance.
 
 import { Notice, setIcon, setTooltip, TFile } from "obsidian"
-import type { MarkdownFileInfo, Scope } from "obsidian"
+import type { Command, MarkdownFileInfo, Scope, UserEvent } from "obsidian"
 import { around } from "monkey-around"
 import { Canvas, CanvasNode, CanvasView } from "src/@types/Canvas"
 import { CanvasData, CanvasEdgeData, CanvasFileNodeData } from "src/@types/AdvancedJsonCanvas"
@@ -26,6 +26,7 @@ type CollapseState = { collapsed?: boolean; mindmapCollapsed?: boolean }
 // Structural shapes for private Obsidian APIs missing from the local typings;
 // type aliases (not interfaces) to satisfy monkey-around's Record<string, any> constraint
 type ViewWithScope = { scope?: Scope }
+type CommandManager = { executeCommand(command: Command, event?: UserEvent): boolean }
 // The real setColor takes an optional silent flag that Canvas.d.ts omits
 type NodeSetColorPrototype = {
   setColor(this: CanvasNode, color: string | undefined, silent?: boolean): void
@@ -54,6 +55,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.register(() => { this.unloaded = true })
     this.registerCommands()
+    this.patchContextualCommandExecution()
     this.registerKeyboardShortcuts()
     this.registerDeleteHandler()
     this.registerCardMenu()
@@ -201,11 +203,12 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   // ── Commands ──
 
   private registerCommands() {
-    const nodeCommand = (run: (canvas: Canvas, node: CanvasNode) => void) => (checking: boolean) => {
+    const nodeCommand = (run: (canvas: Canvas, node: CanvasNode) => void,
+      canRun?: (node: CanvasNode) => boolean) => (checking: boolean) => {
       const canvas = this.plugin.getCurrentCanvas()
       if (!canvas || canvas.readonly || !this.plugin.settings.getSetting('mindmapFeatureEnabled')) return false
       const node = this.getSelectedNode(canvas)
-      if (!node || node.isEditing || canvas.nodes.get(node.getData().id) !== node) return false
+      if (!node || node.isEditing || canvas.nodes.get(node.getData().id) !== node || canRun?.(node) === false) return false
       if (!checking) run(canvas, node)
       return true
     }
@@ -232,7 +235,8 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       name: t('cmd.editSelectedNode'),
       // eslint-disable-next-line obsidianmd/commands/no-default-hotkeys
       hotkeys: [{ modifiers: [], key: ' ' }],
-      checkCallback: nodeCommand((_canvas, node) => node.setIsEditing(true))
+      checkCallback: nodeCommand((_canvas, node) => node.startEditing(),
+        node => typeof node.startEditing === 'function' && typeof node.isEditable === 'function' && node.isEditable())
     })
 
     this.plugin.addCommand({
@@ -253,6 +257,26 @@ export default class MindmapCanvasExtension extends CanvasExtension {
         return true
       }
     })
+  }
+
+  private patchContextualCommandExecution() {
+    const plugin = this.plugin
+    const manager = plugin.app.commands as CommandManager
+    if (typeof manager?.executeCommand !== 'function') return
+    const ids = new Set(['mindmap-create-child-node', 'mindmap-create-sibling-node', 'mindmap-edit-selected-node']
+      .map(id => `${plugin.manifest.id}:${id}`))
+
+    plugin.register(around(manager, {
+      executeCommand: (next: CommandManager['executeCommand']) => function (this: CommandManager, command: Command, event?: UserEvent): boolean {
+        if (ids.has(command.id)) {
+          // Obsidian reports success even when a checkCallback returns false, consuming the key.
+          if (!command.checkCallback?.(true)) return false
+          const activeElement = plugin.getCurrentCanvas()?.wrapperEl.ownerDocument.activeElement
+          if (activeElement?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return false
+        }
+        return next.call(this, command, event) as boolean
+      }
+    }))
   }
 
   // ── Keyboard Shortcuts ──

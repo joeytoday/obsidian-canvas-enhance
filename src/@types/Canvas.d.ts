@@ -102,6 +102,8 @@ export interface CanvasElement {
 
 export interface CanvasNode extends CanvasElement {
   isEditing: boolean
+  isEditable(): boolean
+  startEditing(position?: Position): void
 
   nodeEl: HTMLElement
   contentEl: HTMLElement

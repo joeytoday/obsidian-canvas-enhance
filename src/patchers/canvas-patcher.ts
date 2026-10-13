@@ -362,11 +362,13 @@ export default class CanvasPatcher extends Patcher {
     })])
   }
 
-  // Places the caret after the injected heading prefix once the edit mode editor is mounted
-  private placeCaretAt(node: CanvasNode, pos: number, attempts = 0) {
+  // Omit pos to focus the end of a native card editor; new headings use an explicit position.
+  private placeCaretAt(node: CanvasNode, pos?: number, attempts = 0) {
+    if (pos === undefined && (!this.elementUninstallers.has(node) || this.plugin.getCurrentCanvas() !== node.canvas || !node.isEditing ||
+      node.canvas.readonly || !node.nodeEl.isConnected)) return
     const cm = node.child?.editMode?.cm as unknown as EditorView | undefined
-    if (cm) {
-      cm.dispatch({ selection: { anchor: pos } })
+    if (cm?.dom?.isConnected) {
+      cm.dispatch({ selection: { anchor: pos ?? cm.state.doc.length }, scrollIntoView: true })
       cm.focus()
       return
     }
@@ -463,6 +465,14 @@ export default class CanvasPatcher extends Patcher {
         that.plugin.app.workspace.trigger('canvas-enhance:node-editing-state-changed', this.canvas, node, editing)
         return result
       }),
+      ...(typeof node.startEditing === 'function' ? {
+        startEditing: Patcher.OverrideExisting((next: CanvasNode['startEditing']) => function (this: CanvasNode, position?: Position): void {
+          next.call(this, position)
+          // Buttons and commands have no pointer position. Keep double-click placement native.
+          if (position === undefined && this.isEditable?.() && that.plugin.settings.getSetting('mindmapFeatureEnabled'))
+            window.setTimeout(() => that.placeCaretAt(this), 0)
+        })
+      } : {}),
       updateBreakpoint: Patcher.OverrideExisting(next => function (breakpoint: boolean): void {
         const breakpointRef = { value: breakpoint }
         that.plugin.app.workspace.trigger('canvas-enhance:node-breakpoint-changed', this.canvas, node, breakpointRef)
