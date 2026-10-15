@@ -1,7 +1,7 @@
 import { EditorView, ViewUpdate } from "@codemirror/view"
 import { around } from "monkey-around"
-import { editorInfoField, Side, WorkspaceLeaf } from "obsidian"
-import { BBox, Canvas, CanvasEdge, CanvasElement, CanvasElementsData, CanvasNode, CanvasPopupMenu, CanvasView, NodeInteractionLayer, Position, SelectionData } from "src/@types/Canvas"
+import { editorInfoField, MarkdownFileInfo, Side, WorkspaceLeaf } from "obsidian"
+import { BBox, Canvas, CanvasEdge, CanvasElement, CanvasElementsData, CanvasNode, CanvasPopupMenu, CanvasView, CanvasWorkspaceLeaf, NodeInteractionLayer, Position, SelectionData } from "src/@types/Canvas"
 import JSONC from "tiny-jsonc"
 import Patcher from "./patcher"
 import BBoxHelper from "src/utils/bbox-helper"
@@ -29,10 +29,10 @@ export default class CanvasPatcher extends Patcher {
       this.patchCanvas(loadedCanvasViewLeafs.first()!.view as CanvasView)
 
       // Reload the canvas views
-      for (const leaf of loadedCanvasViewLeafs) (leaf as any).rebuildView()
+      for (const leaf of loadedCanvasViewLeafs) (leaf as CanvasWorkspaceLeaf).rebuildView()
     } else {
       // Patch the canvas view as soon it gets requested
-      await Patcher.waitForViewRequest<CanvasView>(this.plugin, "canvas", view => this.patchCanvas(view))
+      await Patcher.waitForViewRequest(this.plugin, "canvas", view => this.patchCanvas(view))
       console.debug(`Patched canvas view on first request`)
     }
   }
@@ -42,10 +42,13 @@ export default class CanvasPatcher extends Patcher {
 
     // Patch canvas view
     Patcher.patchPrototype<CanvasView>(this.plugin, view, {
-      setEphemeralState: Patcher.OverrideExisting(next => function (state: any): void {
+      setEphemeralState: Patcher.OverrideExisting(next => function (state: {
+        subpath?: string
+        match?: { nodeId?: string; matches?: [number, number][] }
+      }): void {
         // Select and zoom to the node if it exists (Link subpath)
         if (state?.subpath) {
-          const nodeId = (state.subpath as string).replace(/^#/, '')
+          const nodeId = state.subpath.replace(/^#/, '')
           const node = this.canvas.nodes.get(nodeId)
 
           if (node) {
@@ -86,7 +89,7 @@ export default class CanvasPatcher extends Patcher {
 
         return next.call(this, state)
       }),
-      setViewData: Patcher.OverrideExisting(next => function (json: string, ...args: any): void {
+      setViewData: Patcher.OverrideExisting(next => function (json: string, ...args: []): void {
         json = json !== '' ? json : '{"nodes": [], "edges": []}'
 
         try {
@@ -118,7 +121,7 @@ export default class CanvasPatcher extends Patcher {
         that.plugin.app.workspace.trigger('canvas-enhance:canvas-changed', this.canvas)
         return result
       }),
-      close: Patcher.OverrideExisting(next => function (...args: any): void {
+      close: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         that.plugin.app.workspace.trigger('canvas-enhance:canvas-view-unloaded:before', this)
         return next.call(this, ...args)
       }),
@@ -126,7 +129,7 @@ export default class CanvasPatcher extends Patcher {
 
     // Patch canvas
     Patcher.patchPrototype<Canvas>(this.plugin, view.canvas, {
-      markViewportChanged: Patcher.OverrideExisting(next => function (...args: any): void {
+      markViewportChanged: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         that.plugin.app.workspace.trigger('canvas-enhance:viewport-changed:before', this)
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:viewport-changed:after', this)
@@ -166,8 +169,8 @@ export default class CanvasPatcher extends Patcher {
         const result = next.call(this, elements, shift)
 
         // Deep clone the data to avoid modifying the original data
-        elements.nodes = elements.nodes.map(nodeData => JSON.parse(JSON.stringify(nodeData)))
-        elements.edges = elements.edges.map(edgeData => JSON.parse(JSON.stringify(edgeData)))
+        elements.nodes = elements.nodes.map(nodeData => JSON.parse(JSON.stringify(nodeData)) as CanvasNodeData)
+        elements.edges = elements.edges.map(edgeData => JSON.parse(JSON.stringify(edgeData)) as CanvasEdgeData)
 
         return result
       }),
@@ -182,7 +185,7 @@ export default class CanvasPatcher extends Patcher {
         that.plugin.app.workspace.trigger('canvas-enhance:selection-changed', this, oldSelection, (update: () => void) => next.call(this, update))
         return result
       }),
-      createTextNode: Patcher.OverrideExisting(next => function (...args: any): CanvasNode {
+      createTextNode: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): CanvasNode {
         let headingPrefix: string | null = null
         const options = args[0] as { text?: string } | undefined
         if (options && !options.text && that.plugin.settings.getSetting('textCardHeadingEnabled')) {
@@ -194,22 +197,22 @@ export default class CanvasPatcher extends Patcher {
         that.plugin.app.workspace.trigger('canvas-enhance:node-created', this, node)
         return node
       }),
-      createFileNode: Patcher.OverrideExisting(next => function (...args: any): CanvasNode {
+      createFileNode: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): CanvasNode {
         const node = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:node-created', this, node)
         return node
       }),
-      createFileNodes: Patcher.OverrideExisting(next => function (...args: any): CanvasNode[] {
+      createFileNodes: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): CanvasNode[] {
         const nodes = next.call(this, ...args)
         nodes.forEach((node: CanvasNode) => that.plugin.app.workspace.trigger('canvas-enhance:node-created', this, node))
         return nodes
       }),
-      createGroupNode: Patcher.OverrideExisting(next => function (...args: any): CanvasNode {
+      createGroupNode: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): CanvasNode {
         const node = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:node-created', this, node)
         return node
       }),
-      createLinkNode: Patcher.OverrideExisting(next => function (...args: any): CanvasNode {
+      createLinkNode: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): CanvasNode {
         const node = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:node-created', this, node)
         return node
@@ -235,21 +238,21 @@ export default class CanvasPatcher extends Patcher {
         if (!this.isClearing) that.plugin.app.workspace.trigger('canvas-enhance:edge-removed', this, edge)
         return result
       }),
-      handleCopy: Patcher.OverrideExisting(next => function (...args: any): void {
+      handleCopy: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         this.isCopying = true
         const result = next.call(this, ...args)
         this.isCopying = false
 
         return result
       }),
-      handlePaste: Patcher.OverrideExisting(next => function (...args: any): void {
+      handlePaste: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         this.isPasting = true
         const result = next.call(this, ...args)
         this.isPasting = false
 
         return result
       }),
-      getSelectionData: Patcher.OverrideExisting(next => function (...args: any): SelectionData {
+      getSelectionData: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): SelectionData {
         const result = next.call(this, ...args)
         if (this.isCopying) that.plugin.app.workspace.trigger('canvas-enhance:copy', this, result)
         return result
@@ -284,25 +287,25 @@ export default class CanvasPatcher extends Patcher {
         that.plugin.app.workspace.trigger('canvas-enhance:readonly-changed', this, readonly)
         return result
       }),
-      undo: Patcher.OverrideExisting(next => function (...args: any): void {
+      undo: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         const result = next.call(this, ...args)
         this.importData(this.getData(), true) // Force update the canvas data
         that.plugin.app.workspace.trigger('canvas-enhance:undo', this)
         return result
       }),
-      redo: Patcher.OverrideExisting(next => function (...args: any): void {
+      redo: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         const result = next.call(this, ...args)
         this.importData(this.getData(), true) // Force update the canvas data
         that.plugin.app.workspace.trigger('canvas-enhance:redo', this)
         return result
       }),
-      clear: Patcher.OverrideExisting(next => function (...args: any): void {
+      clear: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         this.isClearing = true
         const result = next.call(this, ...args)
         this.isClearing = false
         return result
       }),
-      getData: Patcher.OverrideExisting(next => function (...args: any): CanvasData {
+      getData: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): CanvasData {
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:data-requested', this, result)
         return result
@@ -322,7 +325,7 @@ export default class CanvasPatcher extends Patcher {
 
         return result
       }),
-      requestSave: Patcher.OverrideExisting(next => function (...args: any): void {
+      requestSave: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         that.plugin.app.workspace.trigger('canvas-enhance:canvas-saved:before', this)
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:canvas-saved:after', this)
@@ -332,7 +335,7 @@ export default class CanvasPatcher extends Patcher {
 
     // Patch canvas popup menu
     Patcher.patchPrototype<CanvasPopupMenu>(this.plugin, view.canvas.menu, {
-      render: Patcher.OverrideExisting(next => function (...args: any): void {
+      render: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:popup-menu-created', this.canvas)
         next.call(this) // Re-Center the popup menu
@@ -353,9 +356,9 @@ export default class CanvasPatcher extends Patcher {
     this.plugin.registerEditorExtension([EditorView.updateListener.of((update: ViewUpdate) => {
       if (!update.docChanged) return
 
-      let editor: any
+      let editor: MarkdownFileInfo & { node?: CanvasNode }
       try { editor = update.state.field(editorInfoField) } catch { return }
-      const node = editor?.node as CanvasNode | undefined
+      const node = editor?.node
       if (!node) return
 
       that.plugin.app.workspace.trigger('canvas-enhance:node-text-content-changed', node.canvas, node, update)
@@ -397,7 +400,7 @@ export default class CanvasPatcher extends Patcher {
 
     const uninstallers: Array<() => void> = []
     Patcher.patch<CanvasNode>(this.plugin, node, {
-      render: Patcher.OverrideExisting(next => function (...args: any): void {
+      render: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:node-rendered', this.canvas, node)
         return result
@@ -460,7 +463,7 @@ export default class CanvasPatcher extends Patcher {
 
         this.nodeEl.style.zIndex = this.zIndex.toString()
       }),
-      setIsEditing: Patcher.OverrideExisting(next => function (editing: boolean, ...args: any): void {
+      setIsEditing: Patcher.OverrideExisting(next => function (editing: boolean, ...args: []): void {
         const result = next.call(this, editing, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:node-editing-state-changed', this.canvas, node, editing)
         return result
@@ -478,7 +481,7 @@ export default class CanvasPatcher extends Patcher {
         that.plugin.app.workspace.trigger('canvas-enhance:node-breakpoint-changed', this.canvas, node, breakpointRef)
         return next.call(this, breakpointRef.value)
       }),
-      getBBox: Patcher.OverrideExisting(next => function (...args: any): BBox {
+      getBBox: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): BBox {
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:node-bbox-requested', this.canvas, node, result)
         return result
@@ -508,12 +511,12 @@ export default class CanvasPatcher extends Patcher {
         return result
       }),
       // File nodes
-      setFile: next => function (...args: any): void {
+      setFile: next => function (...args: Parameters<typeof next>): void {
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:node-changed', this.canvas, this)
         return result
       },
-      setFilePath: next => function (...args: any): void {
+      setFilePath: next => function (...args: Parameters<typeof next>): void {
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:node-changed', this.canvas, this)
         return result
@@ -554,13 +557,13 @@ export default class CanvasPatcher extends Patcher {
 
         return result
       }),
-      render: Patcher.OverrideExisting(next => function (...args: any): void {
+      render: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:edge-changed', this.canvas, this)
 
         return result
       }),
-      getCenter: Patcher.OverrideExisting(next => function (...args: any): Position {
+      getCenter: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): Position {
         const result = next.call(this, ...args)
         that.plugin.app.workspace.trigger('canvas-enhance:edge-center-requested', this.canvas, this, result)
         return result
@@ -610,7 +613,7 @@ export default class CanvasPatcher extends Patcher {
 
     // Patch CanvasElement object
     const uninstall = around(canvasElement, {
-      initialize: next => function (this: any, ...args: any): void {
+      initialize: next => function (this: CanvasElement, ...args: Parameters<typeof next>): void {
         const result = next.call(this, ...args)
 
         onReady()

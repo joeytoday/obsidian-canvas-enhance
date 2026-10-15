@@ -3,8 +3,8 @@ import CanvasEnhancePlugin from "src/main"
 import { Canvas, CanvasNode, Position } from "src/@types/Canvas"
 
 export function getTemplatesFolder(plugin: CanvasEnhancePlugin): TFolder | null {
-  const templatesPlugin = (plugin.app as any).internalPlugins?.getPluginById?.('templates')
-  const folderPath = templatesPlugin?.instance?.options?.folder as string | undefined
+  const templatesPlugin = plugin.app.internalPlugins?.getPluginById?.('templates')
+  const folderPath = templatesPlugin?.instance?.options?.folder
   if (!folderPath) return null
   const folder = plugin.app.vault.getAbstractFileByPath(folderPath)
   return folder instanceof TFolder ? folder : null

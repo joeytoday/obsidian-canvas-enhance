@@ -11,23 +11,13 @@ export default class ZOrderingCanvasExtension  extends CanvasExtension {
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas:node-menu',
-      (menu: Menu, node: CanvasNode) => this.nodeContextMenu(node, menu)
+      (menu: Menu, node: CanvasNode) => this.addZOrderingContextMenuItems(node.canvas, [node], menu)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas:selection-menu',
-      (menu: Menu, canvas: Canvas) => this.selectionContextMenu(canvas, menu)
+      (menu: Menu, canvas: Canvas) => this.addZOrderingContextMenuItems(canvas, CanvasHelper.getSelectedNodes(canvas), menu)
     ))
-  }
-
-  private nodeContextMenu(node: CanvasNode, menu: Menu) {
-    this.addZOrderingContextMenuItems(node.canvas, [node], menu)
-  }
-
-  private selectionContextMenu(canvas: Canvas, menu: Menu) {
-    const selectedNodes = CanvasHelper.getSelectedNodes(canvas)
-
-    this.addZOrderingContextMenuItems(canvas, selectedNodes, menu)
   }
 
   private addZOrderingContextMenuItems(canvas: Canvas, nodes: CanvasNode[], menu: Menu) {

@@ -52,8 +52,9 @@ export default class NodeExposerExtension extends CanvasExtension {
 
         if (!this.observedIframeBodies.has(iframeBody)) {
           this.observedIframeBodies.add(iframeBody)
-          iframeBody.classList.add(CANVAS_NODE_IFRAME_BODY_CLASS)
-          new MutationObserver(() => iframeBody!.classList.toggle(CANVAS_NODE_IFRAME_BODY_CLASS, true))
+          const classList = iframeBody.classList
+          classList.add(CANVAS_NODE_IFRAME_BODY_CLASS)
+          new MutationObserver(() => classList.toggle(CANVAS_NODE_IFRAME_BODY_CLASS, true))
             .observe(iframeBody, { attributes: true, attributeFilter: ['class'] })
         }
         this.setDataAttributes(iframeBody, nodeData)

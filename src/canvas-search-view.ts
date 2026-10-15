@@ -1,4 +1,4 @@
-import { setIcon } from "obsidian"
+import { debounce, setIcon } from "obsidian"
 import { CanvasView } from "src/@types/Canvas"
 import { CanvasGroupNodeData, CanvasTextNodeData } from "src/@types/AdvancedJsonCanvas"
 import { t } from "src/i18n"
@@ -48,19 +48,14 @@ export default class CanvasSearchView {
     const documentSearchButtons = documentSearch.createDiv()
     documentSearchButtons.className = "document-search-buttons"
 
-    const previousButton = documentSearchButtons.createEl("button")
-    previousButton.className = "clickable-icon document-search-button"
-    previousButton.setAttribute("aria-label", t('search.previous'))
-    previousButton.setAttribute("data-tooltip-position", "top")
-    setIcon(previousButton, "arrow-up")
-    previousButton.addEventListener("click", () => this.changeMatch(this.matchIndex - 1))
-
-    const nextButton = documentSearchButtons.createEl("button")
-    nextButton.className = "clickable-icon document-search-button"
-    nextButton.setAttribute("aria-label", t('search.next'))
-    nextButton.setAttribute("data-tooltip-position", "top")
-    setIcon(nextButton, "arrow-down")
-    nextButton.addEventListener("click", () => this.changeMatch(this.matchIndex + 1))
+    for (const [direction, label, icon] of [[-1, 'search.previous', 'arrow-up'], [1, 'search.next', 'arrow-down']] as const) {
+      const button = documentSearchButtons.createEl("button")
+      button.className = "clickable-icon document-search-button"
+      button.setAttribute("aria-label", t(label))
+      button.setAttribute("data-tooltip-position", "top")
+      setIcon(button, icon)
+      button.addEventListener("click", () => this.changeMatch(this.matchIndex + direction))
+    }
 
     const closeButton = documentSearch.createEl("button")
     closeButton.className = "clickable-icon document-search-close-button"
@@ -87,47 +82,42 @@ export default class CanvasSearchView {
     }
   }
 
-  private searchDebounceId: number | null = null
+  private scheduleSearch = debounce(() => this.performSearch(), 150, true)
 
   private onInput() {
     const hasQuery = this.searchInput.value.length > 0
     this.searchCount.style.display = hasQuery ? "block" : "none"
 
     if (!hasQuery) {
+      this.scheduleSearch.cancel()
       this.searchMatches = []
       this.changeMatch(0)
       return
     }
 
     // Full-canvas scan per keystroke is wasteful while typing
-    if (this.searchDebounceId !== null) window.clearTimeout(this.searchDebounceId)
-    this.searchDebounceId = window.setTimeout(() => {
-      this.searchDebounceId = null
-      this.performSearch()
-    }, 150)
+    this.scheduleSearch()
   }
 
   private performSearch() {
-    this.searchMatches = Array.from(this.view.canvas.nodes.values()).map(node => {
-        const nodeData = node.getData()
+    const query = this.searchInput.value
+    if (!query || !this.containerEl.isConnected) return
+    const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "gi")
+    this.searchMatches = []
+    for (const node of this.view.canvas.nodes.values()) {
+      const nodeData = node.getData()
+      const content = nodeData.type === 'text' ? (nodeData as CanvasTextNodeData).text
+        : nodeData.type === 'group' ? (nodeData as CanvasGroupNodeData).label
+        : nodeData.type === 'file' ? node.child?.data : undefined
+      if (!content) continue
 
-        let content: string | undefined = undefined
-        if (nodeData.type === "text") content = (nodeData as CanvasTextNodeData).text
-        else if (nodeData.type === "group") content = (nodeData as CanvasGroupNodeData).label
-        else if (nodeData.type === "file") content = node.child?.data
+      const matches: number[][] = []
+      let match: RegExpExecArray | null
+      while ((match = regex.exec(content)) !== null)
+        matches.push([match.index, match.index + match[0].length])
 
-        if (!content) return null
-
-        const matches: number[][] = []
-        const escaped = this.searchInput.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        const regex = new RegExp(escaped, "gi")
-        let match: RegExpExecArray | null
-        while ((match = regex.exec(content)) !== null) {
-          matches.push([match.index, match.index + match[0].length])
-        }
-
-        return { nodeId: node.id, content: content, matches: matches }
-    }).filter(match => match && match.matches.length > 0) as SearchMatch[]
+      if (matches.length > 0) this.searchMatches.push({ nodeId: node.id, content, matches })
+    }
 
     // Update match index and update the count display
     this.changeMatch(0)
@@ -142,16 +132,13 @@ export default class CanvasSearchView {
     }
 
     const match = this.searchMatches[this.matchIndex]
-    if (match) this.goToMatch(match)
+    if (match) this.view.setEphemeralState({ match })
 
     this.searchCount.textContent = `${this.matchIndex + 1} / ${this.searchMatches.length}`
   }
 
-  private goToMatch(match: SearchMatch) {
-    this.view.setEphemeralState({ match: match })
-  }
-
   private close() {
+    this.scheduleSearch.cancel()
     this.containerEl.remove()
     this.view.canvas.searchEl = undefined
   }

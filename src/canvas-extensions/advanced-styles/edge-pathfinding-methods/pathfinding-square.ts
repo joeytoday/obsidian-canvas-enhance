@@ -34,14 +34,14 @@ export default class EdgePathfindingSquare extends EdgePathfindingMethod {
       this.toSide === "right" && idealCenter.x < this.toPos.x
 
     if (this.fromSide === this.toSide) {
-      const uPath = this.getUPath(this.fromPos, this.toPos, this.fromSide, this.toSide)
+      const uPath = this.getUPath(this.fromPos, this.toPos, this.fromSide)
 
       pathArray.push(...uPath.pathArray)
       center = uPath.center
     } else if (BBoxHelper.isHorizontal(this.fromSide) === BBoxHelper.isHorizontal(this.toSide)) {
       let zPath: PartialPath
       if (!isPathCollidingAtFrom || !isPathCollidingAtTo) {
-        zPath = this.getZPath(this.fromPos, this.toPos, this.fromSide, this.toSide)
+        zPath = this.getZPath(this.fromPos, this.toPos, this.fromSide)
 
         pathArray.push(...zPath.pathArray)
       } else {
@@ -69,7 +69,7 @@ export default class EdgePathfindingSquare extends EdgePathfindingMethod {
           firstFromDetourPoint.x < firstToDetourPoint.x ? "right" : "left"
         )
 
-        zPath = this.getZPath(firstFromDetourPoint, firstToDetourPoint, newFromSide, BBoxHelper.getOppositeSide(newFromSide))
+        zPath = this.getZPath(firstFromDetourPoint, firstToDetourPoint, newFromSide)
 
         pathArray.push(this.fromPos)
         pathArray.push(...zPath.pathArray)
@@ -111,7 +111,7 @@ export default class EdgePathfindingSquare extends EdgePathfindingMethod {
             }
           }
 
-          const uPath = this.getUPath(secondFromDetourPoint, this.toPos, this.toSide, this.toSide)
+          const uPath = this.getUPath(secondFromDetourPoint, this.toPos, this.toSide)
 
           pathArray.push(this.fromPos)
           pathArray.push(firstFromDetourPoint)
@@ -147,8 +147,8 @@ export default class EdgePathfindingSquare extends EdgePathfindingMethod {
             }
 
             const path = useUPath ?
-              this.getUPath(secondFromDetourPoint, this.toPos, this.toSide, this.toSide) :
-              this.getZPath(secondFromDetourPoint, this.toPos, this.toSide, this.toSide)
+              this.getUPath(secondFromDetourPoint, this.toPos, this.toSide) :
+              this.getZPath(secondFromDetourPoint, this.toPos, this.toSide)
 
             pathArray.push(this.fromPos)
             pathArray.push(firstFromDetourPoint)
@@ -185,8 +185,8 @@ export default class EdgePathfindingSquare extends EdgePathfindingMethod {
             }
 
             const path = useUPath ?
-              this.getUPath(this.fromPos, secondToDetourPoint, this.fromSide, this.fromSide) :
-              this.getZPath(this.fromPos, secondToDetourPoint, this.fromSide, this.fromSide)
+              this.getUPath(this.fromPos, secondToDetourPoint, this.fromSide) :
+              this.getZPath(this.fromPos, secondToDetourPoint, this.fromSide)
 
             pathArray.push(...path.pathArray)
             pathArray.push(secondToDetourPoint)
@@ -218,7 +218,7 @@ export default class EdgePathfindingSquare extends EdgePathfindingMethod {
     return { svgPath, center }
   }
 
-  private getUPath(fromPos: Position, toPos: Position, fromSide: Side, toSide: Side): PartialPath {
+  private getUPath(fromPos: Position, toPos: Position, fromSide: Side): PartialPath {
     const direction = BBoxHelper.direction(fromSide)
 
     if (BBoxHelper.isHorizontal(fromSide)) {
@@ -254,7 +254,7 @@ export default class EdgePathfindingSquare extends EdgePathfindingMethod {
     }
   }
 
-  private getZPath(fromPos: Position, toPos: Position, fromSide: Side, toSide: Side): PartialPath {
+  private getZPath(fromPos: Position, toPos: Position, fromSide: Side): PartialPath {
     if (BBoxHelper.isHorizontal(fromSide)) {
       const midX = fromPos.x + (toPos.x - fromPos.x) / 2
       return {

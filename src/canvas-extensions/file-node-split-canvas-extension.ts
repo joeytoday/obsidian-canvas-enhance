@@ -41,7 +41,7 @@ export default class FileNodeSplitCanvasExtension extends CanvasExtension {
     const wrapperEl = canvas.wrapperEl
     if (this.attachedWrappers.has(wrapperEl)) return
     this.attachedWrappers.add(wrapperEl)
-    wrapperEl.addEventListener('click', event => this.onLabelClick(canvas, event), true)
+    this.plugin.registerDomEvent(wrapperEl, 'click', event => this.onLabelClick(canvas, event), true)
   }
 
   private onLabelClick(canvas: Canvas, event: MouseEvent) {
@@ -57,12 +57,10 @@ export default class FileNodeSplitCanvasExtension extends CanvasExtension {
     this.openInSidePane(file, canvas.view.leaf)
   }
 
-  private getFileNodeAt(canvas: Canvas, target: EventTarget | null): TFile | null {
+  private getFileNodeAt(canvas: Canvas, target: HTMLElement): TFile | null {
     if (!this.plugin.settings.getSetting('openFileNodeInSplit')) return null
 
-    const el = target as HTMLElement | null
-    if (!el?.closest) return null
-    const nodeEl = el.closest('.canvas-node')
+    const nodeEl = target.closest('.canvas-node')
     if (!nodeEl) return null
 
     for (const node of canvas.nodes.values()) {

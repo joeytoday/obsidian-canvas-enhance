@@ -1,26 +1,28 @@
 {
   "name": "obsidian-canvas-enhance",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "license": "AGPL-3.0-only",
   "main": "src/main.js",
   "scripts": {
     "postinstall": "patch-package",
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production",
-    "lint": "eslint src/ --ext .ts,.tsx",
+    "lint": "eslint src/ manifest.json package.json --ext .ts,.tsx",
     "test": "node --test tests/*.test.cjs"
   },
   "devDependencies": {
     "@types/node": "^16.11.6",
     "@typescript-eslint/parser": "^8.59.0",
     "esbuild": "^0.25.4",
-    "eslint-plugin-obsidianmd": "^0.3.0",
+    "eslint": "9.39.2",
+    "eslint-plugin-obsidianmd": "0.4.2",
     "obsidian": "latest",
     "patch-package": "^8.0.1",
     "tslib": "2.4.0",
     "typescript": "^4.9.0"
   },
   "dependencies": {
+    "@codemirror/view": "6.38.6",
     "esbuild-sass-plugin": "^3.3.1",
     "html-to-image": "1.11.11",
     "monkey-around": "^2.3.0",

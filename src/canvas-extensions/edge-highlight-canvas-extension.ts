@@ -1,4 +1,4 @@
-import { Canvas, CanvasEdge, CanvasElement, CanvasView } from 'src/@types/Canvas'
+import { Canvas, CanvasEdge, CanvasView } from 'src/@types/Canvas'
 import CanvasExtension from './canvas-extension'
 
 export default class EdgeHighlightCanvasExtension  extends CanvasExtension {
@@ -9,7 +9,7 @@ export default class EdgeHighlightCanvasExtension  extends CanvasExtension {
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:selection-changed',
-      (canvas: Canvas, oldSelection: Set<CanvasElement>, updateSelection: (update: () => void) => void) => this.onSelectionChanged(canvas)
+      (canvas: Canvas) => this.onSelectionChanged(canvas)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(

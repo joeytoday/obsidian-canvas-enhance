@@ -21,6 +21,13 @@ export const NAV_DIRECTIONS: NavDirection[] = ['up', 'down', 'left', 'right']
 export default class CanvasHelper {
   static readonly GRID_SIZE = 20
 
+  static getSelectedNode(canvas: Canvas): CanvasNode | undefined {
+    const selected = canvas.selection.values().next()
+    if (selected.done) return undefined
+    const node = canvas.nodes.get(selected.value.id)
+    return node === selected.value ? node : undefined
+  }
+
   static canvasCommand(plugin: CanvasEnhancePlugin, check: (canvas: Canvas) => boolean, run: (canvas: Canvas) => void): (checking: boolean) => boolean {
     return (checking: boolean) => {
       const canvas = plugin.getCurrentCanvas()

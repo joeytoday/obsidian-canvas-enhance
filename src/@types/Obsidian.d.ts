@@ -1,6 +1,35 @@
 import * as obsidian from "obsidian"
 import { CustomWorkspaceEvents } from "./CustomWorkspaceEvents"
 import SuggestManager from "./SuggestManager"
+import type { CanvasView } from "./Canvas"
+import type PropertiesView from "./PropertiesPlugin"
+import type SearchView from "./SearchPlugin"
+import type OutgoingLink from "./OutgoingLinkPlugin"
+import type { BasesPlugin } from "./BasesPlugin"
+
+export interface InternalPluginInstances {
+  canvas: { options: { newFileLocation?: 'root' | 'current' | 'folder'; newFileFolderPath?: string } }
+  templates: { options: { folder?: string } }
+  properties: object
+  'file-recovery': { forceAdd(path: string, content: string): void }
+  bases: BasesPlugin
+}
+
+export interface InternalPlugin<T> {
+  _loaded?: boolean
+  instance?: T
+}
+
+export interface ViewTypeMap {
+  canvas: CanvasView
+  'file-properties': PropertiesView
+  search: SearchView
+  'outgoing-link': { outgoingLink: OutgoingLink }
+}
+
+export type ViewFactoryMap = {
+  [K in keyof ViewTypeMap]: (leaf: obsidian.WorkspaceLeaf) => ViewTypeMap[K]
+}
 
 export * from "obsidian"
 declare module "obsidian" {
@@ -19,10 +48,17 @@ declare module "obsidian" {
      */
     lastEvent: obsidian.UserEvent | null
 
-    commands: any
-    internalPlugins: any
+    commands: {
+      commands: Record<string, obsidian.Command>
+      executeCommand(command: obsidian.Command, event?: obsidian.UserEvent): boolean
+    }
+    internalPlugins: {
+      plugins: { [K in keyof InternalPluginInstances]?: InternalPlugin<InternalPluginInstances[K]> }
+      getPluginById<K extends keyof InternalPluginInstances>(id: K): InternalPlugin<InternalPluginInstances[K]> | undefined
+      getEnabledPluginById<K extends keyof InternalPluginInstances>(id: K): InternalPluginInstances[K] | undefined
+    }
 
-    viewRegistry: any
+    viewRegistry: { viewByType: ViewFactoryMap }
     embedRegistry: obsidian.EmbedRegistry
 
     /** @public */

@@ -1,4 +1,4 @@
-import SearchView, { MatchData, SearchQuery } from "src/@types/SearchPlugin"
+import { MatchData, SearchQuery } from "src/@types/SearchPlugin"
 import Patcher from "./patcher"
 
 export default class SearchPatcher extends Patcher {
@@ -6,7 +6,7 @@ export default class SearchPatcher extends Patcher {
     if (!this.plugin.settings.getSetting('canvasMetadataCompatibilityEnabled')) return
 
     const that = this // eslint-disable-line @typescript-eslint/no-this-alias -- For patcher
-    await Patcher.waitForViewRequest<SearchView>(this.plugin, "search", view => {
+    await Patcher.waitForViewRequest(this.plugin, "search", view => {
       // Patch the search view until the searchQuery is set or the plugin is unloaded
       const uninstallers: (() => void)[] = []
       Patcher.patchThisAndPrototype(this.plugin, view, {
@@ -27,7 +27,7 @@ export default class SearchPatcher extends Patcher {
 
   private patchSearchQuery(searchQuery: SearchQuery) {
     Patcher.patchThisAndPrototype(this.plugin, searchQuery, {
-      _match: Patcher.OverrideExisting(next => function (data: MatchData): void {
+      _match: Patcher.OverrideExisting(next => function (data: MatchData) {
         const isCanvas = data.strings.filepath?.endsWith(".canvas") ?? false
 
         if (isCanvas && !data.cache)

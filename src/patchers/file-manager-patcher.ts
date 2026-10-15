@@ -10,9 +10,10 @@ export default class FileManagerPatcher extends Patcher {
     Patcher.patch(this.plugin, this.plugin.app.fileManager, {
       processFrontMatter: Patcher.OverrideExisting(next => async function (file: TFile, fn: (frontmatter: unknown) => void, options?: DataWriteOptions) {
         if (file?.extension === 'canvas') {
-          await CanvasFileHelper.modifyContent(that.plugin.app.vault, file, (content) =>
+          await CanvasFileHelper.modifyContent(that.plugin.app.vault, file, (content) => {
+            if (!content.metadata?.frontmatter) throw new Error('Canvas frontmatter is missing')
             fn(content.metadata.frontmatter)
-          )
+          })
           return
         }
 

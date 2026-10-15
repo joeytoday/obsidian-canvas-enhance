@@ -1,6 +1,7 @@
 import { CanvasNodeType } from "src/@types/AdvancedJsonCanvas"
 import TextHelper from "src/utils/text-helper"
 import { t } from "src/i18n"
+import { isRecord } from "src/utils/type-helper"
 
 export interface StyleAttributeOption {
   icon: string
@@ -15,36 +16,32 @@ export interface StyleAttribute {
   options: StyleAttributeOption[]
 }
 
-export function styleAttributeValidator(json: Record<string, any>): StyleAttribute | null {
-  const hasKey = json.key !== undefined
-  const hasLabel = json.label !== undefined
-  const hasOptions = Array.isArray(json.options)
-
-  if (!hasKey) console.error('Style attribute is missing the "key" property')
-  if (!hasLabel) console.error('Style attribute is missing the "label" property')
-  if (!hasOptions) console.error('Style attribute is missing the "options" property or is not an array')
-
-  // Camel case the key
-  json.key = TextHelper.toCamelCase(json.key)
-
-  let optionsValid = true
-  let hasDefault = false
-  for (const option of json.options) {
-    const hasIcon = option.icon !== undefined
-    const hasLabel = option.label !== undefined
-    const hasValue = option.value !== undefined
-
-    if (!hasIcon) console.error(`Style attribute option (${option.value ?? option.label}) is missing the "icon" property`)
-    if (!hasLabel) console.error(`Style attribute option (${option.value}) is missing the "label" property`)
-    if (!hasValue) console.error(`Style attribute option (${option.label}) is missing the "value" property`)
-
-    if (!hasIcon || !hasLabel || !hasValue) optionsValid = false
-    if (option.value === null) hasDefault = true
+export function styleAttributeValidator(json: Record<string, unknown>): StyleAttribute | null {
+  const { key, label, nodeTypes } = json
+  if (typeof key !== 'string' || typeof label !== 'string' || !Array.isArray(json.options)) {
+    console.error('Style attribute requires string "key" and "label" properties and an "options" array')
+    return null
   }
-  if (!hasDefault) console.error('Style attribute is missing a default option (option with a "value" of null)')
 
-  const isValid = hasKey && hasLabel && hasOptions && optionsValid && hasDefault
-  return isValid ? json as StyleAttribute : null
+  const options: unknown[] = json.options
+  if (!options.every((option): option is StyleAttributeOption => isRecord(option) &&
+    typeof option.icon === 'string' && typeof option.label === 'string' &&
+    (typeof option.value === 'string' || option.value === null))) {
+    console.error('Style attribute options require string "icon" and "label" properties and a string or null "value"')
+    return null
+  }
+  if (!options.some(option => option.value === null)) {
+    console.error('Style attribute is missing a default option (option with a "value" of null)')
+    return null
+  }
+
+  const style: StyleAttribute = { ...json, key: TextHelper.toCamelCase(key), label, options }
+  if (nodeTypes !== undefined) {
+    if (!Array.isArray(nodeTypes) ||
+      !nodeTypes.every((type: unknown): type is CanvasNodeType => type === 'text' || type === 'file' || type === 'group' || type === 'link')) return null
+    style.nodeTypes = nodeTypes
+  }
+  return style
 }
 
 export const BUILTIN_NODE_STYLE_ATTRIBUTES = [

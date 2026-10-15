@@ -80,13 +80,13 @@ export default class AutoFileNodeEdgesCanvasExtension extends CanvasExtension {
     const linkedFilesFrontmatterKey = this.plugin.settings.getSetting('autoFileNodeEdgesFrontmatterKey')
     const fileLinksToBeLinkedTo = fileMetadata.frontmatterLinks?.filter(link => link.key.split(".")[0] === linkedFilesFrontmatterKey) ?? []
 
-    const filepathsToBeLinkedTo = fileLinksToBeLinkedTo
-      .map(link => this.plugin.app.metadataCache.getFirstLinkpathDest(link.link, canvasFile.path))
-      .map(file => file?.path)
-      .filter(path => path !== null)
+    const filepathsToBeLinkedTo = new Set(fileLinksToBeLinkedTo.flatMap(link => {
+      const file = this.plugin.app.metadataCache.getFirstLinkpathDest(link.link, canvasFile.path)
+      return file ? [file.path] : []
+    }))
 
     const nodesToBeLinkedTo = Array.from(canvas.nodes.values())
-      .filter(otherNode => otherNode.id !== node.id && filepathsToBeLinkedTo.includes(otherNode.file?.path))
+      .filter(otherNode => otherNode.id !== node.id && otherNode.file && filepathsToBeLinkedTo.has(otherNode.file.path))
 
     const newEdges: Map<string, CanvasEdgeData> = new Map()
     for (const otherNode of nodesToBeLinkedTo) {

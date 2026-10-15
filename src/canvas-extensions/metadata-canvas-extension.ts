@@ -3,6 +3,7 @@ import { Canvas, CanvasView } from "src/@types/Canvas"
 import { CURRENT_SPEC_VERSION } from "src/utils/migration-helper"
 import CanvasExtension from "./canvas-extension"
 import { t } from "src/i18n"
+import type { CanvasMetadata } from "src/@types/AdvancedJsonCanvas"
 
 export default class MetadataCanvasExtension extends CanvasExtension {
   isEnabled() { return true }
@@ -33,14 +34,15 @@ export default class MetadataCanvasExtension extends CanvasExtension {
 
     // Add proxy to metadata to listen for changes
     const that = this // eslint-disable-line @typescript-eslint/no-this-alias -- For patcher
-    const validator: ProxyHandler<any> = {
-      get(target: any, key: string): any {
-        if (typeof target[key] === 'object' && target[key] !== null)
-          return new Proxy(target[key], validator)
-        else return target[key]
+    const validator: ProxyHandler<object> = {
+      get(target, key): unknown {
+        const value: unknown = Reflect.get(target, key)
+        if (typeof value === 'object' && value !== null)
+          return new Proxy(value, validator)
+        else return value
       },
-      set(target: any, key: string, value: any) {
-        target[key] = value
+      set(target, key, value: unknown) {
+        (target as Record<PropertyKey, unknown>)[key] = value
 
         that.plugin.app.workspace.trigger('canvas-enhance:canvas-metadata-changed', canvas)
         canvas.requestSave()
@@ -50,7 +52,7 @@ export default class MetadataCanvasExtension extends CanvasExtension {
     }
 
     // Set canvas metadata
-    canvas.metadata = new Proxy(metadata, validator)
+    canvas.metadata = new Proxy<CanvasMetadata>(metadata, validator)
 
     // Trigger metadata change event
     this.plugin.app.workspace.trigger('canvas-enhance:canvas-metadata-changed', canvas)

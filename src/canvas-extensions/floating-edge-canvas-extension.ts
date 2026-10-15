@@ -12,7 +12,7 @@ export default class FloatingEdgeCanvasExtension  extends CanvasExtension {
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:data-loaded:after',
-      (canvas: Canvas, data: CanvasData, setData: (data: CanvasData) => void) => this.onLoadData(canvas, data)
+      (canvas: Canvas, data: CanvasData) => this.onLoadData(canvas, data)
     ))
 
     this.plugin.registerEvent(this.plugin.app.workspace.on(

@@ -92,8 +92,8 @@ export default class CanvasMetadataHandler {
     // Extract frontmatter links
     metadata.frontmatterLinks = []
     for (const [key, value] of Object.entries(frontmatter ?? {})) {
-      const getLinks = (value: string[]) => value.map((v) => {
-        if (!v.startsWith('[[') || !v.endsWith(']]')) return null // Frontmatter only supports wikilinks
+      const getLinks = (value: unknown[]) => value.map((v) => {
+        if (typeof v !== 'string' || !v.startsWith('[[') || !v.endsWith(']]')) return null // Frontmatter only supports wikilinks
         const [link, ...aliases] = v.slice(2, -2).split('|')
 
         return {

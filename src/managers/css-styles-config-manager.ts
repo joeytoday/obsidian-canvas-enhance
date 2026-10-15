@@ -1,5 +1,6 @@
 import { parseYaml } from "obsidian"
 import CanvasEnhancePlugin from "src/main"
+import { isRecord } from "src/utils/type-helper"
 
 export default class CssStylesConfigManager<T> {
   private cachedConfigs = new WeakMap<Document, T[]>()
@@ -63,13 +64,13 @@ export default class CssStylesConfigManager<T> {
       if (!yamlString) continue
 
       // parseYaml throws on invalid YAML; skip the snippet instead of crashing
-      let configYaml: Record<string, unknown>
+      let configYaml: unknown
       try {
         configYaml = parseYaml(yamlString)
       } catch {
         continue
       }
-      configs.push(configYaml)
+      if (isRecord(configYaml)) configs.push(configYaml)
     }
 
     return configs

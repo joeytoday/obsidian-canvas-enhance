@@ -93,7 +93,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
         name: t('cmd.cloneNode', { direction: NAV_DIRECTION_LABELS[direction] }),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
-          (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1 && canvas.selection.values().next().value?.getData().type === 'text',
+          (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1 && CanvasHelper.getSelectedNode(canvas)?.getData().type === 'text',
           (canvas: Canvas) => this.cloneNode(canvas, direction)
         )
       })
@@ -103,7 +103,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
         name: t('cmd.expandNode', { direction: NAV_DIRECTION_LABELS[direction] }),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
-          (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1,
+          (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1 && CanvasHelper.getSelectedNode(canvas) !== undefined,
           (canvas: Canvas) => this.expandNode(canvas, direction)
         )
       })
@@ -368,7 +368,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
   }
 
   private cloneNode(canvas: Canvas, cloneDirection: NavDirection) {
-    const sourceNode = canvas.selection.values().next().value
+    const sourceNode = CanvasHelper.getSelectedNode(canvas)
     if (!sourceNode) return
     const sourceNodeData = sourceNode.getData()
 
@@ -400,7 +400,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
   }
 
   private expandNode(canvas: Canvas, expandDirection: NavDirection) {
-    const node = canvas.selection.values().next().value
+    const node = CanvasHelper.getSelectedNode(canvas)
     if (!node) return
 
     const expandNodeStepSize = this.plugin.settings.getSetting('expandNodeStepSize')

@@ -50,6 +50,14 @@ function fixture(saved = null) {
       constructor() { settingRows.push(this) }
       setName(name) { this.name = name; return this }
       setDesc(description) { this.description = description; return this }
+      addText(callback) {
+        const row = this
+        callback({
+          setValue(value) { row.value = value; return this },
+          onChange(change) { row.change = change; return this },
+        })
+        return this
+      }
       addDropdown(callback) {
         const dropdown = {
           addOption() { return this },
@@ -135,6 +143,23 @@ test('settings controls use their explicit plugin reference for template and fol
   assert.equal(settingRows.length, 2)
   assert.match(settingRows[0].description, /未检测到/)
   assert.equal(settingRows[1].name, '新建文件所在文件夹')
+})
+
+test('shared text controls preserve string parsing and numeric serialization', async () => {
+  const { plugin, calls, settingRows, SETTINGS } = fixture()
+  await plugin.settings.loadSettings()
+  plugin.settings.addSettingsTab()
+  const tab = calls.tabs[0]
+  tab.createTextSetting({}, 'minNodeSize', SETTINGS.general.children.minNodeSize)
+  tab.createTextSetting({}, 'autoFileNodeEdgesFrontmatterKey', SETTINGS.autoFileNodeEdgesFeatureEnabled.children.autoFileNodeEdgesFrontmatterKey)
+  assert.equal(settingRows[0].value, '60')
+  assert.equal(settingRows[1].value, 'canvas-edges')
+  await settingRows[0].change('80.5')
+  await settingRows[1].change('  related  ')
+  assert.equal(plugin.settings.getSetting('minNodeSize'), 80)
+  assert.equal(plugin.settings.getSetting('autoFileNodeEdgesFrontmatterKey'), 'related')
+  await settingRows[1].change('')
+  assert.equal(plugin.settings.getSetting('autoFileNodeEdgesFrontmatterKey'), 'canvas-edges')
 })
 
 test('node and edge menus reuse the settings CSS caches and refresh after css-change', async () => {

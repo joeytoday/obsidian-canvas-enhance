@@ -6,7 +6,7 @@ export default class BasesTableViewPatcher extends Patcher {
   protected async patch() {
     if (!this.plugin.settings.getSetting('canvasMetadataCompatibilityEnabled')) return
 
-    const bases: BasesPlugin = this.plugin.app.internalPlugins.getEnabledPluginById("bases")
+    const bases = this.plugin.app.internalPlugins.getEnabledPluginById("bases")
     if (!bases) return // Core plugin not enabled
 
     void this.patchViewFactory(bases)

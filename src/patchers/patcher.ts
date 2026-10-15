@@ -1,6 +1,7 @@
 import { around } from "monkey-around"
 import CanvasEnhancePlugin from "src/main"
-import { Plugin } from "obsidian"
+import { Plugin, WorkspaceLeaf } from "obsidian"
+import type { ViewFactoryMap, ViewTypeMap } from "src/@types/Obsidian"
 
 // Is any
 type IsAny<T> = 0 extends 1 & T ? true : false
@@ -8,18 +9,18 @@ type NotAny<T> = IsAny<T> extends true ? never : T
 
 // All keys in T that are functions
 type FunctionKeys<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never
+  [K in keyof T]-?: NonNullable<T[K]> extends (...args: never[]) => unknown ? K : never
 }[keyof T]
 
 // The type of the function at key K in T
 type KeyFunction<T, K extends FunctionKeys<T>> =
-  T[K] extends (...args: any[]) => any ? T[K] : never
+  NonNullable<T[K]> extends (...args: never[]) => unknown ? NonNullable<T[K]> : never
 
 // The type of a patch function for key K in T
 type KeyFunctionReplacement<T, K extends FunctionKeys<T>, R extends ReturnType<KeyFunction<T, K>>> =
   (this: T, ...args: Parameters<KeyFunction<T, K>>) => IsAny<ReturnType<KeyFunction<T, K>>> extends false
   ? ReturnType<KeyFunction<T, K>> & NotAny<R>
-  : any
+  : ReturnType<KeyFunction<T, K>>
 
 // The wrapper of a patch function for key K in T
 type PatchFunctionWrapper<T, K extends FunctionKeys<T>, R extends ReturnType<KeyFunction<T, K>>> =
@@ -40,10 +41,10 @@ export default abstract class Patcher {
 
   protected abstract patch(): Promise<void>
 
-  protected static async waitForMapValueLookup<T>(map: Record<string, any>, viewType: string, patch: (view: T) => void): Promise<T> {
+  protected static async waitForViewRequest<K extends keyof ViewTypeMap>(plugin: CanvasEnhancePlugin, viewType: K, patch: (view: ViewTypeMap[K]) => void): Promise<ViewTypeMap[K]> {
     return new Promise(resolve => {
-      const uninstaller = around(map, {
-        [viewType]: next => function (this: any, ...args: any[]): void {
+      const uninstaller = around(plugin.app.viewRegistry.viewByType, {
+        [viewType]: (next: ViewFactoryMap[K]) => function (this: ViewFactoryMap, ...args: [WorkspaceLeaf]): ViewTypeMap[K] {
           const view = next.call(this, ...args)
           patch(view)
 
@@ -53,18 +54,15 @@ export default abstract class Patcher {
           return view
         }
       })
+      plugin.register(uninstaller)
     })
-  }
-
-  protected static async waitForViewRequest<T>(plugin: CanvasEnhancePlugin, viewType: string, patch: (view: T) => void): Promise<T> {
-    return this.waitForMapValueLookup(plugin.app.viewRegistry.viewByType, viewType, patch)
   }
 
   static OverrideExisting<T, K extends FunctionKeys<T>, R extends ReturnType<KeyFunction<T, K>>>(
     fn: PatchFunctionWrapper<T, K, R> & { __overrideExisting?: boolean }
   ) { return Object.assign(fn, { __overrideExisting: true }) }
 
-  static patchThisAndPrototype<T>(
+  static patchThisAndPrototype<T extends object>(
     plugin: Plugin,
     object: T | undefined,
     patches: FunctionPatchObject<T>,
@@ -74,7 +72,7 @@ export default abstract class Patcher {
     return Patcher.patchPrototype(plugin, object, patches, uninstallers)
   }
 
-  static patchPrototype<T>(
+  static patchPrototype<T extends object>(
     plugin: Plugin,
     target: T | undefined,
     patches: FunctionPatchObject<T>,
@@ -83,7 +81,7 @@ export default abstract class Patcher {
     return Patcher.patch(plugin, target, patches, true, uninstallers)
   }
 
-  static patch<T>(
+  static patch<T extends object>(
     plugin: Plugin,
     object: T | undefined,
     patches: FunctionPatchObject<T>,
@@ -92,7 +90,7 @@ export default abstract class Patcher {
     registerWithPlugin = true
   ): T | null {
     if (!object) return null
-    const target = prototype ? object.constructor.prototype : object
+    const target = (prototype ? object.constructor.prototype : object) as T
 
     // Validate override requirements
     for (const key of Object.keys(patches) as Array<FunctionKeys<T>>) {
@@ -103,7 +101,7 @@ export default abstract class Patcher {
       }
     }
 
-    const uninstaller = around(target, patches)
+    const uninstaller = around<T>(target, patches as Parameters<typeof around<T>>[1])
     if (uninstallers) uninstallers.push(uninstaller)
     // Instance-level patches are released by the caller when the element is removed;
     // registering them here would pin every created node/edge until plugin unload
@@ -112,7 +110,7 @@ export default abstract class Patcher {
     return object
   }
 
-  static async patchOnce<T, V>(
+  static async patchOnce<T extends object, V>(
     plugin: Plugin,
     object: T | undefined,
     patches: (resolve: (value: V) => void) => FunctionPatchObject<T>

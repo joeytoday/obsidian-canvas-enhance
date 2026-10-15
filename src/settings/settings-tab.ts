@@ -31,22 +31,20 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     const linksEl = containerEl.createDiv()
     linksEl.classList.add('ce-settings-links')
 
-    const openUrl = openExternalUrl
-
     new SettingEl(linksEl)
       .setName('Canvas Enhance')
       .addButton(button => button
         .setButtonText(t('settings.guideButton'))
-        .onClick(() => openUrl(getActiveLanguage() === 'en'
+        .onClick(() => openExternalUrl(getActiveLanguage() === 'en'
           ? `${README_URL}#english`
           : 'https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md')))
       .addButton(button => button
         .setButtonText(t('settings.changelogButton'))
-        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md')))
+        .onClick(() => openExternalUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md')))
       .addButton(button => button
         .setButtonText(t('settings.starButton'))
         .setCta()
-        .onClick(() => openUrl('https://github.com/joeytoday/obsidian-canvas-enhance')))
+        .onClick(() => openExternalUrl('https://github.com/joeytoday/obsidian-canvas-enhance')))
 
     // Tab navigation
     const tabBar = containerEl.createDiv()
@@ -80,10 +78,8 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
 
           switch (setting.type) {
             case 'text':
-              this.createTextSetting(childrenEl, settingId, setting)
-              break
             case 'number':
-              this.createNumberSetting(childrenEl, settingId, setting)
+              this.createTextSetting(childrenEl, settingId, setting)
               break
             case 'dimension':
               this.createDimensionSetting(childrenEl, settingId, setting)
@@ -95,7 +91,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
               this.createDropdownSetting(childrenEl, settingId, setting)
               break
             case 'button':
-              this.createButtonSetting(childrenEl, settingId, setting)
+              this.createButtonSetting(childrenEl, setting)
               break
             case 'styles':
               this.createStylesSetting(childrenEl, settingId, setting)
@@ -155,26 +151,15 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     return setting
   }
 
-  private createTextSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues, setting: TextSetting) {
+  private createTextSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues, setting: TextSetting | NumberSetting) {
+    const value = this.settingsManager.getSetting(settingId)
     new SettingEl(containerEl)
       .setName(setting.label)
       .setDesc(setting.description)
       .addText(text => text
-        .setValue(this.settingsManager.getSetting(settingId) as string)
+        .setValue(setting.type === 'number' ? JSON.stringify(value) : value as string)
         .onChange(async (value) => {
           await this.settingsManager.setSetting({ [settingId]: setting.parse ? setting.parse(value) : value })
-        })
-      )
-  }
-
-  private createNumberSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues, setting: NumberSetting) {
-    new SettingEl(containerEl)
-      .setName(setting.label)
-      .setDesc(setting.description)
-      .addText(text => text
-        .setValue(JSON.stringify(this.settingsManager.getSetting(settingId)))
-        .onChange(async (value) => {
-          await this.settingsManager.setSetting({ [settingId]: setting.parse(value) })
         })
       )
   }
@@ -234,7 +219,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     return resolveLanguage(this.settingsManager.getSetting('language')) !== getActiveLanguage()
   }
 
-  private createButtonSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues, setting: ButtonSetting) {
+  private createButtonSetting(containerEl: HTMLElement, setting: ButtonSetting) {
     new SettingEl(containerEl)
       .setName(setting.label)
       .setDesc(setting.description)

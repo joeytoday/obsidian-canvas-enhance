@@ -40,12 +40,12 @@ export default class EncapsulateCanvasExtension extends CanvasExtension {
     const selection = canvas.getSelectionData()
 
     // Create new file
-    const canvasSettings = this.plugin.app.internalPlugins.plugins.canvas.instance.options
+    const canvasSettings = this.plugin.app.internalPlugins.plugins.canvas?.instance?.options
 
-    const defaultNewCanvasLocation = canvasSettings.newFileLocation
+    const defaultNewCanvasLocation = canvasSettings?.newFileLocation
     let targetFolderPath = this.plugin.app.vault.getRoot().path // If setting is "root"
     if (defaultNewCanvasLocation === 'current') targetFolderPath = canvas.view.file?.parent?.path ?? targetFolderPath
-    else if (defaultNewCanvasLocation === 'folder') targetFolderPath = canvasSettings.newFileFolderPath ?? targetFolderPath
+    else if (defaultNewCanvasLocation === 'folder') targetFolderPath = canvasSettings?.newFileFolderPath ?? targetFolderPath
 
     const targetFilePath = await new FileNameModal(
       this.plugin.app,

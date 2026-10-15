@@ -15,7 +15,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-breakpoint-changed',
-      (canvas: Canvas, node: CanvasNode, breakpointRef: { value: boolean }) => {
+      (canvas: Canvas, _node: CanvasNode, breakpointRef: { value: boolean }) => {
         if (canvas.screenshotting) breakpointRef.value = true
       }
     ))

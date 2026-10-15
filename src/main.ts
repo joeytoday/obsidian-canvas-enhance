@@ -62,7 +62,7 @@ import EdgeExposerExtension from './canvas-extensions/dataset-exposers/edge-expo
 import CanvasWrapperExposerExtension from './canvas-extensions/dataset-exposers/canvas-wrapper-exposer'
 import BasesTableViewPatcher from './patchers/bases-table-view-patcher'
 
-const PATCHERS = [
+const PATCHERS: (new (plugin: CanvasEnhancePlugin) => Patcher)[] = [
   // Core canvas patchers
   CanvasPatcher,
   SearchCommandPatcher,
@@ -80,9 +80,9 @@ const PATCHERS = [
   LinkSuggestionsPatcher,
   EmbedPatcher,
   SearchPatcher,
-].filter(Boolean) as (typeof Patcher)[]
+]
 
-const CANVAS_EXTENSIONS: typeof CanvasExtension[] = [
+const CANVAS_EXTENSIONS: (new (plugin: CanvasEnhancePlugin) => CanvasExtension)[] = [
   // Advanced JSON Canvas Extensions
   MetadataCanvasExtension,
   NodeStylesExtension,
@@ -128,8 +128,8 @@ export default class CanvasEnhancePlugin extends Plugin {
   settings: SettingsManager
   windowsManager: WindowsManager
 
-  patchers: Patcher[]
-  canvasExtensions: CanvasExtension[]
+  patchers: (Patcher | undefined)[]
+  canvasExtensions: (CanvasExtension | undefined)[]
 
   async onload() {
     IconsHelper.addIcons()
@@ -140,14 +140,14 @@ export default class CanvasEnhancePlugin extends Plugin {
 
     this.windowsManager = new WindowsManager(this)
 
-    this.patchers = PATCHERS.map((Patcher: any) => {
+    this.patchers = PATCHERS.map((Patcher) => {
       try { return new Patcher(this) }
       catch (e) {
         console.error(`Error initializing patcher ${Patcher.name}:`, e)
       }
     })
 
-    this.canvasExtensions = CANVAS_EXTENSIONS.map((Extension: any) => {
+    this.canvasExtensions = CANVAS_EXTENSIONS.map((Extension) => {
       try { return new Extension(this) }
       catch (e) {
         console.error(`Error initializing ce-extension ${Extension.name}:`, e)
@@ -159,8 +159,6 @@ export default class CanvasEnhancePlugin extends Plugin {
       for (const extension of this.canvasExtensions) extension?.tryInit()
     }))
   }
-
-  onunload() {}
 
   getCanvases(): Canvas[] {
     return this.app.workspace.getLeavesOfType('canvas')

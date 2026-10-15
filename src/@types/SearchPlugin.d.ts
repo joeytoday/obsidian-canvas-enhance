@@ -7,7 +7,7 @@ export default interface SearchView {
 
 export interface SearchQuery {
   app: App
-  _match: (data: MatchData) => any
+  _match: (data: MatchData) => unknown
 }
 
 export interface MatchData {
@@ -23,5 +23,5 @@ export interface MatchData {
   keys: string[]
   cache: CachedMetadata | null
 
-  data: any
+  data: unknown
 }

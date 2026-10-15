@@ -40,8 +40,11 @@ export default class CollapsibleGroupsCanvasExtension extends CanvasExtension {
       name: t('cmd.toggleGroupCollapse'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
-        (canvas: Canvas) => canvas.selection.size === 1 && canvas.selection.values().next().value.getData().type === 'group',
-        (canvas: Canvas) => this.toggleCollapseGroup(canvas, canvas.selection.values().next().value)
+        (canvas: Canvas) => canvas.selection.size === 1 && CanvasHelper.getSelectedNode(canvas)?.getData().type === 'group',
+        (canvas: Canvas) => {
+          const node = CanvasHelper.getSelectedNode(canvas)
+          if (node) this.toggleCollapseGroup(canvas, node)
+        }
       )
     })
   }

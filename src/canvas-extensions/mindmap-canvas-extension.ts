@@ -217,7 +217,6 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     this.plugin.addCommand({
       id: 'mindmap-create-child-node',
       name: t('cmd.createChildNode'),
-      // eslint-disable-next-line obsidianmd/commands/no-default-hotkeys
       hotkeys: [{ modifiers: [], key: 'Tab' }],
       checkCallback: nodeCommand((canvas) => this.createChildNode(canvas, false))
     })
@@ -225,7 +224,6 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     this.plugin.addCommand({
       id: 'mindmap-create-sibling-node',
       name: t('cmd.createSiblingNode'),
-      // eslint-disable-next-line obsidianmd/commands/no-default-hotkeys
       hotkeys: [{ modifiers: [], key: 'Enter' }],
       checkCallback: nodeCommand((canvas) => this.createSiblingNode(canvas, false))
     })
@@ -233,7 +231,6 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     this.plugin.addCommand({
       id: 'mindmap-edit-selected-node',
       name: t('cmd.editSelectedNode'),
-      // eslint-disable-next-line obsidianmd/commands/no-default-hotkeys
       hotkeys: [{ modifiers: [], key: ' ' }],
       checkCallback: nodeCommand((_canvas, node) => node.startEditing(),
         node => typeof node.startEditing === 'function' && typeof node.isEditable === 'function' && node.isEditable())
@@ -274,7 +271,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
           const activeElement = plugin.getCurrentCanvas()?.wrapperEl.ownerDocument.activeElement
           if (activeElement?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return false
         }
-        return next.call(this, command, event) as boolean
+        return next.call(this, command, event)
       }
     }))
   }
