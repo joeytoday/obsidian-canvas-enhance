@@ -33,11 +33,16 @@ Obsidian Canvas is great, but it leaves gaps. Canvas Enhance fills them — with
 
 Enable the features you need in settings. The plugin interface supports **English and 简体中文**, including settings, commands, menus, and export options.
 
+<video src="assets/showcase-canvas-enhence.mp4" poster="https://github.com/user-attachments/assets/67932468-584b-4fcb-94fe-4231d501f81c" controls width="100%">
+</video>
+
 [Get started with the English guide](docs/guide.en.md#quick-start).
 
 ## Features
 
 ### Overview Mode
+
+https://github.com/user-attachments/assets/5a87278b-2d0e-4ab1-8bb0-7b85d7193645
 
 Zoom out and nodes become unreadable. Overview Mode automatically replaces card content with large titles:
 
@@ -47,6 +52,8 @@ Zoom out and nodes become unreadable. Overview Mode automatically replaces card 
 - Zoom back in past the threshold and everything restores automatically
 
 ### Mindmap
+
+https://github.com/user-attachments/assets/9d0a7240-75b7-4c5c-bc42-cfba88a1e9f9
 
 With a single card selected and not being edited, `Tab` creates a child node, `Enter` creates a sibling, `Space` edits the selected node, and `Alt+Arrow` navigates between nodes. The first three shortcuts can be changed in Obsidian under Settings → Hotkeys. Child nodes inherit the parent's color. New nodes are placed following the hierarchy order.
 
@@ -60,13 +67,17 @@ Enable **Card heading** and choose a **Card heading level** to start new text ca
 
 https://github.com/user-attachments/assets/c78a55e6-309e-4150-92ee-d68c80d1d015
 
-### Open Files in a Side Pane
+### File Templates and Side-pane Files
+
+Choose a template under **Settings → Canvas Enhance → Basic → File template** to create file nodes with pre-filled content.
 
 Click a file card's title, or right-click it and choose **Open in sidebar**. The file opens in a pane beside the canvas, so you can read or edit the note while keeping the bigger picture visible.
 
 Further files open as tabs in the side pane. Opening the same file again reuses its existing tab. Enable this under **Settings → Canvas Enhance → Basic → Open file cards in split**.
 
-[See the side-pane walkthrough](docs/guide.en.md#open-files-beside-your-canvas).
+https://github.com/user-attachments/assets/1c76f084-aa48-4336-b689-d1c193a4204f
+
+[See the template and side-pane walkthrough](docs/guide.en.md#file-templates-and-side-pane-files).
 
 ### Node & Edge Styles
 

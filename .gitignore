@@ -26,3 +26,4 @@ data.json
 
 # Exclude large mp4 files
 assets/*.mp4
+!assets/showcase-canvas-enhence.mp4
