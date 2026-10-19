@@ -104,7 +104,7 @@ https://github.com/user-attachments/assets/1c76f084-aa48-4336-b689-d1c193a4204f
 
 含传送门的画布暂不支持整体重排。插件会提示，并保留原布局。
 
-<img width="852" height="480" alt="整体重排后的思维导图" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
+<img width="852" height="480" alt="整体重排后的思维导图" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" /
 
 
 ### 节点与边样式
@@ -166,8 +166,6 @@ options:
 
 ![画布的元数据与链接集成](../assets/docs/metadata-cache-support.png)
 
-> **待补充演示 — 知识网络：** 在画布卡片插入笔记双链，依次展示关系图谱、目标笔记反向链接和画布出链。上图为参考截图。
-
 ## 其他功能
 
 ### 画布属性（Frontmatter）
@@ -222,7 +220,6 @@ options:
 ### 宽高比控制
 
 在「节点与边」启用“宽高比控制”，右键节点选择“设置宽高比”。调整尺寸时保持比例，适合图片卡片。
-
 
 ### 浮动边
 
