@@ -31,8 +31,7 @@ Obsidian Canvas 原生功能够用，但不够好用。Canvas Enhance 在不改�
 
 按需开启设置中的功能。插件界面支持 **中文 / English**，涵盖设置、命令、菜单和导出选项。
 
-<video src="assets/showcase-canvas-enhence.mp4" poster="https://img.joeytoday.com/2026/20261019200745528.png" controls width="100%">
-</video>
+[![点击观看 Canvas Enhance 演示](assets/overview-cover.png)](assets/showcase-canvas-enhence.mp4)
 
 ## 功能
 

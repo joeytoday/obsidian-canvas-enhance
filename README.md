@@ -33,8 +33,7 @@ Obsidian Canvas is great, but it leaves gaps. Canvas Enhance fills them — with
 
 Enable the features you need in settings. The plugin interface supports **English and 简体中文**, including settings, commands, menus, and export options.
 
-<video src="assets/showcase-canvas-enhence.mp4" poster="https://img.joeytoday.com/2026/20261019200745528.png" controls width="100%">
-</video>
+[![Watch the Canvas Enhance demo](assets/overview-cover.png)](assets/showcase-canvas-enhence.mp4)
 
 [Get started with the English guide](docs/guide.en.md#quick-start).
 
