@@ -37,7 +37,7 @@ https://github.com/user-attachments/assets/86da3869-f637-467e-a2dd-4042e3c7c74b
 
 ### 概览模式
 
-https://github.com/user-attachments/assets/d98e9132-ad4f-4186-b1e3-f2f051ceabeb
+https://github.com/user-attachments/assets/5a87278b-2d0e-4ab1-8bb0-7b85d7193645
 
 缩小画布后节点内容变得难以阅读。概览模式自动用大号标题填满每张卡片：
 
@@ -62,11 +62,11 @@ https://github.com/user-attachments/assets/9d0a7240-75b7-4c5c-bc42-cfba88a1e9f9
 
 https://github.com/user-attachments/assets/c78a55e6-309e-4150-92ee-d68c80d1d015
 
-### 文件节点模板
+### 文件节点模板 + 文件侧边栏打开
 
 支持在设置中配置，使用特定模板创建文件节点。
 
-https://github.com/user-attachments/assets/7ae37cf5-bc9d-427e-90d5-e86e044c1b79
+https://github.com/user-attachments/assets/1c76f084-aa48-4336-b689-d1c193a4204f
 
 ### 节点与边样式
 
