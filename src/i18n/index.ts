@@ -26,8 +26,6 @@ export function resolveLanguage(setting: string): LanguageId {
   return getLanguage().toLowerCase().startsWith('zh') ? 'zh-cn' : 'en'
 }
 
-// The interface language is applied once, when the plugin loads: registered commands and menus cannot be renamed later,
-// so changing the setting only takes effect after Obsidian is reloaded
 export function setLanguage(setting: string) {
   currentLanguage = resolveLanguage(setting)
 }

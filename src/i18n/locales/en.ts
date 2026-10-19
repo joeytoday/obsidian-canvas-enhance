@@ -2,9 +2,8 @@ import { TranslationKey } from "./zh-cn"
 
 export const en: Record<TranslationKey, string> = {
   'settings.language.label': 'Interface language',
-  'settings.language.description': 'Language used by the plugin interface. Reload Obsidian after changing it for the change to fully take effect.',
+  'settings.language.description': 'Language used by the plugin interface. Changes take effect immediately.',
   'settings.language.auto': 'Auto (follow Obsidian)',
-  'settings.language.reloadWarning': 'Language changed. Reload Obsidian to apply the new language.',
   'notice.reloadToApply': 'Reload Obsidian to apply changes.',
   'settings.general.label': 'General',
   'settings.general.description': 'General settings for the Canvas Enhance plugin.',

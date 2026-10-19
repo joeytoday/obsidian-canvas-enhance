@@ -14,7 +14,7 @@ export default class EncapsulateCanvasExtension extends CanvasExtension {
     /* Add command to encapsulate selection */
     this.plugin.addCommand({
       id: 'encapsulate-selection',
-      name: t('cmd.encapsulate'),
+      name: () => t('cmd.encapsulate'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.selection.size > 0,

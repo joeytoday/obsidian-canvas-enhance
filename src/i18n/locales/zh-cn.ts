@@ -1,9 +1,8 @@
 // Source of truth for translation keys: every other locale must provide the same keys (see en.ts)
 export const zhCn = {
   'settings.language.label': '界面语言',
-  'settings.language.description': '插件界面使用的语言。更改后需要重新加载 Obsidian 才能完全生效。',
+  'settings.language.description': '插件界面使用的语言。更改后立即生效。',
   'settings.language.auto': '自动（跟随 Obsidian）',
-  'settings.language.reloadWarning': '语言已更改。请重新加载 Obsidian 以应用新语言。',
   'notice.reloadToApply': '重新加载 Obsidian 以应用更改。',
   'settings.general.label': '通用',
   'settings.general.description': 'Canvas Enhance 插件的通用设置。',

@@ -39,6 +39,40 @@ export default class CanvasHelper {
     }
   }
 
+  /** Update existing controls without replacing cards, changing selection or reloading views. */
+  static refreshLanguage(canvas: Canvas) {
+    for (const [id, key, placement] of [
+      ['properties-button', 'menu.properties', 'left'],
+      ['disable-node-popup', 'readonly.hidePopup', 'left'],
+      ['disable-zoom', 'readonly.disableZoom', 'left'],
+      ['disable-pan', 'readonly.disablePan', 'left'],
+      ['focus-mode-toggle', 'menu.focusMode', 'left'],
+      ['create-group', 'menu.dragToAddGroup', 'top'],
+      ['mindmap-rearrange-all', 'mindmap.rearrange', 'top'],
+    ] as const) {
+      const button = canvas.wrapperEl.querySelector<HTMLElement>(`#${id}`)
+      if (button) setTooltip(button, t(key), { placement })
+    }
+
+    for (const node of canvas.nodes.values()) {
+      if (!node.mindmapCollapseEl) continue
+      const data = node.getData()
+      const collapsed = 'mindmapCollapsed' in data && data.mindmapCollapsed === true
+      node.mindmapCollapseEl.setAttribute('aria-label',
+        collapsed ? t('mindmap.expandChildren') : t('mindmap.collapseChildren'))
+    }
+
+    for (const [selector, key] of [
+      ['.document-search-button:first-child', 'search.previous'],
+      ['.document-search-button:last-child', 'search.next'],
+      ['.document-search-close-button', 'search.exit'],
+    ] as const) {
+      canvas.searchEl?.querySelector(selector)?.setAttribute('aria-label', t(key))
+    }
+
+    if (canvas.menu.menuEl.isConnected) canvas.menu.render()
+  }
+
   static createControlMenuButton(menuOption: MenuOption): HTMLElement {
     const quickSetting = activeDocument.createElement("div")
     if (menuOption.id) quickSetting.id = menuOption.id

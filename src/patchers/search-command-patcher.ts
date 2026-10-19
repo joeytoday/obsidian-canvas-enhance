@@ -29,7 +29,7 @@ export default class SearchCommandPatcher extends Patcher {
     // editor:open-search has no default hotkey on canvas, so bind our own command
     this.plugin.addCommand({
       id: 'open-canvas-search',
-      name: t('cmd.searchInCanvas'),
+      name: () => t('cmd.searchInCanvas'),
       hotkeys: [{ modifiers: ['Mod'], key: 'f' }],
       checkCallback: (checking: boolean) => {
         // Leave Mod+F to the native editor search when an editor is active

@@ -1,9 +1,10 @@
-import { ItemView, Plugin } from 'obsidian'
+import { type Command, ItemView, Plugin } from 'obsidian'
 import { Canvas, CanvasView } from './@types/Canvas'
 
 // Utils
 import IconsHelper from './utils/icons-helper'
 import DebugHelper from './utils/debug-helper'
+import CanvasHelper from './utils/canvas-helper'
 
 // Managers
 import SettingsManager from './settings'
@@ -123,6 +124,8 @@ const CANVAS_EXTENSIONS: (new (plugin: CanvasEnhancePlugin) => CanvasExtension)[
 ]
 
 export default class CanvasEnhancePlugin extends Plugin {
+  private commandNames = new Map<Command, () => string>()
+
   debugHelper: DebugHelper
 
   settings: SettingsManager
@@ -131,12 +134,26 @@ export default class CanvasEnhancePlugin extends Plugin {
   patchers: (Patcher | undefined)[]
   canvasExtensions: (CanvasExtension | undefined)[]
 
+  /** Accept live labels while retaining the host's command registration and cleanup. */
+  override addCommand(command: Omit<Command, 'name'> & { name: string | (() => string) }): Command {
+    const { name, ...options } = command
+    const registered = super.addCommand({ ...options, name: typeof name === 'function' ? name() : name })
+    if (typeof name === 'function') this.commandNames.set(registered, name)
+    return registered
+  }
+
   async onload() {
     IconsHelper.addIcons()
 
     this.settings = new SettingsManager(this)
     await this.settings.loadSettings()
     this.settings.addSettingsTab()
+
+    this.registerEvent(this.app.workspace.on('canvas-enhance:language-changed', () => {
+      for (const [command, name] of this.commandNames) command.name = `${this.manifest.name}: ${name()}`
+      for (const canvas of this.getCanvases()) CanvasHelper.refreshLanguage(canvas)
+    }))
+    this.register(() => this.commandNames.clear())
 
     this.windowsManager = new WindowsManager(this)
 

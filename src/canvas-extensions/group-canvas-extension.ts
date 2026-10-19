@@ -13,7 +13,7 @@ export default class GroupCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.addCommand({
       id: 'create-group-around-selection',
-      name: t('cmd.groupSelection'),
+      name: () => t('cmd.groupSelection'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.selection.size > 0,

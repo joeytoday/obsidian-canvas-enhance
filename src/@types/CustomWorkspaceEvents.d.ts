@@ -5,6 +5,7 @@ import { CanvasData } from "./AdvancedJsonCanvas"
 export interface CustomWorkspaceEvents {
   // Plugin events
   'canvas-enhance:settings-changed': () => void
+  'canvas-enhance:language-changed': () => void
 
   // Built-in canvas events
   'canvas:selection-menu': (menu: Menu, canvas: Canvas) => void

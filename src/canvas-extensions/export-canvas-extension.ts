@@ -22,7 +22,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'export-all-as-image',
-      name: t('export.cmd.canvas'),
+      name: () => t('export.cmd.canvas'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.nodes.size > 0,
@@ -32,7 +32,7 @@ export default class ExportCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'export-selected-as-image',
-      name: t('export.cmd.selection'),
+      name: () => t('export.cmd.selection'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.selection.size > 0,

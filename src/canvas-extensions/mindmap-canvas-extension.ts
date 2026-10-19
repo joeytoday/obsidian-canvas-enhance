@@ -216,21 +216,21 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     // Keep the existing single-key defaults, now configurable in Obsidian Hotkeys.
     this.plugin.addCommand({
       id: 'mindmap-create-child-node',
-      name: t('cmd.createChildNode'),
+      name: () => t('cmd.createChildNode'),
       hotkeys: [{ modifiers: [], key: 'Tab' }],
       checkCallback: nodeCommand((canvas) => this.createChildNode(canvas, false))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-create-sibling-node',
-      name: t('cmd.createSiblingNode'),
+      name: () => t('cmd.createSiblingNode'),
       hotkeys: [{ modifiers: [], key: 'Enter' }],
       checkCallback: nodeCommand((canvas) => this.createSiblingNode(canvas, false))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-edit-selected-node',
-      name: t('cmd.editSelectedNode'),
+      name: () => t('cmd.editSelectedNode'),
       hotkeys: [{ modifiers: [], key: ' ' }],
       checkCallback: nodeCommand((_canvas, node) => node.startEditing(),
         node => typeof node.startEditing === 'function' && typeof node.isEditable === 'function' && node.isEditable())
@@ -238,13 +238,13 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'mindmap-create-floating-node',
-      name: t('cmd.createFloatingNode'),
+      name: () => t('cmd.createFloatingNode'),
       checkCallback: nodeCommand((canvas) => this.createFloatingNode(canvas, 'right'))
     })
 
     this.plugin.addCommand({
       id: 'mindmap-split-heading-into-mindmap',
-      name: t('cmd.splitByH1'),
+      name: () => t('cmd.splitByH1'),
       checkCallback: (checking: boolean) => {
         const canvas = this.plugin.getCurrentCanvas()
         if (!canvas || canvas.readonly || canvas.selection.size !== 1) return false

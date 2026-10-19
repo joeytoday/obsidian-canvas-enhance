@@ -5,7 +5,7 @@ import type { StyleAttribute } from "src/canvas-extensions/advanced-styles/style
 import { DEFAULT_SETTINGS_VALUES } from "./values"
 import type { CanvasEnhancePluginSettingsValues } from "./values"
 import { CanvasEnhancePluginSettingTab } from "./settings-tab"
-import { setLanguage } from "src/i18n"
+import { getActiveLanguage, setLanguage } from "src/i18n"
 
 export default class SettingsManager {
   private plugin: CanvasEnhancePlugin
@@ -40,6 +40,14 @@ export default class SettingsManager {
   async setSetting(data: Partial<CanvasEnhancePluginSettingsValues>) {
     this.settings = Object.assign(this.settings, data)
     await this.saveSettings()
+    if (data.language !== undefined) {
+      const previousLanguage = getActiveLanguage()
+      setLanguage(this.settings.language)
+      if (getActiveLanguage() !== previousLanguage) {
+        this.plugin.app.workspace.trigger('canvas-enhance:language-changed')
+        if (this.settingsTab?.containerEl.isConnected) this.settingsTab.display()
+      }
+    }
     this.plugin.app.workspace.trigger("canvas-enhance:settings-changed")
   }
 

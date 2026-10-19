@@ -1,14 +1,15 @@
 import { Notice, PluginSettingTab, Setting as SettingEl, TextComponent } from "obsidian"
 import type CanvasEnhancePlugin from "src/main"
 import { getTemplatesFolder, listTemplateFiles, listVaultFolders } from "src/utils/file-template-helper"
-import { getActiveLanguage, resolveLanguage, t } from "src/i18n"
+import { getActiveLanguage, t } from "src/i18n"
 import type SettingsManager from "./settings-manager"
 import { DEFAULT_SETTINGS_VALUES } from "./values"
 import type { CanvasEnhancePluginSettingsValues } from "./values"
 import { SETTINGS, SETTINGS_TABS } from "./schema"
 import type { BooleanSetting, ButtonSetting, DimensionSetting, DropdownSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TextSetting } from "./types"
 
-const README_URL = 'https://github.com/joeytoday/obsidian-canvas-enhance?tab=readme-ov-file'
+const REPO_URL = 'https://github.com/joeytoday/obsidian-canvas-enhance'
+const README_URL = `${REPO_URL}?tab=readme-ov-file`
 
 function openExternalUrl(url: string) {
   window.open(url, '_blank')
@@ -28,6 +29,7 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     containerEl.classList.add("ce-settings")
 
     // Quick links
+    const languageSuffix = getActiveLanguage() === 'en' ? '.en' : ''
     const linksEl = containerEl.createDiv()
     linksEl.classList.add('ce-settings-links')
 
@@ -35,16 +37,14 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
       .setName('Canvas Enhance')
       .addButton(button => button
         .setButtonText(t('settings.guideButton'))
-        .onClick(() => openExternalUrl(getActiveLanguage() === 'en'
-          ? `${README_URL}#english`
-          : 'https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/docs/guide.md')))
+        .onClick(() => openExternalUrl(`${REPO_URL}/blob/main/docs/guide${languageSuffix}.md`)))
       .addButton(button => button
         .setButtonText(t('settings.changelogButton'))
-        .onClick(() => openExternalUrl('https://github.com/joeytoday/obsidian-canvas-enhance/blob/main/CHANGELOG.md')))
+        .onClick(() => openExternalUrl(`${REPO_URL}/blob/main/CHANGELOG${languageSuffix}.md`)))
       .addButton(button => button
         .setButtonText(t('settings.starButton'))
         .setCta()
-        .onClick(() => openExternalUrl('https://github.com/joeytoday/obsidian-canvas-enhance')))
+        .onClick(() => openExternalUrl(REPO_URL)))
 
     // Tab navigation
     const tabBar = containerEl.createDiv()
@@ -194,13 +194,6 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
   }
 
   private createDropdownSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues, setting: DropdownSetting) {
-    // The language only changes after a reload, so warn right above the setting while the chosen one is not active yet
-    let reloadWarningEl: HTMLElement | null = null
-    if (settingId === 'language') {
-      reloadWarningEl = containerEl.createDiv({ cls: 'ce-settings-warning', text: t('settings.language.reloadWarning') })
-      reloadWarningEl.hidden = !this.isLanguageReloadPending()
-    }
-
     new SettingEl(containerEl)
       .setName(setting.label)
       .setDesc(setting.description)
@@ -209,14 +202,8 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
         .setValue(this.settingsManager.getSetting(settingId) as string)
         .onChange(async (value) => {
           await this.settingsManager.setSetting({ [settingId]: value })
-
-          if (reloadWarningEl) reloadWarningEl.hidden = !this.isLanguageReloadPending()
         })
       )
-  }
-
-  private isLanguageReloadPending(): boolean {
-    return resolveLanguage(this.settingsManager.getSetting('language')) !== getActiveLanguage()
   }
 
   private createButtonSetting(containerEl: HTMLElement, setting: ButtonSetting) {

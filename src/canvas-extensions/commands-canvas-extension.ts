@@ -27,7 +27,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.addCommand({
       id: 'toggle-readonly',
-      name: t('cmd.toggleReadonly'),
+      name: () => t('cmd.toggleReadonly'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (_canvas: Canvas) => true,
@@ -37,7 +37,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'create-text-node',
-      name: t('cmd.createTextNode'),
+      name: () => t('cmd.createTextNode'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly,
@@ -47,7 +47,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'create-file-node',
-      name: t('cmd.createFileNode'),
+      name: () => t('cmd.createFileNode'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly,
@@ -57,7 +57,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'select-all-edges',
-      name: t('cmd.selectAllEdges'),
+      name: () => t('cmd.selectAllEdges'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (_canvas: Canvas) => true,
@@ -69,7 +69,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'zoom-to-selection',
-      name: t('cmd.zoomToSelection'),
+      name: () => t('cmd.zoomToSelection'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => canvas.selection.size > 0,
@@ -79,7 +79,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'zoom-to-fit',
-      name: t('cmd.zoomToFit'),
+      name: () => t('cmd.zoomToFit'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (_canvas: Canvas) => true,
@@ -90,7 +90,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     for (const direction of NAV_DIRECTIONS) {
       this.plugin.addCommand({
         id: `clone-node-${direction}`,
-        name: t('cmd.cloneNode', { direction: NAV_DIRECTION_LABELS[direction] }),
+        name: () => t('cmd.cloneNode', { direction: NAV_DIRECTION_LABELS[direction] }),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1 && CanvasHelper.getSelectedNode(canvas)?.getData().type === 'text',
@@ -100,7 +100,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
       this.plugin.addCommand({
         id: `expand-node-${direction}`,
-        name: t('cmd.expandNode', { direction: NAV_DIRECTION_LABELS[direction] }),
+        name: () => t('cmd.expandNode', { direction: NAV_DIRECTION_LABELS[direction] }),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1 && CanvasHelper.getSelectedNode(canvas) !== undefined,
@@ -110,7 +110,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
       this.plugin.addCommand({
         id: `navigate-${direction}`,
-        name: t('cmd.navigate', { direction: NAV_DIRECTION_LABELS[direction] }),
+        name: () => t('cmd.navigate', { direction: NAV_DIRECTION_LABELS[direction] }),
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (canvas: Canvas) => canvas.getSelectionData().nodes.length === 1,
@@ -121,7 +121,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'flip-selection-horizontally',
-      name: t('cmd.flipHorizontal'),
+      name: () => t('cmd.flipHorizontal'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.selection.size > 0,
@@ -131,7 +131,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'flip-selection-vertically',
-      name: t('cmd.flipVertical'),
+      name: () => t('cmd.flipVertical'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.selection.size > 0,
@@ -142,7 +142,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     for (const type of ['connected', 'incoming', 'outgoing'] as const) {
       this.plugin.addCommand({
         id: `select-${type}-edges`,
-        name: EDGE_DIRECTION_MENU[type].label,
+        name: () => EDGE_DIRECTION_MENU[type].label,
         checkCallback: CanvasHelper.canvasCommand(
           this.plugin,
           (canvas: Canvas) => canvas.selection.size > 0,
@@ -153,7 +153,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'swap-nodes',
-      name: t('cmd.swapNodes'),
+      name: () => t('cmd.swapNodes'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.getSelectionData().nodes.length === 2,
@@ -175,7 +175,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'copy-wikilink-to-node',
-      name: t('cmd.copyWikilink'),
+      name: () => t('cmd.copyWikilink'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly && canvas.selection.size === 1,
@@ -193,7 +193,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'pull-outgoing-links-to-canvas',
-      name: t('cmd.pullOutgoingLinks'),
+      name: () => t('cmd.pullOutgoingLinks'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly,
@@ -238,7 +238,7 @@ export default class CommandsCanvasExtension extends CanvasExtension {
 
     this.plugin.addCommand({
       id: 'pull-backlinks-to-canvas',
-      name: t('cmd.pullBacklinks'),
+      name: () => t('cmd.pullBacklinks'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (canvas: Canvas) => !canvas.readonly,

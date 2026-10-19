@@ -11,7 +11,7 @@ export default class FocusModeCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.addCommand({
       id: 'toggle-focus-mode',
-      name: t('cmd.toggleFocusMode'),
+      name: () => t('cmd.toggleFocusMode'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         (_canvas: Canvas) => true,

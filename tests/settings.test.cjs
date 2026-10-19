@@ -16,9 +16,9 @@ const edgeStylesCode = bundle('canvas-extensions/advanced-styles/edge-styles.ts'
 const cssManagerCode = bundle('managers/css-styles-config-manager.ts')
 const copy = value => JSON.parse(JSON.stringify(value))
 
-function fixture(saved = null) {
+function fixture(saved = null, hostLanguage = 'zh') {
   const listeners = new Map()
-  const calls = { saved: [], events: [], menus: new Map(), parses: 0, tabs: [] }
+  const calls = { saved: [], events: [], menus: new Map(), parses: 0, tabs: [], buttons: [], opened: [] }
   const sheet = { ownerNode: { textContent: '' } }
   const document = { styleSheets: { length: 1, item: () => sheet } }
   const plugin = {
@@ -44,12 +44,43 @@ function fixture(saved = null) {
     addSettingTab: tab => calls.tabs.push(tab),
   }
   const settingRows = []
+  const element = () => ({
+    isConnected: true,
+    empty() {},
+    classList: { add() {}, remove() {} },
+    createDiv: element,
+    createSpan: element,
+    createEl: element,
+    addEventListener() {},
+    querySelectorAll: () => [],
+  })
   const obsidian = {
-    PluginSettingTab: class { constructor(app) { this.app = app } },
+    PluginSettingTab: class { constructor(app) { this.app = app; this.containerEl = element() } },
     Setting: class {
       constructor() { settingRows.push(this) }
       setName(name) { this.name = name; return this }
       setDesc(description) { this.description = description; return this }
+      setHeading() { return this }
+      setClass() { return this }
+      addExtraButton() { return this }
+      addButton(callback) {
+        const button = {
+          setButtonText(text) { this.text = text; return this },
+          setCta() { return this },
+          onClick(click) { this.click = click; return this },
+        }
+        callback(button)
+        calls.buttons.push(button)
+        return this
+      }
+      addToggle(callback) {
+        callback({
+          setTooltip() { return this },
+          setValue() { return this },
+          onChange() { return this },
+        })
+        return this
+      }
       addText(callback) {
         const row = this
         callback({
@@ -59,17 +90,19 @@ function fixture(saved = null) {
         return this
       }
       addDropdown(callback) {
+        const row = this
         const dropdown = {
           addOption() { return this },
+          addOptions() { return this },
           setValue() { return this },
-          onChange() { return this },
+          onChange(change) { row.change = change; return this },
         }
         callback(dropdown)
         return this
       }
     },
     parseYaml(text) { calls.parses++; return JSON.parse(text) },
-    getLanguage: () => 'zh',
+    getLanguage: () => hostLanguage,
   }
   function load(code) {
     const loaded = { exports: {} }
@@ -80,7 +113,9 @@ function fixture(saved = null) {
       }
       throw new Error(`unexpected dependency: ${name}`)
     }
-    new Function('module', 'exports', 'require', 'activeDocument', code)(loaded, loaded.exports, mockRequire, document)
+    new Function('module', 'exports', 'require', 'activeDocument', 'window', code)(
+      loaded, loaded.exports, mockRequire, document, { open: url => calls.opened.push(url) },
+    )
     return loaded.exports
   }
   const { default: SettingsManager, SETTINGS, DEFAULT_SETTINGS_VALUES } = load(settingsCode)
@@ -143,6 +178,56 @@ test('settings controls use their explicit plugin reference for template and fol
   assert.equal(settingRows.length, 2)
   assert.match(settingRows[0].description, /未检测到/)
   assert.equal(settingRows[1].name, '新建文件所在文件夹')
+})
+
+test('language dropdown immediately refreshes settings and document links, including auto mode', async () => {
+  for (const [language, hostLanguage, suffix, labels] of [
+    ['en', 'zh', '.en', ['Guide', 'Changelog']],
+    ['zh-cn', 'en', '', ['使用指南', '更新日志']],
+    ['auto', 'en', '.en', ['Guide', 'Changelog']],
+    ['auto', 'zh-TW', '', ['使用指南', '更新日志']],
+  ]) {
+    const { plugin, calls, settingRows } = fixture({ language }, hostLanguage)
+    await plugin.settings.loadSettings()
+    plugin.settings.addSettingsTab()
+    const tab = calls.tabs[0]
+    const checkLinks = (suffix, labels) => {
+      calls.opened.length = 0
+      assert.deepEqual(calls.buttons.slice(0, 2).map(button => button.text), labels)
+      calls.buttons.slice(0, 3).forEach(button => button.click())
+      const repo = 'https://github.com/joeytoday/obsidian-canvas-enhance'
+      assert.deepEqual(calls.opened, [
+        `${repo}/blob/main/docs/guide${suffix}.md`,
+        `${repo}/blob/main/CHANGELOG${suffix}.md`,
+        repo,
+      ])
+    }
+    tab.display()
+    checkLinks(suffix, labels)
+    const dropdown = settingRows.find(row => row.name === (suffix ? 'Interface language' : '界面语言'))
+    calls.buttons.length = 0
+    calls.events.length = 0
+    await dropdown.change(suffix ? 'zh-cn' : 'en')
+    checkLinks(suffix ? '' : '.en', suffix ? ['使用指南', '更新日志'] : ['Guide', 'Changelog'])
+    assert.deepEqual(calls.events, ['canvas-enhance:language-changed', 'canvas-enhance:settings-changed'])
+
+    calls.buttons.length = 0
+    await plugin.settings.setSetting({ language })
+    checkLinks(suffix, labels)
+  }
+})
+
+test('failed saves and unchanged effective languages do not refresh or partially translate the interface', async () => {
+  const { plugin, calls, SETTINGS } = fixture({ language: 'zh-cn' }, 'zh-TW')
+  await plugin.settings.loadSettings()
+  calls.events.length = 0
+  await plugin.settings.setSetting({ language: 'auto' })
+  assert.deepEqual(calls.events, ['canvas-enhance:settings-changed'])
+  calls.events.length = 0
+  plugin.saveData = async () => { throw new Error('disk unavailable') }
+  await assert.rejects(plugin.settings.setSetting({ language: 'en' }), /disk unavailable/)
+  assert.equal(SETTINGS.general.children.language.label, '界面语言')
+  assert.deepEqual(calls.events, [])
 })
 
 test('shared text controls preserve string parsing and numeric serialization', async () => {

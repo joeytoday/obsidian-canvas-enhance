@@ -10,7 +10,7 @@ export default class NodeTemplatesCanvasExtension extends CanvasExtension {
   init() {
     this.plugin.addCommand({
       id: 'create-file-node-from-template',
-      name: t('cmd.createTemplateNode'),
+      name: () => t('cmd.createTemplateNode'),
       checkCallback: CanvasHelper.canvasCommand(
         this.plugin,
         () => !!this.plugin.settings.getSetting('fileNodeTemplatePath'),
