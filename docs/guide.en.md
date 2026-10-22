@@ -56,6 +56,8 @@ Child nodes inherit their parent's color, and new nodes follow the hierarchy. Un
 
 Change the first three shortcuts under Obsidian **Settings → Hotkeys**. Search for Canvas Enhance and **Create child node**, **Create sibling node**, or **Edit selected node**. Inside card editors and regular Markdown editors, these actions do not replace normal typing, spaces, or line breaks.
 
+To create nodes while editing a card, bind the child and sibling commands to `Shift+Tab` and `Shift+Enter` (combinations with `Ctrl` / `Cmd` also work). These shortcuts work inside the selected text or Markdown file card editor, preserving its content and moving editing to the new node. Bare `Tab`, `Enter`, and `Space` keep their normal input behavior, and regular Markdown pages are unaffected. Creating a sibling requires an existing parent node.
+
 Use the plus/minus control on a parent node to collapse or expand its descendants. Collapsed state is saved with the canvas. This is separate from **Collapsible groups**, described below.
 
 Existing reference: creating nodes from the keyboard.

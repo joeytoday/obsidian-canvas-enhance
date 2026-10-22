@@ -2,6 +2,7 @@
 
 import { Notice, setIcon, setTooltip, TFile } from "obsidian"
 import type { Command, MarkdownFileInfo, Scope, UserEvent } from "obsidian"
+import type { EditorView } from "@codemirror/view"
 import { around } from "monkey-around"
 import { Canvas, CanvasNode, CanvasView } from "src/@types/Canvas"
 import { CanvasData, CanvasEdgeData, CanvasFileNodeData } from "src/@types/AdvancedJsonCanvas"
@@ -202,14 +203,24 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
   // ── Commands ──
 
+  private getFocusedNodeEditor(node: CanvasNode): EditorView | null {
+    const editor = node.child?.editMode?.cm as EditorView | undefined
+    return editor?.dom.isConnected && editor.hasFocus &&
+      editor.dom.ownerDocument.activeElement === editor.contentDOM ? editor : null
+  }
+
   private registerCommands() {
     const nodeCommand = (run: (canvas: Canvas, node: CanvasNode) => void,
-      canRun?: (node: CanvasNode) => boolean) => (checking: boolean) => {
+      canRun?: (node: CanvasNode) => boolean, allowEditing = false) => (checking: boolean) => {
       const canvas = this.plugin.getCurrentCanvas()
       if (!canvas || canvas.readonly || !this.plugin.settings.getSetting('mindmapFeatureEnabled')) return false
       const node = this.getSelectedNode(canvas)
-      if (!node || node.isEditing || canvas.nodes.get(node.getData().id) !== node || canRun?.(node) === false) return false
-      if (!checking) run(canvas, node)
+      if (!node || canvas.nodes.get(node.getData().id) !== node || canRun?.(node) === false) return false
+      if (node.isEditing && (!allowEditing || !this.getFocusedNodeEditor(node))) return false
+      if (!checking) {
+        if (node.isEditing) node.setIsEditing(false)
+        run(canvas, node)
+      }
       return true
     }
 
@@ -218,14 +229,15 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       id: 'mindmap-create-child-node',
       name: () => t('cmd.createChildNode'),
       hotkeys: [{ modifiers: [], key: 'Tab' }],
-      checkCallback: nodeCommand((canvas) => this.createChildNode(canvas, false))
+      checkCallback: nodeCommand((canvas) => this.createChildNode(canvas, false), undefined, true)
     })
 
     this.plugin.addCommand({
       id: 'mindmap-create-sibling-node',
       name: () => t('cmd.createSiblingNode'),
       hotkeys: [{ modifiers: [], key: 'Enter' }],
-      checkCallback: nodeCommand((canvas) => this.createSiblingNode(canvas, false))
+      checkCallback: nodeCommand((canvas) => this.createSiblingNode(canvas, false),
+        node => node.canvas.getEdgesForNode(node).some(edge => edge.to.node === node), true)
     })
 
     this.plugin.addCommand({
@@ -263,15 +275,31 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const ids = new Set(['mindmap-create-child-node', 'mindmap-create-sibling-node', 'mindmap-edit-selected-node']
       .map(id => `${plugin.manifest.id}:${id}`))
 
+    const canExecute = (command: Command, event?: UserEvent): boolean => {
+      if (!ids.has(command.id)) return true
+      // Obsidian reports success even when a checkCallback returns false, consuming the key.
+      if (!command.checkCallback?.(true)) return false
+      const canvas = plugin.getCurrentCanvas()
+      if (!canvas) return false
+      const node = this.getSelectedNode(canvas)
+      const editor = node?.isEditing ? this.getFocusedNodeEditor(node) : null
+      const doc = editor?.dom.ownerDocument ?? canvas.wrapperEl.ownerDocument
+      // Obsidian's hotkey dispatcher omits the event argument. Use only the
+      // synchronous DOM event from this canvas window, never a saved event.
+      const keyEvent = (event ?? canvas.wrapperEl.ownerDocument.defaultView?.event) as KeyboardEvent | undefined
+      if (editor?.composing || (keyEvent?.type === 'keydown' && (keyEvent.isComposing || keyEvent.key === 'Process'))) return false
+      if (editor || doc.activeElement?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) {
+        if (!editor) return false
+        if (keyEvent?.type !== 'keydown' || keyEvent.repeat) return false
+        // Bare input keys and Shift+letters must remain ordinary typing.
+        if (!(keyEvent.ctrlKey || keyEvent.metaKey ||
+          (keyEvent.shiftKey && ['Tab', 'Enter'].includes(keyEvent.key)))) return false
+      }
+      return true
+    }
     plugin.register(around(manager, {
       executeCommand: (next: CommandManager['executeCommand']) => function (this: CommandManager, command: Command, event?: UserEvent): boolean {
-        if (ids.has(command.id)) {
-          // Obsidian reports success even when a checkCallback returns false, consuming the key.
-          if (!command.checkCallback?.(true)) return false
-          const activeElement = plugin.getCurrentCanvas()?.wrapperEl.ownerDocument.activeElement
-          if (activeElement?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return false
-        }
-        return next.call(this, command, event)
+        return canExecute(command, event) && next.call(this, command, event)
       }
     }))
   }

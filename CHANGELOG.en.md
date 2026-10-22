@@ -2,6 +2,11 @@
 
 [English](CHANGELOG.en.md) · [简体中文](CHANGELOG.md)
 
+## 1.0.11
+
+- Create child or sibling nodes while editing text and Markdown file cards using custom key combinations such as `Shift+Tab` and `Shift+Enter`, preserving the original content and moving editing to the new node.
+- Keep the default Tab, Enter, and Space actions on non-editing cards, along with normal input in Markdown notes and text fields.
+
 ## 1.0.10
 
 - Interface language changes take effect immediately without restarting Obsidian. Guide and Changelog links open in the active interface language.

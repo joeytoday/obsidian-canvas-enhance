@@ -2,6 +2,11 @@
 
 [English](CHANGELOG.en.md) · [简体中文](CHANGELOG.md)
 
+## 1.0.11
+
+- 支持在文本及 Markdown 文件卡片编辑中，通过自定义组合键（如 `Shift+Tab`、`Shift+Enter`）创建下级或同级节点，保留原内容并进入新节点编辑。
+- 保留未编辑卡片的默认 Tab、Enter、Space 操作，以及普通 Markdown 和输入框中的正常输入行为。
+
 ## 1.0.10
 
 - 切换插件界面语言立即生效，无需重启 Obsidian；使用指南和更新日志跟随界面语言打开。
