@@ -163,6 +163,8 @@ export const en: Record<TranslationKey, string> = {
   'settings.mindmapFeatureEnabled.mindmapUseFloatingNodeHotkeys.description': 'When enabled, you can create floating nodes with Cmd/Ctrl+arrow keys.',
   'settings.mindmapFeatureEnabled.mindmapPropagateColorToEdges.label': 'Propagate color to edges',
   'settings.mindmapFeatureEnabled.mindmapPropagateColorToEdges.description': 'When you set a node color, it is automatically applied to the edges leaving that node.',
+  'settings.mindmapFeatureEnabled.mindmapKeepViewport.label': 'Keep zoom and position',
+  'settings.mindmapFeatureEnabled.mindmapKeepViewport.description': 'When enabled, creating, editing, navigating to or deleting a node does not zoom or center the canvas. The view only shifts, as little as needed, when the node would otherwise be outside the visible area.',
   'settings.openFileNodeInSplit.label': 'Open file cards in split',
   'settings.openFileNodeInSplit.description': 'When enabled, clicking a file card title or using "Open in sidebar" from the context menu opens the file in a new pane on the right, keeping the canvas visible.',
   'settings.fileNodeTemplateEnabled.label': 'File template',
