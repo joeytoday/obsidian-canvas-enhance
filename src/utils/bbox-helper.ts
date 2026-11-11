@@ -49,6 +49,25 @@ export default class BBoxHelper {
         position.minY > bbox.minY && position.maxY < bbox.maxY
   }
 
+  /**
+   * Minimal shift of the viewport (in canvas units) that makes `target` visible
+   * with `margin` to spare. A target larger than the viewport is aligned to the
+   * top-left edge. Returns a zero shift when the target is already visible.
+   */
+  static getRevealShift(viewport: BBox, target: BBox, margin: number): Position {
+    const shiftAxis = (viewMin: number, viewMax: number, targetMin: number, targetMax: number): number => {
+      const tooLarge = targetMax - targetMin + margin * 2 > viewMax - viewMin
+      if (tooLarge || targetMin - margin < viewMin) return targetMin - margin - viewMin
+      if (targetMax + margin > viewMax) return targetMax + margin - viewMax
+      return 0
+    }
+
+    return {
+      x: shiftAxis(viewport.minX, viewport.maxX, target.minX, target.maxX),
+      y: shiftAxis(viewport.minY, viewport.maxY, target.minY, target.maxY)
+    }
+  }
+
   static enlargeBBox(bbox: BBox, padding: number): BBox {
     return {
       minX: bbox.minX - padding,

@@ -21,6 +21,9 @@ const FLOATING_DIR: Record<NavDirection, { dx: number; dy: number }> = {
   right: { dx:  1, dy:  0 },
 }
 
+// Gap kept between a revealed node and the viewport edge, in canvas units
+const REVEAL_MARGIN = 40
+
 type Rect = { x: number; y: number; width: number; height: number }
 type CollapseState = { collapsed?: boolean; mindmapCollapsed?: boolean }
 
@@ -76,8 +79,31 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     window.setTimeout(() => {
       const real = canvas.nodes.get(node.getData().id)
       real?.setIsEditing(true)
-      canvas.zoomToSelection()
+      this.showSelection(canvas)
     }, 0)
+  }
+
+  /**
+   * Brings the selected node into view. By default it zooms and centers on the
+   * selection; with "keep zoom and position" enabled it only shifts the viewport
+   * by the minimum amount needed when the node is not fully visible.
+   */
+  private showSelection(canvas: Canvas) {
+    if (!this.plugin.settings.getSetting('mindmapKeepViewport')) {
+      canvas.zoomToSelection()
+      return
+    }
+
+    const node = this.getSelectedNode(canvas)
+    if (node) this.revealNode(canvas, node)
+  }
+
+  private revealNode(canvas: Canvas, node: CanvasNode) {
+    const shift = BBoxHelper.getRevealShift(canvas.getViewportBBox(), node.getBBox(), REVEAL_MARGIN)
+    if (shift.x === 0 && shift.y === 0) return
+
+    // tx/ty are the canvas coordinates of the viewport center
+    canvas.setViewport(canvas.tx + shift.x, canvas.ty + shift.y, canvas.tZoom)
   }
 
   private generateId(): string {
@@ -375,7 +401,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
     this.rearrangeSiblings(canvas, parent)
     canvas.selectOnly(parent)
-    canvas.zoomToSelection()
+    this.showSelection(canvas)
   }
 
   // ── Node Creation ──
@@ -443,7 +469,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     }
 
     canvas.requestSave()
-    canvas.zoomToSelection()
+    this.showSelection(canvas)
     return real ?? null
   }
 
@@ -469,7 +495,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     if (!real) return null
 
     canvas.selectOnly(real)
-    canvas.zoomToSelection()
+    this.showSelection(canvas)
     window.setTimeout(() => real.setIsEditing(true), 100)
     return real
   }
@@ -756,7 +782,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const target = CanvasHelper.findClosestNode(canvas, direction, candidates)
     if (target) {
       canvas.selectOnly(target)
-      canvas.zoomToSelection()
+      this.showSelection(canvas)
     }
   }
 

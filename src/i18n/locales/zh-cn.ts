@@ -162,6 +162,8 @@ export const zhCn = {
   'settings.mindmapFeatureEnabled.mindmapUseFloatingNodeHotkeys.description': '启用后，可以用 Cmd/Ctrl+方向键创建浮动节点。',
   'settings.mindmapFeatureEnabled.mindmapPropagateColorToEdges.label': '颜色传播到边',
   'settings.mindmapFeatureEnabled.mindmapPropagateColorToEdges.description': '设置节点颜色时，自动传播到从该节点出发的边。',
+  'settings.mindmapFeatureEnabled.mindmapKeepViewport.label': 'Keep zoom and position',
+  'settings.mindmapFeatureEnabled.mindmapKeepViewport.description': 'When enabled, creating, editing, navigating to or deleting a node does not zoom or center the canvas. The view only shifts, as little as needed, when the node would otherwise be outside the visible area.',
   'settings.openFileNodeInSplit.label': '文件卡片分屏打开',
   'settings.openFileNodeInSplit.description': '启用后，点击文件卡片标题或右键「在侧边栏打开」时，在右侧新窗格打开文件，画布保持可见。',
   'settings.fileNodeTemplateEnabled.label': '文件模板',
