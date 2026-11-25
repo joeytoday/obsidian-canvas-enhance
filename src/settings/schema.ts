@@ -462,6 +462,11 @@ export const SETTINGS = {
         get label() { return t('settings.mindmapFeatureEnabled.mindmapPropagateColorToEdges.label') },
         get description() { return t('settings.mindmapFeatureEnabled.mindmapPropagateColorToEdges.description') },
         type: 'boolean'
+      },
+      mindmapKeepViewport: {
+        get label() { return t('settings.mindmapFeatureEnabled.mindmapKeepViewport.label') },
+        get description() { return t('settings.mindmapFeatureEnabled.mindmapKeepViewport.description') },
+        type: 'boolean'
       }
     }
   },

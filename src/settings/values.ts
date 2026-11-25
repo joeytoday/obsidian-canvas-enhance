@@ -129,6 +129,7 @@ export interface CanvasEnhancePluginSettingsValues {
   mindmapUseNavigationHotkeys: boolean
   mindmapUseFloatingNodeHotkeys: boolean
   mindmapPropagateColorToEdges: boolean
+  mindmapKeepViewport: boolean
 }
 
 export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
@@ -235,4 +236,5 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   mindmapUseNavigationHotkeys: true,
   mindmapUseFloatingNodeHotkeys: true,
   mindmapPropagateColorToEdges: false,
+  mindmapKeepViewport: false,
 }
