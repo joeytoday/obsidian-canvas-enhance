@@ -15,7 +15,11 @@ interface SettingBase {
 }
 
 export type Setting = TextSetting | NumberSetting | DimensionSetting | BooleanSetting |
-  DropdownSetting | ButtonSetting | StyleAttributesSetting | TemplateSelectSetting | FolderSelectSetting
+  DropdownSetting | ButtonSetting | StyleAttributesSetting | TemplateSelectSetting | FolderSelectSetting | CardAppearanceSetting
+
+export interface CardAppearanceSetting extends SettingBase {
+  type: 'cardAppearance'
+}
 
 export interface StyleAttributesSetting {
   label: string

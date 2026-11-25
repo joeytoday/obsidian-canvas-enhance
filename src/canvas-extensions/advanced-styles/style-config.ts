@@ -139,8 +139,54 @@ export const BUILTIN_NODE_STYLE_ATTRIBUTES = [
         value: 'invisible'
       }
     ]
+  },
+  // Keep the original snippet keys and values so existing cards need no migration.
+  {
+    key: 'cardGradient',
+    get label() { return t('style.cardGradient.label') },
+    options: [
+      { icon: 'circle-dot', get label() { return t('style.card.none') }, value: null },
+      { icon: 'move-up-right', get label() { return t('style.card.upperRight') }, value: 'ur' },
+      { icon: 'move-down-right', get label() { return t('style.card.lowerRight') }, value: 'lr' },
+      { icon: 'move-down-left', get label() { return t('style.card.lowerLeft') }, value: 'll' },
+      { icon: 'move-up-left', get label() { return t('style.card.upperLeft') }, value: 'ul' }
+    ]
+  },
+  {
+    key: 'cardBorder',
+    get label() { return t('style.cardBorder.label') },
+    options: [
+      { icon: 'square', get label() { return t('style.cardBorder.standard') }, value: null },
+      { icon: 'arrow-left-to-line', get label() { return t('style.cardBorder.left') }, value: 'left' },
+      { icon: 'arrow-up-to-line', get label() { return t('style.cardBorder.top') }, value: 'top' },
+      { icon: 'arrow-right-to-line', get label() { return t('style.cardBorder.right') }, value: 'right' },
+      { icon: 'arrow-down-to-line', get label() { return t('style.cardBorder.bottom') }, value: 'bottom' },
+      { icon: 'panel-top-bottom-dashed', get label() { return t('style.cardBorder.banded') }, value: 'banded' },
+      { icon: 'panel-left-right-dashed', get label() { return t('style.cardBorder.rail') }, value: 'rail' },
+      { icon: 'square-dashed', get label() { return t('style.cardBorder.borderless') }, value: 'borderless' }
+    ]
+  },
+  {
+    key: 'cardDropshadow',
+    get label() { return t('style.cardDropshadow.label') },
+    options: [
+      { icon: 'sticky-note', get label() { return t('style.card.none') }, value: null },
+      { icon: 'move-down-right', get label() { return t('style.card.lowerRight') }, value: 'lr' },
+      { icon: 'move-down-left', get label() { return t('style.card.lowerLeft') }, value: 'll' },
+      { icon: 'move-up-left', get label() { return t('style.card.upperLeft') }, value: 'ul' },
+      { icon: 'move-up-right', get label() { return t('style.card.upperRight') }, value: 'ur' }
+    ]
   }
 ] as StyleAttribute[]
+
+export function getNodeStyleAttributes(legacy: StyleAttribute[], css: StyleAttribute[]): StyleAttribute[] {
+  const styles = [...BUILTIN_NODE_STYLE_ATTRIBUTES, ...legacy, ...css]
+  const lastIndex = new Map(styles.map((style, index) => [style.key, index]))
+  // Only deduplicate the newly built-in snippet groups. Preserve existing custom
+  // shape/border definitions, whose options and node type restrictions may differ.
+  return styles.filter((style, index) =>
+    !['cardGradient', 'cardBorder', 'cardDropshadow'].includes(style.key) || lastIndex.get(style.key) === index)
+}
 
 export const BUILTIN_EDGE_STYLE_ATTRIBUTES = [
   {

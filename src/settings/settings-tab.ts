@@ -6,7 +6,8 @@ import type SettingsManager from "./settings-manager"
 import { DEFAULT_SETTINGS_VALUES } from "./values"
 import type { CanvasEnhancePluginSettingsValues } from "./values"
 import { SETTINGS, SETTINGS_TABS } from "./schema"
-import type { BooleanSetting, ButtonSetting, DimensionSetting, DropdownSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TextSetting } from "./types"
+import { CARD_APPEARANCE_CONTROLS, getCardAppearance } from './card-appearance'
+import type { BooleanSetting, ButtonSetting, CardAppearanceSetting, DimensionSetting, DropdownSetting, NumberSetting, Setting, SettingsHeading, StyleAttributesSetting, TextSetting } from "./types"
 
 const REPO_URL = 'https://github.com/joeytoday/obsidian-canvas-enhance'
 const README_URL = `${REPO_URL}?tab=readme-ov-file`
@@ -77,6 +78,9 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
           if (!(settingId in DEFAULT_SETTINGS_VALUES) && setting.type !== 'button') continue
 
           switch (setting.type) {
+            case 'cardAppearance':
+              this.createCardAppearanceSettings(childrenEl, setting)
+              break
             case 'text':
             case 'number':
               this.createTextSetting(childrenEl, settingId, setting)
@@ -149,6 +153,40 @@ export class CanvasEnhancePluginSettingTab extends PluginSettingTab {
     }
 
     return setting
+  }
+
+  private createCardAppearanceSettings(containerEl: HTMLElement, setting: CardAppearanceSetting) {
+    const details = containerEl.createEl('details')
+    details.classList.add('setting-item')
+    details.createEl('summary', { text: setting.label })
+    details.createDiv({ cls: 'setting-item-description', text: setting.description })
+
+    const values = getCardAppearance(this.settingsManager.getSetting('cardAppearance'))
+    for (const control of CARD_APPEARANCE_CONTROLS) {
+      const value = values[control.key]
+      const row = new SettingEl(details).setName(t(control.label))
+      const save = async (value: number | string) => {
+        const current = this.settingsManager.getSetting('cardAppearance')
+        await this.settingsManager.setSetting({ cardAppearance: getCardAppearance({ ...current, [control.key]: value }) })
+      }
+      let reset: () => void
+      if (typeof control.defaultValue === 'number') {
+        row.addSlider(slider => {
+          const describe = (value: number) => row.setDesc(`${value}${control.unit}`)
+          slider.setLimits(0, control.max ?? 100, 1).setValue(Number(value)).setDynamicTooltip()
+            .onChange(async value => { describe(value); await save(value) })
+          describe(Number(value))
+          reset = () => { slider.setValue(Number(control.defaultValue)); describe(Number(control.defaultValue)) }
+        })
+      } else {
+        row.addColorPicker(picker => {
+          picker.setValue(String(value)).onChange(save)
+          reset = () => { picker.setValue(String(control.defaultValue)) }
+        })
+      }
+      row.addExtraButton(button => button.setIcon('rotate-ccw').setTooltip(t('settings.cardAppearance.reset'))
+        .onClick(async () => { reset(); await save(control.defaultValue) }))
+    }
   }
 
   private createTextSetting(containerEl: HTMLElement, settingId: keyof CanvasEnhancePluginSettingsValues, setting: TextSetting | NumberSetting) {

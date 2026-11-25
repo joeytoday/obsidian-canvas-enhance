@@ -3,14 +3,15 @@ const path = require('node:path')
 const { test } = require('node:test')
 const { buildSync } = require('esbuild')
 
-function load(file) {
+function load(file, mocks = {}) {
   const code = buildSync({
     entryPoints: [path.join(__dirname, '../src', file)],
     bundle: true, platform: 'node', format: 'cjs', write: false,
-    external: ['obsidian', 'monkey-around', 'src/utils/modal-helper'],
+    external: ['obsidian', 'monkey-around', 'src/utils/modal-helper', ...Object.keys(mocks)],
   }).outputFiles[0].text
   const loaded = { exports: {} }, errors = []
   new Function('module', 'exports', 'require', 'console', code)(loaded, loaded.exports, name => {
+    if (name in mocks) return mocks[name]
     if (name === 'monkey-around') return require(name)
     if (name === 'src/utils/modal-helper') return {}
     if (name === 'obsidian') return {
@@ -46,6 +47,88 @@ test('style validation keeps valid custom fields and rejects malformed keys, opt
     { ...valid, nodeTypes: 'text' }, { ...valid, nodeTypes: ['unknown'] },
   ]
   for (const value of invalid) assert.equal(validate(value), null, JSON.stringify(value))
+})
+
+test('card appearance normalizes partial, malformed and out-of-range saved values', () => {
+  const { getCardAppearance: normalize } = load('settings/card-appearance.ts')
+  const defaults = normalize({})
+  for (const value of [null, false, [], 'wrong']) assert.deepEqual(normalize(value), defaults)
+  assert.deepEqual(normalize({ gradientEnd: NaN, shadowBlur: Infinity, shadowLightColor: 'url(https://invalid)' }), defaults)
+  assert.deepEqual(normalize({ gradientStart: -1, borderWidth: 500, shadowDarkColor: '#AABBCC', unknown: 'ignore' }),
+    { ...defaults, gradientStart: 0, borderWidth: 30, shadowDarkColor: '#AABBCC' })
+})
+
+test('built-in card styles retain snippet values and reset to null', () => {
+  const { BUILTIN_NODE_STYLE_ATTRIBUTES: styles, styleAttributeValidator: validate } = load('canvas-extensions/advanced-styles/style-config.ts')
+  for (const [key, values] of Object.entries({
+    cardGradient: [null, 'ur', 'lr', 'll', 'ul'],
+    cardBorder: [null, 'left', 'top', 'right', 'bottom', 'banded', 'rail', 'borderless'],
+    cardDropshadow: [null, 'lr', 'll', 'ul', 'ur'],
+  })) {
+    const style = styles.find(style => style.key === key)
+    assert.deepEqual(style.options.map(option => option.value), values)
+    assert.ok(validate(style))
+    assert.ok(!style.label.startsWith('style.'), 'label must be translated')
+    assert.ok(style.options.every(option => !option.label.startsWith('style.')))
+  }
+})
+
+test('node styles replace duplicate menus without losing custom options or selection data', () => {
+  let menu
+  const { default: Extension } = load('canvas-extensions/advanced-styles/node-styles.ts', {
+    'src/utils/canvas-helper': { addStyleAttributesToPopup: (...args) => { menu = args } },
+  })
+  const custom = { key: 'cardGradient', label: 'Legacy', options: [{ icon: 'square', label: 'Default', value: null }] }
+  const snippet = { ...custom, label: 'Snippet', options: [...custom.options, { icon: 'circle', label: 'Radial', value: 'radial' }] }
+  const extension = new Extension({ settings: {
+    getSetting: key => key === 'customNodeStyleAttributes' ? [custom] : false,
+    nodeCssStylesManager: { getStyles: () => [snippet] },
+  } })
+  const text = { id: 'text', type: 'text', text: 'Keep body', styleAttributes: { shape: 'pill', cardBorder: 'left' } }
+  const file = { id: 'file', type: 'file', file: 'keep.md', styleAttributes: { border: 'dashed' } }
+  const data = [text, file], updates = [], history = []
+  const canvas = {
+    getSelectionData: () => ({ nodes: data }), selection: new Set(data),
+    nodes: new Map(data.map(node => [node.id, { setData: value => updates.push(value) }])),
+    getData: () => ({ nodes: updates }), pushHistory: value => history.push(value),
+  }
+  extension.onPopupMenuCreated(canvas)
+  const groups = menu[1], apply = menu[3]
+  menu[2].cardGradient = 'radial'
+  assert.equal(text.styleAttributes.cardGradient, undefined, 'menu state must not mutate an undo snapshot')
+  assert.equal(new Set(groups.map(style => style.key)).size, groups.length)
+  assert.equal(groups.find(style => style.key === 'cardGradient'), snippet)
+  apply(snippet, 'radial')
+  assert.deepEqual(updates, data.map(node => ({ ...node, styleAttributes: { ...node.styleAttributes, cardGradient: 'radial' } })))
+  assert.equal(history.length, 1, 'multi-selection is a single undo step')
+  assert.equal(text.styleAttributes.cardGradient, undefined)
+  updates.length = 0
+  apply(snippet, null)
+  assert.ok(updates.every(node => node.styleAttributes.cardGradient === null))
+  menu = undefined
+  canvas.readonly = true
+  extension.onPopupMenuCreated(canvas)
+  assert.equal(menu, undefined)
+  canvas.readonly = false
+  canvas.selection.add({ id: 'edge' })
+  extension.onPopupMenuCreated(canvas)
+  assert.equal(menu, undefined)
+})
+
+test('card style deduplication preserves original shapes and custom node type restrictions', () => {
+  const { getNodeStyleAttributes, BUILTIN_NODE_STYLE_ATTRIBUTES } = load('canvas-extensions/advanced-styles/style-config.ts')
+  const shape = BUILTIN_NODE_STYLE_ATTRIBUTES.find(style => style.key === 'shape')
+  const custom = { key: 'shape', label: 'File shapes', nodeTypes: ['file'], options: [
+    { icon: 'square', label: 'Default', value: null },
+    { icon: 'circle', label: 'Custom', value: 'custom-file-shape' },
+  ] }
+  const styles = getNodeStyleAttributes([custom], [])
+  assert.equal(styles.find(style => style === shape), shape)
+  assert.equal(styles.find(style => style === custom), custom)
+  assert.deepEqual(shape.options.map(option => option.value),
+    [null, 'pill', 'diamond', 'parallelogram', 'circle', 'predefined-process', 'document', 'database'])
+  assert.deepEqual(shape.nodeTypes, ['text'])
+  assert.deepEqual(custom.nodeTypes, ['file'])
 })
 
 test('CSS configuration parsing skips scalars, arrays and invalid YAML without dropping valid snippets', () => {

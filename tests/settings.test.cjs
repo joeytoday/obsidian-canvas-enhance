@@ -18,10 +18,12 @@ const copy = value => JSON.parse(JSON.stringify(value))
 
 function fixture(saved = null, hostLanguage = 'zh') {
   const listeners = new Map()
-  const calls = { saved: [], events: [], menus: new Map(), parses: 0, tabs: [], buttons: [], opened: [] }
+  const calls = { saved: [], events: [], menus: new Map(), parses: 0, tabs: [], buttons: [], opened: [], canvases: [], cleanup: [] }
   const sheet = { ownerNode: { textContent: '' } }
   const document = { styleSheets: { length: 1, item: () => sheet } }
   const plugin = {
+    getCanvases: () => calls.canvases,
+    register(callback) { calls.cleanup.push(callback) },
     app: {
       workspace: {
         on(event, callback) {
@@ -62,7 +64,25 @@ function fixture(saved = null, hostLanguage = 'zh') {
       setDesc(description) { this.description = description; return this }
       setHeading() { return this }
       setClass() { return this }
-      addExtraButton() { return this }
+      addExtraButton(callback) {
+        const row = this
+        callback({
+          setIcon() { return this }, setTooltip() { return this },
+          onClick(click) { row.reset = click; return this },
+        })
+        return this
+      }
+      addSlider(callback) {
+        const row = this
+        callback({
+          setLimits(min, max, step) { row.limits = [min, max, step]; return this },
+          setValue(value) { row.value = value; return this },
+          setDynamicTooltip() { return this },
+          onChange(change) { row.change = change; return this },
+        })
+        return this
+      }
+      addColorPicker(callback) { return this.addText(callback) }
       addButton(callback) {
         const button = {
           setButtonText(text) { this.text = text; return this },
@@ -109,7 +129,7 @@ function fixture(saved = null, hostLanguage = 'zh') {
     const mockRequire = name => {
       if (name === 'obsidian') return obsidian
       if (name === 'src/utils/canvas-helper') return {
-        addStyleAttributesToPopup(_plugin, canvas, styles) { calls.menus.set(canvas, styles) },
+        addStyleAttributesToPopup(canvas, styles) { calls.menus.set(canvas, styles) },
       }
       throw new Error(`unexpected dependency: ${name}`)
     }
@@ -245,6 +265,42 @@ test('shared text controls preserve string parsing and numeric serialization', a
   assert.equal(plugin.settings.getSetting('autoFileNodeEdgesFrontmatterKey'), 'related')
   await settingRows[1].change('')
   assert.equal(plugin.settings.getSetting('autoFileNodeEdgesFrontmatterKey'), 'canvas-edges')
+})
+
+test('card appearance controls save, reset and update all open canvases without touching node data', async () => {
+  const { plugin, calls, settingRows, load, SETTINGS } = fixture()
+  await plugin.settings.loadSettings()
+  const makeCanvas = () => {
+    const properties = new Map()
+    return { properties, wrapperEl: { style: {
+      setProperty: (key, value) => properties.set(key, value),
+      removeProperty: key => properties.delete(key),
+    } } }
+  }
+  calls.canvases.push(makeCanvas(), makeCanvas())
+  const NodeStyles = load(nodeStylesCode).default
+  new NodeStyles(plugin)
+  plugin.settings.addSettingsTab()
+  const tab = calls.tabs[0]
+  tab.createCardAppearanceSettings(tab.containerEl, SETTINGS.nodeStylingFeatureEnabled.children.cardAppearance)
+  assert.equal(settingRows.length, 8)
+  const gradient = settingRows.find(row => row.name === '渐变终点强度')
+  const color = settingRows.find(row => row.name === '浅色模式阴影颜色')
+  assert.deepEqual(gradient.limits, [0, 100, 1])
+  assert.equal(gradient.value, 30)
+  await gradient.change(60)
+  await color.change('#123456')
+  for (const canvas of calls.canvases) {
+    assert.equal(canvas.properties.get('--ce-gradient-end'), '60%')
+    assert.equal(canvas.properties.get('--ce-shadow-light-color'), '#123456')
+  }
+  assert.equal(calls.saved.at(-1).cardAppearance.gradientEnd, 60)
+  await gradient.reset()
+  await color.reset()
+  assert.equal(gradient.value, 30)
+  for (const canvas of calls.canvases) assert.equal(canvas.properties.get('--ce-gradient-end'), '30%')
+  calls.cleanup.forEach(cleanup => cleanup())
+  for (const canvas of calls.canvases) assert.equal(canvas.properties.size, 0, 'unload removes only owned CSS variables')
 })
 
 test('node and edge menus reuse the settings CSS caches and refresh after css-change', async () => {

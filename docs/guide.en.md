@@ -114,18 +114,25 @@ Canvases containing portals are not supported by rearrangement yet. The plugin s
 
 ### Node and Edge Styles
 
-Enable **Node styles** and **Edge styles** under **Nodes & edges**, then use context menus to change their appearance.
+Enable **Node styles** and **Edge styles** under **Nodes & edges**, then select a card or edge and open **Style** in its floating toolbar.
 
 | Object | Options |
 |---|---|
 | Node shape | Flowchart shapes such as terminal, process, decision, predefined process, document, and database |
 | Node border | Solid, dashed, dotted, or hidden |
+| Gradient | None, or toward the upper right, lower right, lower left, or upper left |
+| Card type | Standard, a single border, top and bottom borders, left and right borders, or borderless (rectangle / pill) |
+| Shadow | None, or toward the lower right, lower left, upper left, or upper right |
 | Text alignment | Left, center, or right |
 | Line | Solid, dotted, short-dashed, or long-dashed |
 | Arrow | 8 styles, including triangle, diamond, circle, and outline variants |
 | Routing | Curved, straight, square, or obstacle-avoiding |
 
 Obstacle-avoiding routing takes connections around intervening nodes, which helps with complex flowcharts. Settings also include default colors, default styles, edge direction, and rounded paths.
+
+Select a card and open **Style → Gradient / Card type / Shadow** in its floating toolbar; no CSS snippet is required. Gradients use the card's color. Card types adjust rectangle / pill borders while preserving other shape outlines. Choose **None** or **Standard** to reset the corresponding effect. Existing `cardGradient`, `cardBorder`, and `cardDropshadow` data remains compatible. For these three attributes, a custom menu with the same key replaces the built-in menu instead of appearing twice.
+
+Expand **Settings → Canvas Enhance → Nodes & edges → Node styles → Card appearance** to adjust gradient start/end intensity, border width, shadow distance, blur, opacity, and shadow colors for light and dark mode. Changes apply immediately to cards using these styles, and each control can restore its default without editing CSS. An enabled legacy snippet may override built-in effects; disable its corresponding gradient, border, and shadow rules when using the built-in controls.
 
 ![Flowchart shapes](../assets/docs/sample-flowchart.png)
 
@@ -157,7 +164,7 @@ options:
 
 1. Put the definition and its CSS rules in a snippet. Use the [complete example](../assets/docs/example-custom-node-style.css) for a working version. The comment alone adds options; it does not draw a status indicator.
 2. Enable the snippet under Obsidian **Settings → Appearance → CSS snippets**.
-3. Right-click a node and choose **Validation State** to apply a style. Under **Nodes & edges**, you can also configure custom node/edge style attributes and combine custom styles into one dropdown.
+3. Select a node and choose **Style → Validation State** in its floating toolbar. Built-in and custom styles share the same nested menu. Under **Nodes & edges**, you can also configure default node/edge style attributes.
 
 ![Custom style menu](../assets/docs/custom-style-attribute-example.png)
 

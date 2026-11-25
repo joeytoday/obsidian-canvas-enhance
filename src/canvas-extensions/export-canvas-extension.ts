@@ -6,6 +6,7 @@ import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
 import { t } from "src/i18n"
+import { getCardAppearance } from 'src/settings/card-appearance'
 
 const MAX_ALLOWED_LOADING_TIME = 10_000
 
@@ -237,6 +238,15 @@ export default class ExportCanvasExtension extends CanvasExtension {
       // Calculate the bounding box of the elements to export
       const targetBoundingBox = CanvasHelper.getBBox([...nodesToExport, ...edgesToExport])
       let enlargedTargetBoundingBox = BBoxHelper.scaleBBox(targetBoundingBox, 1.1) // Enlarge the bounding box by 10%
+      if (this.plugin.settings.getSetting('nodeStylingFeatureEnabled')) {
+        const appearance = getCardAppearance(this.plugin.settings.getSetting('cardAppearance'))
+        // CSS drop-shadow blur is a standard deviation; allow three deviations.
+        const padding = Number(appearance.shadowDistance) + 3 * Number(appearance.shadowBlur)
+        const shadowBounds = nodesToExport
+          .filter(node => ['ur', 'lr', 'll', 'ul'].includes(node.getData().styleAttributes?.cardDropshadow ?? ''))
+          .map(node => BBoxHelper.enlargeBBox(node.getBBox(), padding))
+        enlargedTargetBoundingBox = BBoxHelper.combineBBoxes([enlargedTargetBoundingBox, ...shadowBounds])
+      }
 
       // Calculate pixel ratio
       const enlargedTargetBoundingBoxSize = { width: enlargedTargetBoundingBox.maxX - enlargedTargetBoundingBox.minX, height: enlargedTargetBoundingBox.maxY - enlargedTargetBoundingBox.minY }

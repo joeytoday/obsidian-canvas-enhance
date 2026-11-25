@@ -1,4 +1,4 @@
-import { BUILTIN_EDGE_STYLE_ATTRIBUTES, BUILTIN_NODE_STYLE_ATTRIBUTES } from "src/canvas-extensions/advanced-styles/style-config"
+import { BUILTIN_EDGE_STYLE_ATTRIBUTES, getNodeStyleAttributes } from "src/canvas-extensions/advanced-styles/style-config"
 import { VARIABLE_BREAKPOINT_CSS_VAR } from "src/canvas-extensions/variable-breakpoint-canvas-extension"
 import { EDGE_LINE_DIRECTION_OPTIONS, NODE_TYPE_OPTIONS, OVERVIEW_FILE_NODE_TITLE_OPTIONS, TEXT_CARD_HEADING_LEVEL_OPTIONS } from "./values"
 import type { CanvasEnhancePluginSettingsValues } from "./values"
@@ -157,16 +157,16 @@ export const SETTINGS = {
       }
     }
   },
-  combineCustomStylesInDropdown: {
-    get label() { return t('settings.combineCustomStylesInDropdown.label') },
-    get description() { return t('settings.combineCustomStylesInDropdown.description') },
-    children: { }
-  },
   nodeStylingFeatureEnabled: {
     get label() { return t('settings.nodeStylingFeatureEnabled.label') },
     get description() { return t('settings.nodeStylingFeatureEnabled.description') },
     infoSection: '节点',
     children: {
+      cardAppearance: {
+        get label() { return t('settings.cardAppearance.label') },
+        get description() { return t('settings.cardAppearance.description') },
+        type: 'cardAppearance'
+      },
       customNodeStyleAttributes: {
         get label() { return t('settings.nodeStylingFeatureEnabled.customNodeStyleAttributes.label') },
         get description() { return t('settings.nodeStylingFeatureEnabled.customNodeStyleAttributes.description') },
@@ -183,11 +183,8 @@ export const SETTINGS = {
         get label() { return t('settings.nodeStylingFeatureEnabled.defaultTextNodeStyleAttributes.label') },
         type: 'styles',
         getParameters(settingsManager) {
-          return [
-            ...BUILTIN_NODE_STYLE_ATTRIBUTES, /* BUILTINS */
-            ...settingsManager.nodeCssStylesManager.getStyles(), /* CUSTOM CSS STYLES */
-            ...settingsManager.getSetting('customNodeStyleAttributes') /* LEGACY CUSTOM STYLES */
-          ].filter((setting) => setting.nodeTypes === undefined || setting.nodeTypes?.includes('text'))
+          return getNodeStyleAttributes(settingsManager.getSetting('customNodeStyleAttributes'), settingsManager.nodeCssStylesManager.getStyles())
+            .filter(setting => setting.nodeTypes === undefined || setting.nodeTypes.includes('text'))
         }
       }
     }
@@ -525,7 +522,6 @@ export const SETTINGS_TABS = {
     groups: [
       'nodeStylingFeatureEnabled',
       'edgesStylingFeatureEnabled',
-      'combineCustomStylesInDropdown',
       'floatingEdgeFeatureEnabled',
       'flipEdgeFeatureEnabled',
       'edgeHighlightEnabled',

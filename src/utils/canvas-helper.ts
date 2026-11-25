@@ -205,51 +205,7 @@ export default class CanvasHelper {
       .filter(node => node !== undefined) as CanvasNode[]
   }
 
-  static addStyleAttributesToPopup(plugin: CanvasEnhancePlugin, canvas: Canvas, styleAttributes: StyleAttribute[], currentStyleAttributes: { [key: string]: string | null }, setStyleAttribute: (attribute: StyleAttribute, value: string | null) => void) {
-    if (!plugin.settings.getSetting('combineCustomStylesInDropdown'))
-      this.addStyleAttributesButtons(canvas, styleAttributes, currentStyleAttributes, setStyleAttribute)
-    else this.addStyleAttributesDropdownMenu(canvas, styleAttributes, currentStyleAttributes, setStyleAttribute)
-  }
-
-  static addStyleAttributesButtons(canvas: Canvas, stylableAttributes: StyleAttribute[], currentStyleAttributes: { [key: string]: string | null }, setStyleAttribute: (attribute: StyleAttribute, value: string | null) => void) {
-    for (const stylableAttribute of stylableAttributes) {
-      const selectedStyle = stylableAttribute.options
-        .find(option => currentStyleAttributes[stylableAttribute.key] === option.value) ??
-        stylableAttribute.options.find(value => value.value === null)
-
-      if (!selectedStyle) {
-        console.warn(`No "null" style option found for stylable attribute "${stylableAttribute.key}"`)
-        continue
-      }
-
-      const menuOption = CanvasHelper.createExpandablePopupMenuOption({
-        id: `menu-option-${stylableAttribute.key}`,
-        label: stylableAttribute.label,
-        icon: selectedStyle.icon
-      }, stylableAttribute.options.map((styleOption) => ({
-        label: styleOption.label,
-        icon: styleOption.icon,
-        callback: () => {
-          // Set style attribute
-          setStyleAttribute(stylableAttribute, styleOption.value)
-
-          // Keep correct reference
-          currentStyleAttributes[stylableAttribute.key] = styleOption.value
-
-          // Update icon
-          setIcon(menuOption, styleOption.icon)
-
-          // Close menu
-          menuOption.dispatchEvent(new Event('click'))
-        }
-      })))
-
-      // Add menu option to menu bar
-      CanvasHelper.addPopupMenuOption(canvas, menuOption)
-    }
-  }
-
-  static addStyleAttributesDropdownMenu(canvas: Canvas, stylableAttributes: StyleAttribute[], currentStyleAttributes: { [key: string]: string | null }, setStyleAttribute: (attribute: StyleAttribute, value: string | null) => void) {
+  static addStyleAttributesToPopup(canvas: Canvas, stylableAttributes: StyleAttribute[], currentStyleAttributes: { [key: string]: string | null }, setStyleAttribute: (attribute: StyleAttribute, value: string | null) => void) {
     const STYLE_MENU_ID = 'style-menu'
     const STYLE_MENU_DROPDOWN_ID = 'style-menu-dropdown'
     const STYLE_MENU_DROPDOWN_SUBMENU_ID = 'style-menu-dropdown-submenu'

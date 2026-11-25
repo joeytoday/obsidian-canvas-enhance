@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 /* Obsidian 1.13 dropped the native text coloring of themed nodes; restore it */
 .canvas-node.is-themed:not(.canvas-node-group) .canvas-node-content {
   color: var(--canvas-color);
@@ -171,7 +173,8 @@
 
     --border-width: 2.5px;
     filter: drop-shadow(0 var(--border-width) 0 var(--border-color))
-            drop-shadow(0 calc(var(--border-width) * -1) 0 var(--border-color));
+            drop-shadow(0 calc(var(--border-width) * -1) 0 var(--border-color))
+            var(--ce-card-shadow, drop-shadow(0 0 0 transparent));
 
     .canvas-node-container {
       @include masked($mask);
@@ -281,6 +284,48 @@
     }
   }
   //#endregion
+
+  // Opt-in card styles; keep native selection rings and existing shape contours.
+  @each $direction, $angle in (ur: 45deg, lr: 135deg, ll: 225deg, ul: 315deg) {
+    &[data-card-gradient='#{$direction}']:not([data-border='invisible']) .canvas-node-container {
+      background-image: linear-gradient($angle,
+        color-mix(in srgb, var(--canvas-color) var(--ce-gradient-start, 0%), var(--canvas-background)),
+        color-mix(in srgb, var(--canvas-color) var(--ce-gradient-end, 30%), var(--canvas-background)));
+    }
+  }
+
+  &:not([data-shape]), &[data-shape='pill'] {
+    @each $type, $widths in (
+      left: (0 0 0 1), top: (1 0 0 0), right: (0 1 0 0), bottom: (0 0 1 0),
+      banded: (1 0 1 0), rail: (0 1 0 1), borderless: (0 0 0 0)
+    ) {
+      &[data-card-border='#{$type}'] .canvas-node-container {
+        $border-widths: ();
+        @each $width in $widths {
+          $border-widths: list.append($border-widths, calc(var(--ce-card-border-width, 5px) * $width));
+        }
+        border-width: $border-widths;
+      }
+      // Native themed cards also draw an inset border using box-shadow.
+      &[data-card-border='#{$type}']:not(.is-focused):not(.is-selected) .canvas-node-container {
+        box-shadow: var(--shadow-stationary);
+      }
+    }
+  }
+
+  @each $direction, $x, $y in (lr 1 1, ll -1 1, ul -1 -1, ur 1 -1) {
+    &[data-card-dropshadow='#{$direction}'] {
+      --ce-shadow-color: var(--ce-shadow-light-color, #000000);
+      --ce-card-shadow: drop-shadow(calc(var(--ce-shadow-distance, 8px) * #{$x}) calc(var(--ce-shadow-distance, 8px) * #{$y}) var(--ce-shadow-blur, 10px) color-mix(in srgb, var(--ce-shadow-color) var(--ce-shadow-opacity, 25%), transparent));
+
+      .theme-dark & {
+        --ce-shadow-color: var(--ce-shadow-dark-color, #ffffff);
+      }
+
+      // The document shape already uses a filter to draw its curved border.
+      &:not([data-shape='document']) { filter: var(--ce-card-shadow); }
+    }
+  }
 
   //#region Combinations
   &[data-border][data-shape='predefined-process'] {

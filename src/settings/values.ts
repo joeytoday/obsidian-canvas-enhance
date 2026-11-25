@@ -42,9 +42,8 @@ export interface CanvasEnhancePluginSettingsValues {
   enableSingleNodeLinks: boolean
   enableSingleNodePopupReferenceCopy: boolean
 
-  combineCustomStylesInDropdown: boolean
-
   nodeStylingFeatureEnabled: boolean
+  cardAppearance: Record<string, number | string>
   customNodeStyleAttributes: StyleAttribute[]
   defaultTextNodeColor: number
   defaultTextNodeStyleAttributes: { [key: string]: string }
@@ -149,9 +148,8 @@ export const DEFAULT_SETTINGS_VALUES: CanvasEnhancePluginSettingsValues = {
   enableSingleNodeLinks: true,
   enableSingleNodePopupReferenceCopy: false,
 
-  combineCustomStylesInDropdown: false,
-
   nodeStylingFeatureEnabled: true,
+  cardAppearance: {},
   customNodeStyleAttributes: [],
   defaultTextNodeColor: 0,
   defaultTextNodeStyleAttributes: {},
