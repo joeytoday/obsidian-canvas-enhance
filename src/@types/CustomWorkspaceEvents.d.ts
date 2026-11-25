@@ -7,6 +7,8 @@ export interface CustomWorkspaceEvents {
   'canvas-enhance:settings-changed': () => void
   'canvas-enhance:language-changed': () => void
 
+  'canvas-enhance:card-content-changed': (canvas: Canvas, node: CanvasNode) => void
+
   // Built-in canvas events
   'canvas:selection-menu': (menu: Menu, canvas: Canvas) => void
   'canvas:node-menu': (menu: Menu, node: CanvasNode) => void

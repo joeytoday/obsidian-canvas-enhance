@@ -52,6 +52,7 @@ import MindmapCollapseCanvasExtension from './canvas-extensions/mindmap-collapse
 import OverviewModeCanvasExtension from './canvas-extensions/overview-mode-canvas-extension'
 
 // Advanced Styles
+import CardContentExtension from './canvas-extensions/card-content-extension'
 import NodeStylesExtension from './canvas-extensions/advanced-styles/node-styles'
 import EdgeStylesExtension from './canvas-extensions/advanced-styles/edge-styles'
 
@@ -87,6 +88,7 @@ const CANVAS_EXTENSIONS: (new (plugin: CanvasEnhancePlugin) => CanvasExtension)[
   // Advanced JSON Canvas Extensions
   MetadataCanvasExtension,
   NodeStylesExtension,
+  CardContentExtension,
   EdgeStylesExtension,
   NodeRatioCanvasExtension,
   FloatingEdgeCanvasExtension,

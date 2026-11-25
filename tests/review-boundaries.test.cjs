@@ -80,10 +80,11 @@ test('node styles replace duplicate menus without losing custom options or selec
   })
   const custom = { key: 'cardGradient', label: 'Legacy', options: [{ icon: 'square', label: 'Default', value: null }] }
   const snippet = { ...custom, label: 'Snippet', options: [...custom.options, { icon: 'circle', label: 'Radial', value: 'radial' }] }
-  const extension = new Extension({ settings: {
-    getSetting: key => key === 'customNodeStyleAttributes' ? [custom] : false,
+  const extension = Object.create(Extension.prototype)
+  extension.plugin = { settings: {
+    getSetting: key => key === 'customNodeStyleAttributes' ? [custom] : key === 'nodeStylingFeatureEnabled',
     nodeCssStylesManager: { getStyles: () => [snippet] },
-  } })
+  } }
   const text = { id: 'text', type: 'text', text: 'Keep body', styleAttributes: { shape: 'pill', cardBorder: 'left' } }
   const file = { id: 'file', type: 'file', file: 'keep.md', styleAttributes: { border: 'dashed' } }
   const data = [text, file], updates = [], history = []

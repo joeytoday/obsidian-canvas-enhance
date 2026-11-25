@@ -216,7 +216,8 @@ export default class OverviewModeCanvasExtension extends CanvasExtension {
 
     if (nodeData.type === 'text') {
       const textData = nodeData as CanvasTextNodeData
-      title = this.extractFirstHeading(textData.text ?? node.child?.data ?? '')
+      const header = textData.cardContent?.header
+      title = (typeof header === 'string' ? header.trim() : '') || this.extractFirstHeading(textData.text ?? node.child?.data ?? '')
     } else if (nodeData.type === 'file') {
       const fileData = nodeData as CanvasFileNodeData
       const mode = this.plugin.settings.getSetting('overviewModeFileNodeTitle')

@@ -132,7 +132,7 @@ Obstacle-avoiding routing takes connections around intervening nodes, which help
 
 Select a card and open **Style → Gradient / Card type / Shadow** in its floating toolbar; no CSS snippet is required. Gradients use the card's color. Card types adjust rectangle / pill borders while preserving other shape outlines. Choose **None** or **Standard** to reset the corresponding effect. Existing `cardGradient`, `cardBorder`, and `cardDropshadow` data remains compatible. For these three attributes, a custom menu with the same key replaces the built-in menu instead of appearing twice.
 
-Expand **Settings → Canvas Enhance → Nodes & edges → Node styles → Card appearance** to adjust gradient start/end intensity, border width, shadow distance, blur, opacity, and shadow colors for light and dark mode. Changes apply immediately to cards using these styles, and each control can restore its default without editing CSS. An enabled legacy snippet may override built-in effects; disable its corresponding gradient, border, and shadow rules when using the built-in controls.
+Expand **Settings → Canvas Enhance → Nodes & edges → Card appearance** to adjust gradient start/end intensity, border width, shadow distance, blur, opacity, and shadow colors for light and dark mode. Changes apply immediately to cards using these styles, and each control can restore its default without editing CSS. An enabled legacy snippet may override built-in effects; disable its corresponding gradient, border, and shadow rules when using the built-in controls.
 
 ![Flowchart shapes](../assets/docs/sample-flowchart.png)
 
@@ -143,6 +143,16 @@ Expand **Settings → Canvas Enhance → Nodes & edges → Node styles → Card 
 Existing reference: node styling.
 
 https://github.com/user-attachments/assets/94340110-f7ea-4b20-9c36-a11d937cd8fd
+
+### Text Card Headers and Footers
+
+Select a single text card to access separate **Header** and **Footer** icons directly in its floating toolbar (hover for labels). Both are also available in the context menu. Each editor changes only its own section: **Save** applies your changes, **Cancel** discards them, and removing one section leaves the other intact. These sections support multiline plain text and are stored with the canvas card, separately from its Markdown body.
+
+Each editor includes a numeric font-size input (px). The default is 16px; clearing or resetting the input restores this value. Text changes affect only the current card; header font size applies to all headers, and footer font size applies to all footers. Save applies both changes; Cancel leaves both unchanged.
+
+**Settings → Canvas Enhance → Nodes & edges → Card appearance → Header and footer** remains available and shares the same font-size settings. It also provides padding, background opacity, and divider width controls. Colors follow the card and current theme. Overview mode uses the header when present, otherwise keeping the existing body-title behavior. Auto-height cards include both sections in their measured height.
+
+Headers and footers are supported on text cards only.
 
 ### Custom CSS Styles
 

@@ -354,3 +354,39 @@
   }
   //#endregion
 }
+
+// Sections live inside the native content area, so overview and export keep working.
+.canvas-node .canvas-node-content.ce-card-content {
+  display: flex;
+  flex-direction: column;
+
+  > .markdown-embed-content {
+    order: 1;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+  }
+
+  > .ce-card-section {
+    flex: 0 0 auto;
+    padding: var(--ce-section-padding, 12px);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    background: color-mix(in srgb, var(--canvas-color) var(--ce-section-background-opacity, 10%), transparent);
+  }
+
+  > .ce-card-header {
+    font-size: var(--ce-header-font-size, 16px);
+    border-bottom: var(--ce-section-divider-width, 1px) solid var(--background-modifier-border);
+  }
+
+  > .ce-card-footer {
+    font-size: var(--ce-footer-font-size, 16px);
+    order: 2;
+    border-top: var(--ce-section-divider-width, 1px) solid var(--background-modifier-border);
+  }
+}
+
+.canvas-node[data-shape='parallelogram'] .ce-card-section {
+  transform: skewX(20deg);
+}

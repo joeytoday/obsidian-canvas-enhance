@@ -17,6 +17,14 @@ export default class AutoResizeNodeCanvasExtension  extends CanvasExtension {
 
   init() {
     this.plugin.registerEvent(this.plugin.app.workspace.on(
+      'canvas-enhance:card-content-changed',
+      (canvas: Canvas, node: CanvasNode) => {
+        if (!canvas.readonly && this.plugin.settings.getSetting('autoResizeNodeFeatureEnabled') &&
+          node.getData().type === 'text' && this.canBeResized(node)) this.resizeFromEditor(node)
+      }
+    ))
+
+    this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-created',
       (canvas: Canvas, node: CanvasNode) => this.onNodeCreated(canvas, node)
     ))

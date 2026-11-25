@@ -2,6 +2,12 @@
 
 [English](CHANGELOG.en.md) · [简体中文](CHANGELOG.md)
 
+## 1.0.12
+
+- Added built-in gradients, card borders, and shadows in nested style menus, with appearance controls in settings and no CSS editing required.
+- Added separate header and footer controls for text cards, with multiline text and global font sizes defaulting to 16px. The Markdown body stays unchanged, with support for copying, undo, auto-height, overview mode, and image export.
+- Added **Keep zoom and position** for mind maps. Creating, editing, navigating to, or deleting nodes preserves the current view, shifting it only when a node would otherwise be off-screen.
+
 ## 1.0.11
 
 - Create child or sibling nodes while editing text and Markdown file cards using custom key combinations such as `Shift+Tab` and `Shift+Enter`, preserving the original content and moving editing to the new node.

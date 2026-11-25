@@ -392,7 +392,9 @@ export default class CommandsCanvasExtension extends CanvasExtension {
     clonedNode.setData({
       ...clonedNode.getData(),
       color: sourceNodeData.color,
-      styleAttributes: sourceNodeData.styleAttributes
+      styleAttributes: sourceNodeData.styleAttributes,
+      ...(sourceNodeData.type === 'text' && sourceNodeData.cardContent
+        ? { cardContent: { ...sourceNodeData.cardContent } } : {})
     })
 
     if (this.plugin.settings.getSetting('zoomToClonedNode'))

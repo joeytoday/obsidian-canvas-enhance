@@ -32,9 +32,9 @@ function fixture(saved = null, hostLanguage = 'zh') {
           listeners.set(event, callbacks)
           return { event, callback }
         },
-        trigger(event) {
+        trigger(event, ...args) {
           calls.events.push(event)
-          for (const callback of listeners.get(event) ?? []) callback()
+          for (const callback of listeners.get(event) ?? []) callback(...args)
         },
       },
       internalPlugins: {},
@@ -46,20 +46,31 @@ function fixture(saved = null, hostLanguage = 'zh') {
     addSettingTab: tab => calls.tabs.push(tab),
   }
   const settingRows = []
-  const element = () => ({
+  const element = (tag) => ({
+    tag,
+    children: [],
     isConnected: true,
     empty() {},
     classList: { add() {}, remove() {} },
-    createDiv: element,
-    createSpan: element,
-    createEl: element,
-    addEventListener() {},
+    createDiv(options) { return this.createEl('div', options) },
+    createSpan(options) { return this.createEl('span', options) },
+    createEl(tag, options) {
+      const child = element(tag)
+      child.text = options?.text
+      this.children.push(child)
+      return child
+    },
+    addEventListener(event, callback) { this[event] = callback },
+    appendChild(child) {
+      this.children = this.children.filter(existing => existing !== child)
+      this.children.push(child)
+    },
     querySelectorAll: () => [],
   })
   const obsidian = {
     PluginSettingTab: class { constructor(app) { this.app = app; this.containerEl = element() } },
     Setting: class {
-      constructor() { settingRows.push(this) }
+      constructor(container) { this.container = container; settingRows.push(this) }
       setName(name) { this.name = name; return this }
       setDesc(description) { this.description = description; return this }
       setHeading() { return this }
@@ -102,9 +113,25 @@ function fixture(saved = null, hostLanguage = 'zh') {
         return this
       }
       addText(callback) {
-        const row = this
+        const row = this, events = {}
+        const inputEl = row.inputEl = {
+          value: '',
+          addEventListener(event, listener) { events[event] = listener },
+          checkValidity() {
+            if (this.value === '') return true
+            const value = Number(this.value)
+            return Number.isInteger(value) && value >= Number(this.min) && value <= Number(this.max)
+          },
+        }
+        row.commit = async value => {
+          inputEl.value = value
+          events.change?.()
+          await new Promise(setImmediate)
+        }
         callback({
-          setValue(value) { row.value = value; return this },
+          inputEl,
+          setValue(value) { row.value = inputEl.value = value; return this },
+          setPlaceholder(value) { row.placeholder = value; return this },
           onChange(change) { row.change = change; return this },
         })
         return this
@@ -267,40 +294,149 @@ test('shared text controls preserve string parsing and numeric serialization', a
   assert.equal(plugin.settings.getSetting('autoFileNodeEdgesFrontmatterKey'), 'canvas-edges')
 })
 
+test('separate header and footer sizes preserve the legacy value until individually configured', () => {
+  const { load } = fixture()
+  const { getCardAppearance, CARD_SECTION_FONT_CONTROLS, CARD_APPEARANCE_CONTROLS } = load(bundle('settings/card-appearance.ts'))
+  const saved = Object.freeze({ sectionFontSize: 22 })
+  const migrated = getCardAppearance(saved)
+  assert.equal(migrated.headerFontSize, 22)
+  assert.equal(migrated.footerFontSize, 22)
+  assert.equal(Object.hasOwn(migrated, 'sectionFontSize'), false)
+  const partial = getCardAppearance({ ...saved, headerFontSize: 18 })
+  assert.equal(partial.headerFontSize, 18)
+  assert.equal(partial.footerFontSize, 22)
+  const bounded = getCardAppearance({ sectionFontSize: 100, headerFontSize: 0 })
+  assert.equal(bounded.headerFontSize, 16)
+  assert.equal(bounded.footerFontSize, 32)
+  assert.equal(getCardAppearance({ sectionFontSize: 'wrong' }).headerFontSize, 16)
+  assert.equal(getCardAppearance({}).footerFontSize, 16, 'unconfigured fonts use the default size')
+  for (const control of Object.values(CARD_SECTION_FONT_CONTROLS))
+    assert.ok(CARD_APPEARANCE_CONTROLS.includes(control), 'both editor and settings page reuse the same font control metadata')
+})
+
 test('card appearance controls save, reset and update all open canvases without touching node data', async () => {
-  const { plugin, calls, settingRows, load, SETTINGS } = fixture()
+  const { plugin, calls, settingRows, load, SETTINGS } = fixture({ nodeStylingFeatureEnabled: false })
   await plugin.settings.loadSettings()
   const makeCanvas = () => {
     const properties = new Map()
-    return { properties, wrapperEl: { style: {
-      setProperty: (key, value) => properties.set(key, value),
-      removeProperty: key => properties.delete(key),
+    const mutations = []
+    return { properties, mutations, nodes: new Map(), wrapperEl: { style: {
+      getPropertyValue: key => properties.get(key) ?? '',
+      setProperty: (key, value) => { mutations.push([key, value]); properties.set(key, value) },
+      removeProperty: key => { mutations.push([key]); properties.delete(key) },
     } } }
   }
   calls.canvases.push(makeCanvas(), makeCanvas())
   const NodeStyles = load(nodeStylesCode).default
-  new NodeStyles(plugin)
+  const nodeStyles = new NodeStyles(plugin)
+  nodeStyles.onPopupMenuCreated({})
+  assert.equal(calls.menus.size, 0, 'disabled node styling must not add its menu')
+  const resized = []
+  for (const canvas of calls.canvases) {
+    for (const [id, data] of Object.entries({
+      section: { type: 'text', cardContent: { header: 'Header' } },
+      plain: { type: 'text' }, file: { type: 'file', cardContent: { header: 'Ignored' } },
+    })) canvas.nodes.set(id, { getData: () => data })
+  }
+  plugin.app.workspace.on('canvas-enhance:card-content-changed', (canvas, node) => {
+    const configured = plugin.settings.getSetting('cardAppearance').headerFontSize
+    assert.equal(canvas.properties.get('--ce-header-font-size'), `${configured ?? 16}px`, 'apply CSS before measuring')
+    resized.push(node)
+  })
   plugin.settings.addSettingsTab()
   const tab = calls.tabs[0]
   tab.createCardAppearanceSettings(tab.containerEl, SETTINGS.nodeStylingFeatureEnabled.children.cardAppearance)
-  assert.equal(settingRows.length, 8)
+  assert.equal(settingRows.length, 13)
   const gradient = settingRows.find(row => row.name === '渐变终点强度')
   const color = settingRows.find(row => row.name === '浅色模式阴影颜色')
+  const sectionFont = settingRows.find(row => row.name === '页眉字号')
+  const footerFont = settingRows.find(row => row.name === '页脚字号')
+  const appearanceGroup = tab.containerEl.children.find(child => child.tag === 'details')
+  const sectionsGroup = appearanceGroup.children.find(child => child.tag === 'details')
+  assert.equal(sectionFont.container, sectionsGroup, 'header and footer controls stay in the nested group')
+  assert.equal(gradient.container, appearanceGroup, 'existing controls stay in their original group')
+  for (const font of [sectionFont, footerFont]) {
+    assert.equal(font.inputEl.type, 'number')
+    assert.equal(font.inputEl.min, '10')
+    assert.equal(font.inputEl.max, '32')
+    assert.equal(font.inputEl.value, '16')
+    assert.equal(font.limits, undefined, 'font sizes use number inputs instead of sliders')
+    assert.ok(font.placeholder.includes('16'))
+  }
+  for (const canvas of calls.canvases) {
+    assert.equal(canvas.properties.get('--ce-header-font-size'), '16px')
+    assert.equal(canvas.properties.get('--ce-footer-font-size'), '16px')
+  }
+  const savedBeforeTyping = calls.saved.length
+  sectionFont.inputEl.value = '24'
+  assert.equal(calls.saved.length, savedBeforeTyping, 'typing does not persist until native change')
+  await sectionFont.commit('24')
+  assert.equal(resized.length, 2, 'only text cards with sections resize in both canvases')
   assert.deepEqual(gradient.limits, [0, 100, 1])
   assert.equal(gradient.value, 30)
   await gradient.change(60)
   await color.change('#123456')
+  const cssWrites = calls.canvases.map(canvas => canvas.mutations.length)
+  await plugin.settings.setSetting({ minNodeSize: 80 })
+  await sectionFont.commit('24')
+  assert.deepEqual(calls.canvases.map(canvas => canvas.mutations.length), cssWrites, 'unchanged settings avoid all CSS writes')
+  assert.equal(resized.length, 2, 'unrelated and unchanged settings must not resize cards')
+  await settingRows.find(row => row.name === '背景不透明度').change(30)
+  assert.equal(resized.length, 2, 'opacity does not change section dimensions')
   for (const canvas of calls.canvases) {
     assert.equal(canvas.properties.get('--ce-gradient-end'), '60%')
     assert.equal(canvas.properties.get('--ce-shadow-light-color'), '#123456')
+    assert.equal(canvas.properties.get('--ce-header-font-size'), '24px')
+    assert.equal(canvas.properties.get('--ce-footer-font-size'), '16px', 'header changes do not affect the footer default')
   }
   assert.equal(calls.saved.at(-1).cardAppearance.gradientEnd, 60)
   await gradient.reset()
   await color.reset()
+  await sectionFont.reset()
+  assert.equal(resized.length, 4, 'resetting font size resizes once per affected card')
+  await footerFont.commit('18')
+  for (const canvas of calls.canvases) {
+    assert.equal(canvas.properties.get('--ce-header-font-size'), '16px')
+    assert.equal(canvas.properties.get('--ce-footer-font-size'), '18px')
+  }
+  await footerFont.reset()
+  assert.equal(footerFont.inputEl.value, '16')
+  assert.equal(sectionFont.inputEl.value, '16')
+  assert.equal(plugin.settings.getSetting('cardAppearance').headerFontSize, 16)
+  assert.equal(plugin.settings.getSetting('cardAppearance').footerFontSize, 16)
   assert.equal(gradient.value, 30)
-  for (const canvas of calls.canvases) assert.equal(canvas.properties.get('--ce-gradient-end'), '30%')
+  const savesBeforeInvalid = calls.saved.length
+  for (const invalid of ['wrong', '9', '33', '14.5']) await sectionFont.commit(invalid)
+  assert.equal(calls.saved.length, savesBeforeInvalid, 'invalid font input is not persisted')
+  await sectionFont.commit('20')
+  await sectionFont.commit('')
+  assert.equal(plugin.settings.getSetting('cardAppearance').headerFontSize, 16, 'clearing the field restores the default size')
+  assert.equal(sectionFont.inputEl.value, '16', 'committing an empty field displays its effective default')
+  for (const canvas of calls.canvases) {
+    assert.equal(canvas.properties.get('--ce-header-font-size'), '16px')
+    assert.equal(canvas.properties.get('--ce-gradient-end'), '30%')
+  }
   calls.cleanup.forEach(cleanup => cleanup())
   for (const canvas of calls.canvases) assert.equal(canvas.properties.size, 0, 'unload removes only owned CSS variables')
+})
+
+test('card appearance remains outside the disabled node styles settings group', async () => {
+  const { plugin, calls, settingRows } = fixture({ nodeStylingFeatureEnabled: false })
+  await plugin.settings.loadSettings()
+  plugin.settings.addSettingsTab()
+  const tab = calls.tabs[0]
+  tab.display()
+  const tabBar = tab.containerEl.children[1]
+  tabBar.children.find(button => button.text === '节点与边').click()
+  const content = tab.containerEl.children[2]
+  const appearance = content.children.find(child => child.tag === 'details')
+  assert.equal(appearance.children[0].text, '卡片外观')
+  const font = settingRows.find(row => row.name === '页眉字号')
+  const sections = appearance.children.find(child => child.tag === 'details')
+  assert.equal(font.container, sections)
+  const originalSetting = settingRows.find(row => row.name === '默认文本节点颜色')
+  assert.notEqual(originalSetting.container, content, 'original node settings remain inside the toggle-controlled group')
+  assert.ok(content.children.includes(originalSetting.container))
 })
 
 test('node and edge menus reuse the settings CSS caches and refresh after css-change', async () => {

@@ -5,7 +5,7 @@ import { getNodeStyleAttributes, StyleAttribute } from "./style-config"
 import { CARD_APPEARANCE_CONTROLS, getCardAppearance } from 'src/settings/card-appearance'
 
 export default class NodeStylesExtension extends CanvasExtension {
-  isEnabled() { return 'nodeStylingFeatureEnabled' as const }
+  isEnabled() { return true }
 
   init() {
     const update = () => this.plugin.getCanvases().forEach(canvas => this.updateAppearance(canvas))
@@ -24,11 +24,21 @@ export default class NodeStylesExtension extends CanvasExtension {
 
   private updateAppearance(canvas: Canvas) {
     const values = getCardAppearance(this.plugin.settings.getSetting('cardAppearance'))
-    for (const control of CARD_APPEARANCE_CONTROLS)
-      canvas.wrapperEl.style.setProperty(control.cssVariable, `${values[control.key]}${control.unit ?? ''}`)
+    let sectionSizeChanged = false
+    for (const control of CARD_APPEARANCE_CONTROLS) {
+      const value = `${values[control.key]}${control.unit ?? ''}`
+      if (canvas.wrapperEl.style.getPropertyValue(control.cssVariable) === value) continue
+      if (control.group === 'sections' && control.unit === 'px') sectionSizeChanged = true
+      canvas.wrapperEl.style.setProperty(control.cssVariable, value)
+    }
+    if (sectionSizeChanged)
+      for (const node of canvas.nodes.values())
+        if (node.getData().type === 'text' && node.getData().cardContent)
+          this.plugin.app.workspace.trigger('canvas-enhance:card-content-changed', canvas, node)
   }
 
   private onPopupMenuCreated(canvas: Canvas): void {
+    if (!this.plugin.settings.getSetting('nodeStylingFeatureEnabled')) return
     const selectionNodeData = canvas.getSelectionData().nodes
     if (canvas.readonly || selectionNodeData.length === 0 || selectionNodeData.length !== canvas.selection.size)
       return

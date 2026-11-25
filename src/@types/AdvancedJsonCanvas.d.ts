@@ -18,3 +18,15 @@ export interface CanvasFileNodeData extends OriginalCanvasFileNodeData {
   // Intermediate values that are not saved in the canvas
   isPortalLoaded?: boolean
 }
+
+export interface CardContent {
+  header?: string
+  footer?: string
+}
+
+// Plugin-owned data stays separate from the Markdown body and the upstream spec.
+declare module "assets/formats/advanced-json-canvas/spec/1.0-1.0" {
+  interface CanvasNodeData {
+    cardContent?: CardContent
+  }
+}

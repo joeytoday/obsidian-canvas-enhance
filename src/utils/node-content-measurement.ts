@@ -4,6 +4,8 @@ const MIN_CONTENT_HEIGHT = "min-content"
 
 // Content height of a node's editor (when editing) or rendered markdown preview
 export function measureNodeContentHeight(node: CanvasNode): number | null {
+  const sectionHeight = Array.from(node.contentEl?.querySelectorAll<HTMLElement>(':scope > .ce-card-section') ?? [])
+    .reduce((height, section) => height + section.offsetHeight, 0)
   const cmDom = node.child?.editMode?.cm?.dom
   if (cmDom) {
     const cmScroller = cmDom.querySelector(".cm-scroller")
@@ -12,7 +14,7 @@ export function measureNodeContentHeight(node: CanvasNode): number | null {
     cmScroller.style.height = MIN_CONTENT_HEIGHT
     const height = cmScroller.scrollHeight
     cmScroller.style.removeProperty("height")
-    return height
+    return height + sectionHeight
   }
 
   const renderedMarkdownContainer = node.nodeEl.querySelector(".markdown-preview-view.markdown-rendered")
@@ -21,5 +23,5 @@ export function measureNodeContentHeight(node: CanvasNode): number | null {
   renderedMarkdownContainer.style.height = MIN_CONTENT_HEIGHT
   const height = renderedMarkdownContainer.clientHeight
   renderedMarkdownContainer.style.removeProperty("height")
-  return height
+  return height + sectionHeight
 }
