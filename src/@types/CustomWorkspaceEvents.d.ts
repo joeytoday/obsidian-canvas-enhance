@@ -12,7 +12,7 @@ export interface CustomWorkspaceEvents {
   // Built-in canvas events
   'canvas:selection-menu': (menu: Menu, canvas: Canvas) => void
   'canvas:node-menu': (menu: Menu, node: CanvasNode) => void
-  'canvas:edge-menu': (menu: Menu, canvas: Canvas) => void
+  'canvas:edge-menu': (menu: Menu, edge: CanvasEdge) => void
   'canvas:node-connection-drop-menu': (menu: Menu, canvas: Canvas) => void
 
   // Custom canvas events

@@ -323,6 +323,7 @@ test('unresolved frontmatter links never create automatic edges to non-file card
   assert.equal(edges.length, 1)
   assert.equal(edges[0].fromNode, 'source')
   assert.equal(edges[0].toNode, 'target')
+  assert.equal(edges[0].mindmapRelation, false, 'automatic knowledge links are ordinary associations')
 })
 
 test('file-card label listeners are attached once and removed on plugin unload', () => {

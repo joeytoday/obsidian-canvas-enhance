@@ -49,6 +49,7 @@ import EdgeHighlightCanvasExtension from './canvas-extensions/edge-highlight-can
 import ReadingModeFixCanvasExtension from './canvas-extensions/reading-mode-fix-canvas-extension'
 import MindmapCanvasExtension from './canvas-extensions/mindmap-canvas-extension'
 import MindmapCollapseCanvasExtension from './canvas-extensions/mindmap-collapse-canvas-extension'
+import MindmapControlsCanvasExtension from './canvas-extensions/mindmap-controls-canvas-extension'
 import OverviewModeCanvasExtension from './canvas-extensions/overview-mode-canvas-extension'
 
 // Advanced Styles
@@ -121,6 +122,7 @@ const CANVAS_EXTENSIONS: (new (plugin: CanvasEnhancePlugin) => CanvasExtension)[
   FocusModeCanvasExtension,
   EncapsulateCanvasExtension,
   MindmapCanvasExtension,
+  MindmapControlsCanvasExtension,
   MindmapCollapseCanvasExtension,
   OverviewModeCanvasExtension
 ]

@@ -52,13 +52,17 @@ On a writable canvas, select one card with no card editor or input focused:
 | `Space` | Edit the selected text or Markdown file card |
 | `Alt+Arrow` | Navigate between nodes |
 
-Child nodes inherit their parent's color, and new nodes follow the hierarchy. Under **Mindmap**, adjust horizontal parent-child spacing, vertical sibling spacing, navigation shortcuts, and color propagation.
+Child nodes inherit their parent's color, and new nodes follow the hierarchy. Under **Mindmap**, adjust parent-child spacing, sibling spacing, navigation shortcuts, and color propagation.
 
 Change the first three shortcuts under Obsidian **Settings → Hotkeys**. Search for Canvas Enhance and **Create child node**, **Create sibling node**, or **Edit selected node**. Inside card editors and regular Markdown editors, these actions do not replace normal typing, spaces, or line breaks.
 
 To create nodes while editing a card, bind the child and sibling commands to `Shift+Tab` and `Shift+Enter` (combinations with `Ctrl` / `Cmd` also work). These shortcuts work inside the selected text or Markdown file card editor, preserving its content and moving editing to the new node. Bare `Tab`, `Enter`, and `Space` keep their normal input behavior, and regular Markdown pages are unaffected. Creating a sibling requires an existing parent node.
 
 Use the plus/minus control on a parent node to collapse or expand its descendants. Collapsed state is saved with the canvas. This is separate from **Collapsible groups**, described below.
+
+**Arrow-based hierarchy:** On a single-headed edge, the arrow points to the child and the other end is the parent. Reversing the arrow reverses the relationship. Card positions, connection faces, and floating attachment points do not determine parentage. Edges with no arrows or arrows at both ends are ordinary connections. For a single-headed cross-reference, right-click and check **Ordinary connection** to exclude it; uncheck it to restore automatic recognition. This rule also applies to older diagrams whose arrowless edges were previously treated as parent-child links.
+
+A canvas can contain branches growing left, right, up, and down without a canvas-wide direction setting. New children continue the current branch, and new siblings follow the selected node's branch. An isolated node with no reference connection starts to the right. Each direction containing child branches has its own collapse control, which folds or expands only that direction, and rearrangement preserves branch directions, card text orientation, and group interiors. Arrow navigation still follows screen directions. Shared descendants hide only when all their parent branches are collapsed, and nodes within a cycle never hide one another.
 
 Existing reference: creating nodes from the keyboard.
 
@@ -102,10 +106,11 @@ https://github.com/user-attachments/assets/1c76f084-aa48-4336-b689-d1c193a4204f
 
 Finish editing or dragging, then click **Rearrange all** in the bottom canvas toolbar to organize the whole canvas.
 
-- Ordinary mind-map branches stay together. Shared cards are placed once, even when several branches converge, and related cards align where spacing permits.
-- Visible text cards fit their content. Hidden cards, fixed-aspect-ratio cards, and cards in cycles keep their sizes.
+- Tree branches align in their own directions with consistent spacing. Shared cards are placed once, even when several branches converge.
+- Cards connected only by ordinary links keep their positions and sizes; rearrangement avoids these cards.
+- Visible text cards in the mind map fit their content. Hidden cards, fixed-aspect-ratio cards, and cards in cycles keep their sizes.
 - Groups move with their cards, preserving internal positions, sizes, and collapsed state. Nested or overlapping groups and cards crossing a group border move together.
-- Floating connections retain their directed hierarchy while attachment sides adjust automatically.
+- Single-headed arrows define the hierarchy, including floating connections whose attachment sides adjust automatically.
 - Repeating rearrangement with unchanged input keeps the layout stable. One undo restores the previous layout.
 
 Canvases containing portals are not supported by rearrangement yet. The plugin shows a notice and leaves the layout unchanged.

@@ -58,9 +58,9 @@ With a single card selected and not being edited, `Tab` creates a child node, `E
 
 <img width="852" height="480" alt="One-click rearrange" src="https://github.com/user-attachments/assets/c5216e10-c417-430f-ae6c-c2d17e1ccc3e" />
 
-**Rearrange all** keeps ordinary mindmap branches together and places shared cards once, aligning related cards where spacing allows. Visible text cards fit their content; hidden cards, cards with a fixed aspect ratio, and cards in cycles keep their sizes. Repeated rearrangement stays stable when the input is unchanged, and the layout can be undone in one step.
+**Rearrange all** aligns tree branches in their own directions and places shared cards once. Cards connected only by ordinary links keep their positions and sizes. Visible text cards in the mind map fit their content; hidden cards, cards with a fixed aspect ratio, and cards in cycles keep their sizes. Repeated rearrangement stays stable when the input is unchanged, and the layout can be undone in one step.
 
-Groups move together with their cards, preserving internal positions, sizes, and collapsed states. Nested or overlapping groups and cards crossing a group border move as one region. Floating connections retain their directed hierarchy while attachment sides adjust automatically. Canvases containing portals are not yet supported; they show a notice and keep their existing layout.
+Groups move together with their cards, preserving internal positions, sizes, and collapsed states. Nested or overlapping groups and cards crossing a group border move as one region. Single-headed arrows define the hierarchy, including floating connections whose attachment sides adjust automatically. Canvases containing portals are not yet supported; they show a notice and keep their existing layout.
 
 Enable **Card heading** and choose a **Card heading level** to start new text cards with an H1/H2/H3 heading, with the caret right after the prefix.
 

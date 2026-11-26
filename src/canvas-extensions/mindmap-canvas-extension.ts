@@ -4,13 +4,14 @@ import { Notice, setIcon, setTooltip, TFile } from "obsidian"
 import type { Command, MarkdownFileInfo, Scope, UserEvent } from "obsidian"
 import type { EditorView } from "@codemirror/view"
 import { around } from "monkey-around"
-import { Canvas, CanvasNode, CanvasView } from "src/@types/Canvas"
+import { Canvas, CanvasEdge, CanvasNode, CanvasView } from "src/@types/Canvas"
 import { CanvasData, CanvasEdgeData, CanvasFileNodeData } from "src/@types/AdvancedJsonCanvas"
 import BBoxHelper from "src/utils/bbox-helper"
 import CanvasHelper, { NavDirection, NAV_DIRECTIONS } from "src/utils/canvas-helper"
 import CanvasExtension from "./canvas-extension"
 import { measureNodeContentHeight } from "src/utils/node-content-measurement"
-import { isMindmapEdge, layoutMindmap } from "src/utils/mindmap-layout"
+import { layoutMindmap } from "src/utils/mindmap-layout"
+import { fromMindmapRect, getDominantDirection, getMindmapEdgeDirection, MINDMAP_SIDES, resolveMindmapRelation, toMindmapRect, type MindmapDirection } from 'src/utils/mindmap-direction'
 import { expandCanvasLayoutSnapshot, hasCanvasLayoutPortal } from "src/utils/canvas-layout-snapshot"
 import { t } from "src/i18n"
 
@@ -25,7 +26,7 @@ const FLOATING_DIR: Record<NavDirection, { dx: number; dy: number }> = {
 const REVEAL_MARGIN = 40
 
 type Rect = { x: number; y: number; width: number; height: number }
-type CollapseState = { collapsed?: boolean; mindmapCollapsed?: boolean }
+type CollapseState = { collapsed?: boolean }
 
 // Structural shapes for private Obsidian APIs missing from the local typings;
 // type aliases (not interfaces) to satisfy monkey-around's Record<string, any> constraint
@@ -50,7 +51,7 @@ type ShowPreviewPrototype = {
 
 export default class MindmapCanvasExtension extends CanvasExtension {
   private registeredViews: WeakSet<CanvasView> = new WeakSet()
-  private cachedParent: { nodeId: string; parentId: string } | null = null
+  private cachedParent: { nodeId: string; parentId: string; direction: MindmapDirection } | null = null
   private rearranging = new WeakSet<Canvas>()
   private unloaded = false
 
@@ -112,13 +113,14 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     ).join("")
   }
 
-  private createEdgeData(from: CanvasNode, toId: string): CanvasEdgeData {
+  private createEdgeData(from: CanvasNode, toId: string, direction: MindmapDirection): CanvasEdgeData {
     return {
       id: this.generateId(),
       fromNode: from.getData().id,
-      fromSide: 'right',
       toNode: toId,
-      toSide: 'left',
+      ...MINDMAP_SIDES[direction],
+      fromEnd: 'none',
+      toEnd: 'arrow',
     }
   }
 
@@ -130,32 +132,60 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   private childSpacing() { return this.plugin.settings.getSetting('mindmapChildNodeSpacing') }
   private siblingSpacing() { return this.plugin.settings.getSetting('mindmapSiblingNodeSpacing') }
 
-  private getChildNodes(canvas: Canvas, parent: CanvasNode): CanvasNode[] {
-    return canvas.getEdgesForNode(parent)
-      .filter(e => e.from.node === parent && isMindmapEdge(e.getData()))
-      .map(e => e.to.node)
-      .sort((a, b) => a.y - b.y)
+  private getRelations(canvas: Canvas, node?: CanvasNode) {
+    const edges = node ? canvas.getEdgesForNode(node) : [...canvas.edges.values()]
+    const seen = new Set<string>()
+    return edges.flatMap(edge => {
+      const data = edge.getData()
+      const relation = resolveMindmapRelation(data)
+      const parent = relation && canvas.nodes.get(relation.parentId)
+      const child = relation && canvas.nodes.get(relation.childId)
+      if (!parent || !child || parent === child) return []
+      const key = JSON.stringify([relation.parentId, relation.childId])
+      if (seen.has(key)) return []
+      seen.add(key)
+      return [{ parent, child, direction: getMindmapEdgeDirection(data, parent, child) }]
+    })
+  }
+
+  private getCreationDirection(canvas: Canvas, node: CanvasNode): MindmapDirection {
+    const relations = this.getRelations(canvas, node)
+    const children = relations.filter(relation => relation.parent === node)
+    return children.length ? getDominantDirection(children.map(relation => relation.direction)) :
+      relations.find(relation => relation.child === node)?.direction ?? 'right'
+  }
+
+  private getParentRelation(canvas: Canvas, node: CanvasNode) {
+    return this.getRelations(canvas, node).find(relation => relation.child === node)
+  }
+
+  private getChildNodes(canvas: Canvas, parent: CanvasNode, direction: MindmapDirection): CanvasNode[] {
+    return this.getRelations(canvas, parent)
+      .filter(relation => relation.parent === parent && relation.direction === direction)
+      .map(relation => relation.child)
+      .sort((a, b) => toMindmapRect(a, direction).y - toMindmapRect(b, direction).y)
   }
 
   // ── Mindmap order ──
 
   // DFS emission order of the mindmap forest (children sorted by y)
-  private layoutOrder(canvas: Canvas) {
+  private layoutOrder(canvas: Canvas, direction: MindmapDirection) {
     const nodes = [...canvas.nodes.values()].filter(n => n.getData().type !== 'group')
     const byId = new Map(nodes.map(n => [n.getData().id, n]))
 
     const childrenOf = new Map<string, CanvasNode[]>()
     const incoming = new Set<string>()
-    for (const edge of canvas.edges.values()) {
-      if (!isMindmapEdge(edge.getData())) continue
-      const fromId = edge.from.node.getData().id, toId = edge.to.node.getData().id
+    for (const { parent, child, direction: branchDirection } of this.getRelations(canvas)) {
+      if (branchDirection !== direction) continue
+      const fromId = parent.getData().id, toId = child.getData().id
       if (!byId.has(fromId) || !byId.has(toId)) continue
       incoming.add(toId)
       const list = childrenOf.get(fromId)
-      if (list) list.push(edge.to.node)
-      else childrenOf.set(fromId, [edge.to.node])
+      if (list) list.push(child)
+      else childrenOf.set(fromId, [child])
     }
-    for (const list of childrenOf.values()) list.sort((a, b) => a.y - b.y)
+    const compare = (a: CanvasNode, b: CanvasNode) => toMindmapRect(a, direction).y - toMindmapRect(b, direction).y
+    for (const list of childrenOf.values()) list.sort(compare)
 
     const order: CanvasNode[] = []
     const indexOf = new Map<string, number>()
@@ -172,7 +202,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       for (const child of childrenOf.get(id) ?? []) visit(child, depth + 1)
       subtreeEnd.set(id, order.length - 1)
     }
-    for (const root of nodes.filter(n => !incoming.has(n.getData().id)).sort((a, b) => a.y - b.y))
+    for (const root of nodes.filter(n => !incoming.has(n.getData().id)).sort(compare))
       visit(root, 0)
 
     return { order, indexOf, subtreeEnd, depthOf }
@@ -180,12 +210,13 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
   // Bottom (+ spacing) of same-depth nodes emitted before `cut`; a new node at
   // that depth must start below it so subtree blocks stay contiguous
-  private minTopBelow(layout: { order: CanvasNode[]; depthOf: Map<string, number> }, cut: number, depth: number): number {
+  private minTopBelow(layout: { order: CanvasNode[]; depthOf: Map<string, number> }, cut: number, depth: number, direction: MindmapDirection): number {
     let bottom = -Infinity
     for (let i = 0; i < cut && i < layout.order.length; i++) {
       const n = layout.order[i]
       if (layout.depthOf.get(n.getData().id) !== depth) continue
-      bottom = Math.max(bottom, n.y + n.height)
+      const rect = toMindmapRect(n, direction)
+      bottom = Math.max(bottom, rect.y + rect.height)
     }
     return bottom + this.siblingSpacing()
   }
@@ -199,18 +230,18 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   }
 
   // Pushes any node intersecting `rect` (with its subtree) below it, cascading
-  private makeSpace(canvas: Canvas, rect: Rect, exclude: Set<string>) {
+  private makeSpace(canvas: Canvas, rect: Rect, exclude: Set<string>, direction: MindmapDirection) {
     const hit = [...canvas.nodes.values()].find(
-      n => !exclude.has(n.getData().id) && this.intersects(rect, n))
+      n => !exclude.has(n.getData().id) && this.intersects(rect, toMindmapRect(n, direction)))
     if (!hit) return
-    const delta = rect.y + rect.height + this.siblingSpacing() - hit.y
-    const moved = this.moveSubtree(canvas, hit, delta, exclude)
-    for (const n of moved.sort((a, b) => a.y - b.y)) {
-      this.makeSpace(canvas, { x: n.x, y: n.y, width: n.width, height: n.height }, exclude)
+    const delta = rect.y + rect.height + this.siblingSpacing() - toMindmapRect(hit, direction).y
+    const moved = this.moveSubtree(canvas, hit, delta, exclude, direction)
+    for (const n of moved.sort((a, b) => toMindmapRect(a, direction).y - toMindmapRect(b, direction).y)) {
+      this.makeSpace(canvas, toMindmapRect(n, direction), exclude, direction)
     }
   }
 
-  private moveSubtree(canvas: Canvas, node: CanvasNode, delta: number, exclude: Set<string>): CanvasNode[] {
+  private moveSubtree(canvas: Canvas, node: CanvasNode, delta: number, exclude: Set<string>, direction: MindmapDirection): CanvasNode[] {
     const moved: CanvasNode[] = []
     const stack = [node]
     while (stack.length) {
@@ -218,11 +249,12 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       const id = n.getData().id
       if (exclude.has(id)) continue
       exclude.add(id)
-      n.setData({ ...n.getData(), y: n.y + delta })
+      const rect = toMindmapRect(n, direction)
+      const { x, y } = fromMindmapRect({ ...rect, y: rect.y + delta }, direction)
+      n.setData({ ...n.getData(), x, y })
       moved.push(n)
-      for (const e of canvas.getEdgesForNode(n)) {
-        if (e.from.node === n && isMindmapEdge(e.getData())) stack.push(e.to.node)
-      }
+      for (const relation of this.getRelations(canvas, n))
+        if (relation.parent === n) stack.push(relation.child)
     }
     return moved
   }
@@ -263,7 +295,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       name: () => t('cmd.createSiblingNode'),
       hotkeys: [{ modifiers: [], key: 'Enter' }],
       checkCallback: nodeCommand((canvas) => this.createSiblingNode(canvas, false),
-        node => node.canvas.getEdgesForNode(node).some(edge => edge.to.node === node), true)
+        node => this.getParentRelation(node.canvas, node) !== undefined, true)
     })
 
     this.plugin.addCommand({
@@ -369,10 +401,37 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   // ── Delete Handler ──
 
   private registerDeleteHandler() {
+    const signatures = new WeakMap<CanvasEdge, string>()
+    const signature = (data: CanvasEdgeData) => {
+      const relation = resolveMindmapRelation(data)
+      return relation ? JSON.stringify([relation.parentId, relation.childId,
+        data.fromSide, data.toSide, !!data.fromFloating, !!data.toFloating]) : ''
+    }
+    const update = (canvas: Canvas) => {
+      this.updateCachedParent(canvas)
+      const node = this.getSelectedNode(canvas)
+      if (node) for (const edge of canvas.getEdgesForNode(node)) signatures.set(edge, signature(edge.getData()))
+    }
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:selection-changed',
-      (canvas: Canvas) => this.updateCachedParent(canvas)
+      update
     ))
+    for (const event of ['canvas-enhance:node-moved', 'canvas-enhance:node-resized'] as const)
+      this.plugin.registerEvent(this.plugin.app.workspace.on(event, (canvas: Canvas, node: CanvasNode) => {
+        const selected = this.getSelectedNode(canvas)
+        if (selected && canvas.nodes.get(selected.getData().id) === selected &&
+          (node === selected || node.getData().id === this.cachedParent?.parentId)) update(canvas)
+      }))
+    for (const event of ['canvas-enhance:edge-created', 'canvas-enhance:edge-changed'] as const)
+      this.plugin.registerEvent(this.plugin.app.workspace.on(event, (canvas: Canvas, edge: CanvasEdge) => {
+        const data = edge.getData()
+        if (canvas.edges.get(data.id) !== edge) return
+        const current = signature(data)
+        if (signatures.get(edge) === current) return
+        signatures.set(edge, current)
+        const selected = this.getSelectedNode(canvas)
+        if (selected && canvas.nodes.get(selected.getData().id) === selected) update(canvas)
+      }))
     this.plugin.registerEvent(this.plugin.app.workspace.on(
       'canvas-enhance:node-removed',
       (canvas: Canvas, node: CanvasNode) => this.onNodeRemoved(canvas, node)
@@ -383,23 +442,25 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const node = this.getSelectedNode(canvas)
     if (!node) { this.cachedParent = null; return }
 
-    const incoming = canvas.getEdgesForNode(node).filter(e => e.to.node === node)
-    if (incoming.length === 0) { this.cachedParent = null; return }
+    const relation = this.getParentRelation(canvas, node)
+    if (!relation) { this.cachedParent = null; return }
 
     this.cachedParent = {
       nodeId: node.getData().id,
-      parentId: incoming[0].from.node.getData().id,
+      parentId: relation.parent.getData().id,
+      direction: relation.direction,
     }
   }
 
   private onNodeRemoved(canvas: Canvas, node: CanvasNode) {
     if (!this.cachedParent || this.cachedParent.nodeId !== node.getData().id) return
 
-    const parent = canvas.nodes.get(this.cachedParent.parentId)
+    const { parentId, direction } = this.cachedParent
+    const parent = canvas.nodes.get(parentId)
     this.cachedParent = null
     if (!parent) return
 
-    this.rearrangeSiblings(canvas, parent)
+    this.rearrangeSiblings(canvas, parent, direction)
     canvas.selectOnly(parent)
     this.showSelection(canvas)
   }
@@ -410,47 +471,53 @@ export default class MindmapCanvasExtension extends CanvasExtension {
     const parent = this.getSelectedNode(canvas)
     if (!parent || (parent.isEditing && !force)) return null
 
-    const children = this.getChildNodes(canvas, parent)
+    const direction = this.getCreationDirection(canvas, parent)
+    const parentRect = toMindmapRect(parent, direction)
+    const children = this.getChildNodes(canvas, parent, direction)
+    const lastChild = children[children.length - 1]
+    const lastRect = lastChild && toMindmapRect(lastChild, direction)
     const desired = children.length === 0
-      ? parent.y
-      : children[children.length - 1].y + children[children.length - 1].height + this.siblingSpacing() + 20
+      ? parentRect.y
+      : lastRect.y + lastRect.height + this.siblingSpacing() + 20
 
     // Keep the new child below every same-column node that precedes it in the
     // mindmap order (e.g. the subtrees of its parent's previous siblings)
-    const layout = this.layoutOrder(canvas)
+    const layout = this.layoutOrder(canvas, direction)
     const parentId = parent.getData().id
-    const lastChild = children[children.length - 1]
     const cut = lastChild
       ? (layout.subtreeEnd.get(lastChild.getData().id) ?? 0) + 1
       : (layout.indexOf.get(parentId) ?? 0) + 1
     const y = Math.max(desired,
-      this.minTopBelow(layout, cut, (layout.depthOf.get(parentId) ?? 0) + 1))
+      this.minTopBelow(layout, cut, (layout.depthOf.get(parentId) ?? 0) + 1, direction))
 
-    const x = parent.x + parent.width + this.childSpacing()
-    this.makeSpace(canvas, { x, y, width: parent.width, height: parent.height },
-      new Set([parentId]))
+    const x = parentRect.x + parentRect.width + this.childSpacing()
+    const rect = { ...parentRect, x, y }
+    this.makeSpace(canvas, rect, new Set([parentId]), direction)
 
-    return this.createConnectedNode(canvas, parent, { x, y })
+    return this.createConnectedNode(canvas, parent, fromMindmapRect(rect, direction), direction)
   }
 
   private createSiblingNode(canvas: Canvas, force: boolean): CanvasNode | null {
     const selected = this.getSelectedNode(canvas)
     if (!selected || (selected.isEditing && !force)) return null
 
-    const incoming = canvas.getEdgesForNode(selected).filter(e => e.to.node === selected)
-    if (incoming.length === 0) return null
+    const relation = this.getParentRelation(canvas, selected)
+    if (!relation) return null
 
-    const parent = incoming[0].from.node
-    const node = this.createConnectedNode(canvas, parent, {
-      x: parent.x + parent.width + this.childSpacing(),
-      y: selected.y + selected.height / 2 + 110,
-    })
+    const { parent, direction } = relation
+    const parentRect = toMindmapRect(parent, direction)
+    const selectedRect = toMindmapRect(selected, direction)
+    const node = this.createConnectedNode(canvas, parent, fromMindmapRect({
+      ...parentRect,
+      x: parentRect.x + parentRect.width + this.childSpacing(),
+      y: selectedRect.y + selectedRect.height / 2 + 110,
+    }, direction), direction)
 
-    this.rearrangeSiblings(canvas, parent)
+    this.rearrangeSiblings(canvas, parent, direction)
     return node
   }
 
-  private createConnectedNode(canvas: Canvas, parent: CanvasNode, pos: { x: number; y: number }): CanvasNode | null {
+  private createConnectedNode(canvas: Canvas, parent: CanvasNode, pos: { x: number; y: number }, direction: MindmapDirection): CanvasNode | null {
     const created = canvas.createTextNode({
       pos,
       size: { width: parent.width, height: parent.height },
@@ -459,7 +526,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       save: true,
     })
 
-    this.addEdge(canvas, this.createEdgeData(parent, created.getData().id))
+    this.addEdge(canvas, this.createEdgeData(parent, created.getData().id, direction))
 
     canvas.deselectAll()
     const real = canvas.nodes.get(created.getData().id)
@@ -508,20 +575,24 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
     const cs = this.childSpacing()
     const ss = this.siblingSpacing()
-    const rowHeight = parent.height * 0.6 + ss
+    const direction = this.getCreationDirection(canvas, parent)
+    const parentRect = toMindmapRect(parent, direction)
+    const size = { width: parent.width, height: parent.height * 0.6 }
+    const childRect = toMindmapRect({ x: 0, y: 0, ...size }, direction)
+    const rowHeight = childRect.height + ss
     const totalHeight = rowHeight * headings.length
 
     for (let i = 0; i < headings.length; i++) {
-      const y = parent.y + parent.height / 2 + totalHeight / 2 - rowHeight * i
+      const y = parentRect.y + parentRect.height / 2 + totalHeight / 2 - rowHeight * i
       const fileNode = canvas.createFileNode({
-        pos: { x: parent.x + parent.width + cs, y },
-        size: { width: parent.width, height: parent.height * 0.6 },
+        pos: fromMindmapRect({ ...childRect, x: parentRect.x + parentRect.width + cs, y }, direction),
+        size,
         file,
         subpath: `#${headings[i].heading}`,
         focus: false,
         save: true,
       })
-      this.addEdge(canvas, this.createEdgeData(parent, fileNode.getData().id))
+      this.addEdge(canvas, this.createEdgeData(parent, fileNode.getData().id, direction))
     }
 
     canvas.requestSave()
@@ -529,40 +600,48 @@ export default class MindmapCanvasExtension extends CanvasExtension {
 
   // ── Auto-arrange ──
 
-  private rearrangeSiblings(canvas: Canvas, parent: CanvasNode) {
+  private rearrangeSiblings(canvas: Canvas, parent: CanvasNode, direction: MindmapDirection) {
     const ss = this.siblingSpacing()
-    const children = this.getChildNodes(canvas, parent)
+    const parentRect = toMindmapRect(parent, direction)
+    const children = this.getChildNodes(canvas, parent, direction)
     if (children.length <= 1) return
 
     const exclude = new Set([parent.getData().id, ...children.map(c => c.getData().id)])
-    const totalHeight = children.reduce((acc, n) => acc + n.height + ss, 0)
-    const startX = children[0].x
-    const width = children[0].width
+    const totalHeight = children.reduce((acc, n) => acc + toMindmapRect(n, direction).height + ss, 0)
+    const firstRect = toMindmapRect(children[0], direction)
+    const startX = Math.max(firstRect.x, parentRect.x + parentRect.width + this.childSpacing())
+    const width = Math.max(...children.map(child => toMindmapRect(child, direction).width))
 
     // keep the stack below same-column nodes that precede it in the mindmap
     // order, then shift past foreign nodes hanging into its top
-    const layout = this.layoutOrder(canvas)
+    const layout = this.layoutOrder(canvas, direction)
     const parentId = parent.getData().id
     let startY = Math.max(
-      parent.y + parent.height / 2 - totalHeight / 2,
-      this.minTopBelow(layout, (layout.indexOf.get(parentId) ?? 0) + 1, (layout.depthOf.get(parentId) ?? 0) + 1))
+      parentRect.y + parentRect.height / 2 - totalHeight / 2,
+      this.minTopBelow(layout, (layout.indexOf.get(parentId) ?? 0) + 1, (layout.depthOf.get(parentId) ?? 0) + 1, direction))
     for (let guard = 0; guard < 100; guard++) {
       const stack: Rect = { x: startX, y: startY, width, height: totalHeight }
-      const above = [...canvas.nodes.values()].find(n =>
-        !exclude.has(n.getData().id) && this.intersects(stack, n) &&
-        n.y + n.height / 2 < startY + totalHeight / 2)
+      const above = [...canvas.nodes.values()].find(n => {
+        const rect = toMindmapRect(n, direction)
+        return !exclude.has(n.getData().id) && this.intersects(stack, rect) &&
+          rect.y + rect.height / 2 < startY + totalHeight / 2
+      })
       if (!above) break
-      startY = above.y + above.height + ss
+      const rect = toMindmapRect(above, direction)
+      startY = rect.y + rect.height + ss
     }
 
     for (let i = 0; i < children.length; i++) {
+      const previous = i > 0 ? toMindmapRect(children[i - 1], direction) : null
       const y = i === 0
         ? startY
-        : children[i - 1].y + children[i - 1].height + ss
-      children[i].setData({ ...children[i].getData(), x: startX, y })
+        : previous!.y + previous!.height + ss
+      const rect = toMindmapRect(children[i], direction)
+      const position = fromMindmapRect({ ...rect, x: startX, y }, direction)
+      children[i].setData({ ...children[i].getData(), x: position.x, y: position.y })
     }
 
-    this.makeSpace(canvas, { x: startX, y: startY, width, height: totalHeight }, exclude)
+    this.makeSpace(canvas, { x: startX, y: startY, width, height: totalHeight }, exclude, direction)
     canvas.requestSave()
   }
 
@@ -618,12 +697,14 @@ export default class MindmapCanvasExtension extends CanvasExtension {
       if (before.nodes.length === 0) return
       const options = { childSpacing: this.childSpacing(), siblingSpacing: this.siblingSpacing() }
       const initialLayout = layoutMindmap(before.nodes, before.edges, options)
+      if (initialLayout.fixedNodeIds.size === before.nodes.length) return
 
       // Mount offscreen cards without changing any saved node geometry.
       canvas.zoomToRealBbox(CanvasHelper.getBBox(before.nodes))
       canvas.setViewport(canvas.tx, canvas.ty, canvas.tZoom)
       layoutViewport = { x: canvas.tx, y: canvas.ty, zoom: canvas.tZoom }
-      const heights = await this.measureLayoutHeights(canvas, before, initialLayout.rigidNodeIds, canContinue)
+      const heights = await this.measureLayoutHeights(canvas, before,
+        new Set([...initialLayout.rigidNodeIds, ...initialLayout.fixedNodeIds]), canContinue)
       if (!heights || !canContinue()) return
       if (JSON.stringify(canvas.getData()) !== serialized ||
         this.childSpacing() !== options.childSpacing || this.siblingSpacing() !== options.siblingSpacing) {
@@ -697,11 +778,11 @@ export default class MindmapCanvasExtension extends CanvasExtension {
   private async measureLayoutHeights(
     canvas: Canvas,
     data: CanvasData,
-    rigidNodeIds: Set<string>,
+    excludedNodeIds: Set<string>,
     canContinue: () => boolean,
   ): Promise<Map<string, number> | null> {
     const heights = new Map<string, number>()
-    const candidates = data.nodes.filter(node => !rigidNodeIds.has(node.id) && !node.ratio &&
+    const candidates = data.nodes.filter(node => !excludedNodeIds.has(node.id) && !node.ratio &&
       (node.type === 'text' || (node.type === 'file' && (node as CanvasFileNodeData).file.endsWith('.md'))))
     await sleep(10)
     const start = performance.now()
@@ -747,13 +828,15 @@ export default class MindmapCanvasExtension extends CanvasExtension {
         const node = nodes.get(expected.id)
         return node && node.type === expected.type &&
           (node as CollapseState).collapsed === (expected as CollapseState).collapsed &&
-          (node as CollapseState).mindmapCollapsed === (expected as CollapseState).mindmapCollapsed &&
+          JSON.stringify(node.mindmapCollapsed) === JSON.stringify(expected.mindmapCollapsed) &&
           (['x', 'y', 'width', 'height'] as const).every(key =>
           Math.abs(node[key] - expected[key]) < 1e-6)
       })
       const connectionsMatch = after.edges.length === actual.edges.length && after.edges.every(expected => {
         const edge = edges.get(expected.id)
-        return edge?.fromNode === expected.fromNode && edge.toNode === expected.toNode
+        return edge?.fromNode === expected.fromNode && edge.toNode === expected.toNode &&
+          (edge.fromEnd ?? 'none') === (expected.fromEnd ?? 'none') &&
+          (edge.toEnd ?? 'arrow') === (expected.toEnd ?? 'arrow') && edge.mindmapRelation === expected.mindmapRelation
       })
       if (!geometryMatches || !connectionsMatch)
         throw new Error('Canvas geometry or connections changed while applying the layout')
@@ -806,7 +889,7 @@ export default class MindmapCanvasExtension extends CanvasExtension {
             if (!plugin.settings.getSetting('mindmapFeatureEnabled')) return
             if (!plugin.settings.getSetting('mindmapPropagateColorToEdges')) return
             this.canvas.getEdgesForNode(this).forEach((edge) => {
-              if (edge.from.node === this) {
+              if (resolveMindmapRelation(edge.getData())?.parentId === this.getData().id) {
                 (edge as EdgeWithSetColor).setColor(color, true)
                 edge.render()
               }

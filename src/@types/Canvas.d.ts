@@ -1,5 +1,6 @@
 import { App, ItemView, TFile, WorkspaceLeaf } from "obsidian"
 import { AnyCanvasNodeData, CanvasData, CanvasEdgeData, CanvasMetadata, CanvasNodeData, EndType, Side } from "./AdvancedJsonCanvas"
+import type { MindmapDirection } from "src/utils/mindmap-direction"
 
 export interface Size {
   width: number
@@ -135,7 +136,7 @@ export interface CanvasNode extends CanvasElement {
 
   // Custom
   collapseEl?: HTMLElement
-  mindmapCollapseEl?: HTMLElement
+  mindmapCollapseEls?: Map<MindmapDirection, HTMLElement>
 
   breakpoint?: number | null
   prevX: number
@@ -350,6 +351,7 @@ export interface Canvas {
   // Custom
   searchEl?: HTMLElement
   zoomToRealBbox(bbox: BBox): void
+  importingNodeIds?: ReadonlySet<string>
   isClearing?: boolean
   isCopying?: boolean
   isPasting?: boolean

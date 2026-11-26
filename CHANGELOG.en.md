@@ -2,6 +2,12 @@
 
 [English](CHANGELOG.en.md) · [简体中文](CHANGELOG.md)
 
+## 1.0.13
+
+- Mind maps infer parent-child relationships from single-headed arrows and reverse them when the arrow reverses. Arrowless, double-headed, and explicitly ordinary connections do not define a hierarchy.
+- Branches can grow in different directions on the same canvas. Node creation and rearrangement follow each branch, with independent folding for each direction without a canvas-wide direction setting.
+- Rearrangement aligns tree branches in their own directions while preserving the positions and sizes of cards connected only by ordinary links.
+
 ## 1.0.12
 
 - Added built-in gradients, card borders, and shadows in nested style menus, with appearance controls in settings and no CSS editing required.

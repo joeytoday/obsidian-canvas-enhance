@@ -319,11 +319,18 @@ export default class CanvasPatcher extends Patcher {
           this.importData(data, true, true)
         }
 
-        if (!silent) that.plugin.app.workspace.trigger('canvas-enhance:data-loaded:before', this, data, setData)
-        const result = next.call(this, data, clearCanvas)
-        if (!silent) that.plugin.app.workspace.trigger('canvas-enhance:data-loaded:after', this, data, setData)
-
-        return result
+        // Silent portal updates restore nodes too; nested imports must return to
+        // the outer context without treating restored edges as newly created.
+        const previous = this.importingNodeIds
+        this.importingNodeIds = new Set(data.nodes.map(node => node.id))
+        try {
+          if (!silent) that.plugin.app.workspace.trigger('canvas-enhance:data-loaded:before', this, data, setData)
+          const result = next.call(this, data, clearCanvas)
+          if (!silent) that.plugin.app.workspace.trigger('canvas-enhance:data-loaded:after', this, data, setData)
+          return result
+        } finally {
+          this.importingNodeIds = previous
+        }
       }),
       requestSave: Patcher.OverrideExisting(next => function (...args: Parameters<typeof next>): void {
         that.plugin.app.workspace.trigger('canvas-enhance:canvas-saved:before', this)

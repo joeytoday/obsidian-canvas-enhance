@@ -157,7 +157,10 @@ function fixture(data = sample(), hooks = {}) {
     canvas.nodes = new Map(state.nodes.map(data => {
       const node = {
         initialized: true, isContentMounted: true, isEditing: false,
+        get x() { return data.x },
         get y() { return data.y },
+        get width() { return data.width },
+        get height() { return data.height },
         getData: () => copy(data),
         setData(next) { calls.nodeWrites.push(copy(next)); Object.assign(data, next) },
         nodeEl: { isConnected: true, classList: { contains: () => false }, getClientRects: () => [{}] },
@@ -178,6 +181,7 @@ function fixture(data = sample(), hooks = {}) {
     extension, collapse, groups, canvas, calls, notices, settings, attrs, button,
     run: () => extension.rearrangeMindmap(canvas, button),
     editNode: (id, changes) => Object.assign(state.nodes.find(n => n.id === id), changes),
+    editEdge: (id, changes) => Object.assign(state.edges.find(e => e.id === id), changes),
     clearCanvas: () => { state = { ...state, nodes: [], edges: [] }; rebuildNodes() },
     fullyExpanded() {
       const data = canvas.getData()
@@ -556,10 +560,11 @@ test('floating target sides keep child lookup and collapsed shared descendants c
   data.nodes[0].mindmapCollapsed = true
   data.nodes.push(textNode('unrelated', 100, 150))
   data.edges = data.edges.map((e, i) => ({ ...e, toFloating: true, toSide: i % 2 ? 'bottom' : 'top' }))
-  data.edges.push(edge('ignored', 'root', 'unrelated', { toSide: 'top' }))
+  data.edges.push(edge('ignored', 'root', 'unrelated', { toSide: 'top', mindmapRelation: false }))
   const f = fixture(data)
-  const children = f.extension.getChildNodes(f.canvas, f.canvas.nodes.get('root'))
-  assert.deepEqual(children.map(n => n.getData().id), ['a', 'b'])
+  const children = ['right', 'left', 'down', 'up'].flatMap(direction =>
+    f.extension.getChildNodes(f.canvas, f.canvas.nodes.get('root'), direction))
+  assert.deepEqual(children.map(n => n.getData().id).sort(), ['a', 'b'])
   assert.deepEqual([...f.collapse.computeHidden(f.canvas)].sort(), ['a', 'b', 'shared'])
   f.editNode('root', { mindmapCollapsed: false })
   f.editNode('a', { mindmapCollapsed: true })
@@ -567,4 +572,210 @@ test('floating target sides keep child lookup and collapsed shared descendants c
   f.editNode('b', { mindmapCollapsed: true })
   assert.deepEqual([...f.collapse.computeHidden(f.canvas)], ['shared'])
   assertNoWrites(f)
+})
+
+test('four directions keep the hierarchy through rearrange, measured height and undo snapshots', async () => {
+  const sides = { right: ['right', 'left'], left: ['left', 'right'], down: ['bottom', 'top'], up: ['top', 'bottom'] }
+  for (const [direction, [fromSide, toSide]] of Object.entries(sides)) {
+    const data = sample()
+    for (const n of data.nodes) {
+      const { x, y } = n
+      if (direction === 'left') n.x = -x - n.width
+      if (direction === 'down') { n.x = y; n.y = x }
+      if (direction === 'up') { n.x = y; n.y = -x - n.height }
+    }
+    data.edges.forEach(e => Object.assign(e, { fromSide, toSide }))
+    data.nodes[0].cardContent = { header: 'Heading', footer: 'Footer' }
+    const f = fixture(data, { measure: () => 180 })
+    await f.run()
+    const after = f.canvas.getData()
+    assert.equal(f.calls.history.length, 1)
+    assert.deepEqual(f.canvas.history.data[0], data, 'undo snapshot is unchanged')
+    assert.deepEqual(after.nodes[0].cardContent, data.nodes[0].cardContent)
+    assert.ok(after.nodes.every(n => n.height === 200 && n.width === 100))
+    assert.ok(after.edges.every(e => e.fromSide === fromSide && e.toSide === toSide))
+    assert.deepEqual(after.edges, data.edges, 'rearrangement preserves every arrow and connection face')
+    for (const e of after.edges) {
+      const parent = after.nodes.find(n => n.id === e.fromNode), child = after.nodes.find(n => n.id === e.toNode)
+      const gap = { right: child.x - parent.x - parent.width, left: parent.x - child.x - child.width,
+        down: child.y - parent.y - parent.height, up: parent.y - child.y - child.height }[direction]
+      assert.ok(gap >= 80, `${direction}: ${e.id} stays on its original side after measurement`)
+    }
+    await f.run()
+    assert.deepEqual(f.canvas.getData(), after)
+    assert.equal(f.calls.history.length, 1, 'rearranging again does not create another undo step')
+    f.canvas.importData(copy(f.canvas.history.data[0]), true)
+    assert.deepEqual(f.canvas.getData(), data)
+    f.canvas.importData(copy(f.canvas.history.data[1]), true)
+    assert.deepEqual(f.canvas.getData(), after)
+  }
+})
+
+test('four directions preserve internal connections and markers in rigid groups and cycles', async () => {
+  for (const direction of ['right', 'left', 'down', 'up']) for (const collapsed of [false, true]) {
+    const data = groupedSample(collapsed)
+    const positions = { right: [-300, 300, 1200, 300, 1700, 300], left: [1600, 300, -400, 300, -900, 300],
+      down: [300, -400, 300, 1100, 300, 1600], up: [300, 1200, 300, -400, 300, -900] }
+    const [rx, ry, tx, ty, cx, cy] = positions[direction]
+    Object.assign(data.nodes.find(n => n.id === 'root'), { x: rx, y: ry })
+    Object.assign(data.nodes.find(n => n.id === 'tail'), { x: tx, y: ty })
+    const sides = { right: ['right', 'left'], left: ['left', 'right'], down: ['bottom', 'top'], up: ['top', 'bottom'] }[direction]
+    for (const e of data.edges.filter(e => e.id !== 'ab')) Object.assign(e, { fromSide: sides[0], toSide: sides[1] })
+    data.nodes.push(textNode('cycle-a', cx, cy), textNode('cycle-b', cx + 150, cy + 100))
+    data.edges.push(
+      edge('group-marked', 'b', 'a', { fromSide: 'top', toSide: 'bottom', mindmapRelation: true }),
+      edge('tail-cycle', 'tail', 'cycle-a'),
+      edge('cycle-a-b', 'cycle-a', 'cycle-b'),
+      edge('cycle-b-a', 'cycle-b', 'cycle-a', { fromSide: 'top', toSide: 'bottom', mindmapRelation: true }),
+    )
+    const internalIds = new Set(['ab', 'group-marked', 'cycle-a-b', 'cycle-b-a'])
+    const internalEdges = byId(data.edges.filter(e => internalIds.has(e.id)))
+    const f = fixture(data, { groups: true })
+    await f.run()
+    const after = f.fullyExpanded()
+    assert.equal(f.calls.history.length, 1)
+    assertGroupOffsets(data, after, ['outer', 'inner', 'a', 'b'])
+    assertGroupOffsets(data, after, ['cycle-a', 'cycle-b'])
+    assert.deepEqual(byId(after.edges.filter(e => internalIds.has(e.id))), internalEdges,
+      `${direction}, collapsed=${collapsed}: rigid translation must not change internal connection sides or markers`)
+    await f.run()
+    assert.deepEqual(f.fullyExpanded(), after)
+    assert.equal(f.calls.history.length, 1)
+  }
+})
+
+test('reversing an arrow during measurement cancels the old plan without losing the change', async () => {
+  const f = fixture(sample(), { sleep: count => { if (count === 2) f.editEdge('ra', { fromEnd: 'arrow', toEnd: 'none' }) } })
+  await f.run()
+  assertNoWrites(f)
+  assert.equal(f.canvas.getData().edges[0].fromEnd, 'arrow')
+  assert.equal(f.canvas.getData().edges[0].toEnd, 'none')
+  assert.deepEqual(f.canvas.getData().nodes, sample().nodes)
+  assert.equal(f.notices.length, 1)
+})
+
+test('import changing arrows or association flags rolls back the whole rearrange', () => {
+  for (const corrupt of [data => { data.edges[0].fromEnd = 'none' }, data => { delete data.edges[0].mindmapRelation }]) {
+    const before = sample()
+    Object.assign(before.edges[0], { fromEnd: 'arrow', toEnd: 'none', mindmapRelation: false })
+    const after = copy(before)
+    after.nodes[0].x += 100
+    const f = fixture(before, { import: (data, count) => { if (count === 1) corrupt(data) } })
+    assert.throws(() => f.extension.applyMindmapLayout(f.canvas, before, after))
+    assert.deepEqual(f.canvas.getData(), before)
+    assert.equal(f.calls.history.length, 0)
+  }
+})
+
+test('mixed branches and reversed arrows keep their directions through measured rearrange and a second run', async () => {
+  const data = {
+    nodes: [textNode('root', 0, 0), textNode('right', 400, 0), textNode('left', -400, 0),
+      textNode('down', 0, 400), textNode('up', 0, -400)],
+    edges: [edge('right', 'root', 'right'),
+      edge('left-reversed', 'left', 'root', { fromEnd: 'arrow', toEnd: 'none' }),
+      edge('down', 'root', 'down', { fromSide: 'bottom', toSide: 'top' }),
+      edge('up', 'root', 'up', { fromSide: 'top', toSide: 'bottom' })],
+  }
+  const f = fixture(data, { measure: () => 180 })
+  await f.run()
+  assert.equal(f.calls.history.length, 1)
+  const after = f.canvas.getData(), nodes = new Map(after.nodes.map(n => [n.id, n])), root = nodes.get('root')
+  assert.ok(nodes.get('right').x >= root.x + root.width + 80)
+  assert.ok(nodes.get('left').x + nodes.get('left').width + 80 <= root.x)
+  assert.ok(nodes.get('down').y >= root.y + root.height + 80)
+  assert.ok(nodes.get('up').y + nodes.get('up').height + 80 <= root.y)
+  assert.deepEqual(after.edges, data.edges)
+  await f.run()
+  assert.deepEqual(f.canvas.getData(), after)
+  assert.equal(f.calls.history.length, 1)
+})
+
+test('directional folding survives measurement, history snapshots and rollback validation', async () => {
+  const before = sample()
+  before.nodes[0].mindmapCollapsed = ['left', 'down']
+  const f = fixture(before, { measure: () => 180 })
+  await f.run()
+  assert.equal(f.calls.history.length, 1)
+  assert.deepEqual(f.canvas.getData().nodes[0].mindmapCollapsed, ['left', 'down'])
+  assert.deepEqual(f.canvas.history.data[0].nodes[0].mindmapCollapsed, ['left', 'down'])
+  const after = copy(before)
+  after.nodes[0].x += 100
+  const corrupted = fixture(before, { import: (data, count) => {
+    if (count === 1) data.nodes[0].mindmapCollapsed = ['up']
+  } })
+  assert.throws(() => corrupted.extension.applyMindmapLayout(corrupted.canvas, before, after), /geometry or connections/)
+  assert.deepEqual(corrupted.canvas.getData(), before)
+  assert.equal(corrupted.calls.history.length, 0)
+})
+
+
+test('rearrange aligns four-way branches while ordinary references keep their position and size', async () => {
+  const card = (id, x, y, extra = {}) => textNode(id, x, y, { width: 300, height: 150, ...extra })
+  const data = {
+    nodes: [card('root', 0, 0), card('right', 650, 0), card('left', -710, 280),
+      card('up', 0, -500), card('down', 0, 500), card('note', 650, -500),
+      card('plain', 510, 500, { height: 134 }), card('double', -710, 740, { height: 134 })],
+    edges: [edge('right', 'root', 'right'),
+      edge('left', 'left', 'root', { fromEnd: 'arrow', toEnd: 'none' }),
+      edge('up', 'root', 'up', { fromSide: 'top', toSide: 'bottom' }),
+      edge('down', 'root', 'down', { fromSide: 'bottom', toSide: 'top' }),
+      edge('turn', 'right', 'note', { fromSide: 'top', toSide: 'bottom' }),
+      edge('plain', 'root', 'plain', { toEnd: 'none' }),
+      edge('double', 'root', 'double', { fromEnd: 'arrow', toEnd: 'arrow' })],
+  }
+  const f = fixture(data, { measure: () => 40 })
+  f.settings.mindmapChildNodeSpacing = 200
+  await f.run()
+  assert.equal(f.calls.history.length, 1)
+  const after = f.canvas.getData(), nodes = new Map(after.nodes.map(n => [n.id, n])), root = nodes.get('root')
+  for (const id of ['plain', 'double']) {
+    assert.deepEqual(nodes.get(id), data.nodes.find(n => n.id === id), `${id} stays unchanged`)
+    assert.ok(!f.calls.measurements.includes(id), `${id} is not measured`)
+  }
+  assert.equal(root.x, 0)
+  assert.equal(root.y, 0)
+  for (const id of ['left', 'right'])
+    assert.ok(Math.abs(nodes.get(id).y + nodes.get(id).height / 2 - root.y - root.height / 2) < 1e-6, `${id} aligns with root`)
+  for (const id of ['up', 'down'])
+    assert.ok(Math.abs(nodes.get(id).x + nodes.get(id).width / 2 - root.x - root.width / 2) < 1e-6, `${id} aligns with root`)
+  assert.deepEqual(after.edges, data.edges)
+  assert.deepEqual(f.canvas.history.data[0], data)
+  await f.run()
+  assert.deepEqual(f.canvas.getData(), after)
+  assert.equal(f.calls.history.length, 1)
+})
+
+
+test('a canvas containing only ordinary references is unchanged without measuring cards', async () => {
+  for (const connection of [{ toEnd: 'none' }, { fromEnd: 'arrow', toEnd: 'arrow' }, { mindmapRelation: false }]) {
+    const data = { nodes: [textNode('a', 0, 0), textNode('b', 200, 300)], edges: [edge('ab', 'a', 'b', connection)] }
+    const f = fixture(data, { measure: () => 400 })
+    await f.run()
+    assert.deepEqual(f.canvas.getData(), data)
+    assert.deepEqual(f.calls.measurements, [])
+    assertNoWrites(f)
+  }
+})
+
+test('measured rearrangement preserves fixed ordinary groups and moves hierarchical groups as a unit', async () => {
+  for (const collapsed of [false, true]) {
+    const data = {
+      nodes: [textNode('root', 0, 0), textNode('child', 400, 0),
+        groupNode('active-group', 900, -50, 300, 250, { collapsed }), textNode('active-card', 950, 0),
+        groupNode('fixed-group', 400, 500, 350, 300, { collapsed }), textNode('fixed-card', 450, 550)],
+      edges: [edge('rc', 'root', 'child'), edge('ca', 'child', 'active-card'),
+        edge('reference', 'root', 'fixed-card', { toEnd: 'none' })],
+    }
+    const f = fixture(data, { groups: true, measure: () => 400 })
+    await f.run()
+    assert.equal(f.calls.history.length, 1)
+    const after = f.canvas.getData()
+    for (const id of ['fixed-group', 'fixed-card'])
+      assert.deepEqual(after.nodes.find(n => n.id === id), data.nodes.find(n => n.id === id))
+    assertGroupOffsets(data, after, ['active-group', 'active-card'])
+    assert.deepEqual(f.calls.measurements.sort(), ['child', 'root'])
+    await f.run()
+    assert.deepEqual(f.canvas.getData(), after)
+    assert.equal(f.calls.history.length, 1)
+  }
 })

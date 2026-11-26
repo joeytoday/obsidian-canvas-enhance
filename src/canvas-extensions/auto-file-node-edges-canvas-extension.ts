@@ -103,6 +103,7 @@ export default class AutoFileNodeEdgesCanvasExtension extends CanvasExtension {
         toNode: otherNode.id,
         toSide: bestToSide,
         toFloating: true,
+        mindmapRelation: false,
       })
     }
 

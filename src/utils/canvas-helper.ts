@@ -55,11 +55,13 @@ export default class CanvasHelper {
     }
 
     for (const node of canvas.nodes.values()) {
-      if (!node.mindmapCollapseEl) continue
+      if (!node.mindmapCollapseEls) continue
       const data = node.getData()
-      const collapsed = 'mindmapCollapsed' in data && data.mindmapCollapsed === true
-      node.mindmapCollapseEl.setAttribute('aria-label',
-        collapsed ? t('mindmap.expandChildren') : t('mindmap.collapseChildren'))
+      for (const [direction, toggle] of node.mindmapCollapseEls) {
+        const collapsed = data.mindmapCollapsed === true ||
+          (Array.isArray(data.mindmapCollapsed) && data.mindmapCollapsed.includes(direction))
+        toggle.setAttribute('aria-label', `${t(collapsed ? 'mindmap.expandChildren' : 'mindmap.collapseChildren')} · ${t(`cmd.direction.${direction}`)}`)
+      }
     }
 
     for (const [selector, key] of [

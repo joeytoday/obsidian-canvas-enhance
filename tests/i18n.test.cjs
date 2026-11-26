@@ -142,8 +142,9 @@ test('existing canvas controls translate without changing canvas data, selection
   const element = () => ({ attributes: {}, setAttribute(key, value) { this.attributes[key] = value } })
   const buttons = new Map(['properties-button', 'disable-node-popup', 'disable-zoom', 'disable-pan', 'focus-mode-toggle', 'create-group', 'mindmap-rearrange-all'].map(id => ['#' + id, element()]))
   const search = new Map(['.document-search-button:first-child', '.document-search-button:last-child', '.document-search-close-button'].map(selector => [selector, element()]))
-  const data = [{ id: 'parent', mindmapCollapsed: true }, { id: 'child' }]
-  const nodes = data.map(value => ({ getData: () => value, mindmapCollapseEl: element() }))
+  const data = [{ id: 'parent', mindmapCollapsed: true }, { id: 'child' }, { id: 'partial', mindmapCollapsed: ['right'] }]
+  const nodes = data.map(value => ({ getData: () => value,
+    mindmapCollapseEls: new Map(['right', 'left'].map(direction => [direction, element()])) }))
   const snapshot = JSON.stringify(data), selection = new Set([nodes[0]])
   let renders = 0
   const canvas = {
@@ -157,8 +158,11 @@ test('existing canvas controls translate without changing canvas data, selection
     i18n.CanvasHelper.refreshLanguage(canvas)
     assert.equal(buttons.get('#mindmap-rearrange-all').attributes['aria-label'], i18n.t('mindmap.rearrange'))
     assert.equal(buttons.get('#properties-button').attributes['aria-label'], i18n.t('menu.properties'))
-    assert.equal(nodes[0].mindmapCollapseEl.attributes['aria-label'], i18n.t('mindmap.expandChildren'))
-    assert.equal(nodes[1].mindmapCollapseEl.attributes['aria-label'], i18n.t('mindmap.collapseChildren'))
+    for (const [index, node] of nodes.entries()) for (const [direction, button] of node.mindmapCollapseEls) {
+      const collapsed = index === 0 || (index === 2 && direction === 'right')
+      assert.ok(button.attributes['aria-label'].includes(i18n.t(collapsed ? 'mindmap.expandChildren' : 'mindmap.collapseChildren')))
+      assert.ok(button.attributes['aria-label'].includes(i18n.t('cmd.direction.' + direction)))
+    }
     assert.equal(search.get('.document-search-button:first-child').attributes['aria-label'], i18n.t('search.previous'))
     assert.equal(JSON.stringify(data), snapshot)
     assert.equal(canvas.selection, selection)

@@ -9,6 +9,28 @@
   // Clear the right connection point (10px on-screen radius) at every zoom level
   transform: translate(calc(100% + 16px * var(--zoom-multiplier)), -50%) scale(var(--zoom-multiplier));
 
+  &[data-direction="left"] {
+    right: auto;
+    left: 0;
+    transform: translate(calc(-100% - 16px * var(--zoom-multiplier)), -50%) scale(var(--zoom-multiplier));
+  }
+
+  &[data-direction="down"], &[data-direction="up"] {
+    right: auto;
+    left: 50%;
+  }
+
+  &[data-direction="down"] {
+    top: auto;
+    bottom: 0;
+    transform: translate(-50%, calc(100% + 16px * var(--zoom-multiplier))) scale(var(--zoom-multiplier));
+  }
+
+  &[data-direction="up"] {
+    top: 0;
+    transform: translate(-50%, calc(-100% - 16px * var(--zoom-multiplier))) scale(var(--zoom-multiplier));
+  }
+
   display: flex;
   align-items: center;
   justify-content: center;
